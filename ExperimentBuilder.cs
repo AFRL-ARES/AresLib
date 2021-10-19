@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DynamicData;
 
 namespace AresLib
 {
@@ -12,11 +9,14 @@ namespace AresLib
   {
 
     // TODO: Pick up here
-    public ReadOnlyObservableCollection<StepBuilder> StepBuilders { get; }
+    public IList<StepBuilder> StepBuilders { get; } = new List<StepBuilder>();
 
     public Experiment Build()
     {
-      throw new NotImplementedException();
+      return new Experiment
+      {
+        Steps = StepBuilders.Select(builder => builder.Build()).ToArray()
+      };
     }
   }
 }
