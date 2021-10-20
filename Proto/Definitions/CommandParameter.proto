@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ares.core;
+
+import "CommandParameterMetadata.proto";
+
+message CommandParameter {
+	CommandParameterMetadata Metadata = 1; // Non-volatile information about the command parameter
+	float Value = 2; // Value of the parameter, represented as a floating point number for planner compatability
+}
