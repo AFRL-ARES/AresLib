@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package ares.core
-
-message CommandParameterMetadata {
-	
-}
