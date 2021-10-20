@@ -5,12 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="DynamicData" Version="7.3.1" />
-    <PackageReference Include="UnitsNet" Version="4.102.0" />
+    <Compile Remove="Automation\**" />
+    <EmbeddedResource Remove="Automation\**" />
+    <None Remove="Automation\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Automation\" />
+    <PackageReference Include="DynamicData" Version="7.3.1" />
+    <PackageReference Include="UnitsNet" Version="4.102.0" />
   </ItemGroup>
 
 </Project>

@@ -2,11 +2,12 @@
 
 namespace AresLib
 {
-  internal class CommandBuilder : IBuilder<AresCommand>
+  internal class DbDomainCommandBuilder : DbDomainBuilder<DeviceCommand,AresCommand>
   {
     public AresCommand Build()
     {
       throw new NotImplementedException();
     }
+
   }
 }

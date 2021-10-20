@@ -1,6 +1,11 @@
-﻿namespace AresLib.AresCoreDevice.Commands
+﻿using System;
+using System.Reflection;
+using System.Threading.Tasks;
+
+namespace AresLib.AresCoreDevice.Commands
 {
-  class WaitCommand : CoreDeviceCommand
+  internal class WaitCommand : CoreDeviceCommand
   {
+    public TimeSpan 
   }
 }

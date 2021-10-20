@@ -4,6 +4,7 @@ namespace AresLib
 {
   public interface IDeviceDomainTranslator
   {
-    Task GetDeviceCommand(AresCommand aresCommand);
+    IAresDevice Device { get; }
+    CommandDomainCoupling GenerateCommandDomains(CommandMetadata commandMeta);
   }
 }

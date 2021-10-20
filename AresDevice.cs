@@ -1,14 +1,19 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+
 namespace AresLib
 {
-  public abstract class AresDevice : IAresDevice
+  public abstract class AresDevice<T> : IAresDevice where T : DeviceCommand, new()
   {
+    public Guid Id { get; } = Guid.NewGuid();
 
-    protected abstract IDeviceDomainTranslator DomainTranslator { get; }
-    public Guid Id { get; }
-    public CommandIssueResult IssueCommand(AresCommand command)
+    public void ExecuteAbstractCommand(DeviceCommand command)
     {
-      throw new System.NotImplementedException();
+      ExecuteGenericCommand((T) command);
     }
+
+    protected abstract void ExecuteGenericCommand(T deviceSpecificCommand);
+
+    public ReadOnlyObservableCollection<CommandMetadata> AvailableCommands { get; }
   }
 }
