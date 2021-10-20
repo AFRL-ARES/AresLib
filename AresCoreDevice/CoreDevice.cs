@@ -5,9 +5,20 @@ namespace AresLib.AresCoreDevice
   {
 
     public IDeviceDomainTranslator DomainTranslator { get; }
-    public void IssueCommand(AresCommand command)
+    public Guid Id { get; } = Guid.NewGuid();
+    public CommandIssueResult IssueCommand(AresCommand command)
     {
-      throw new NotImplementedException();
+      var success = Enum.TryParse<CoreDeviceCommandType>(command.Name, out var commandType);
+      if (!success)
+        return new CommandIssueResult
+        {
+          Success = false,
+          Error = $"{this} does not support a command of name {command.Name}"
+        };
+
+
+
+      return new CommandIssueResult { Success = true };
     }
   }
 }

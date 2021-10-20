@@ -1,7 +1,9 @@
-﻿namespace AresLib
+﻿using System;
+namespace AresLib
 {
   public interface IAresDevice
   {
-    void IssueCommand(AresCommand command);
+    Guid Id { get; }
+    CommandIssueResult IssueCommand(AresCommand command);
   }
 }

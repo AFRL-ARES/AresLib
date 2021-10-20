@@ -4,8 +4,9 @@ namespace AresLib
 {
   public class AresCommand
   {
-    private string Name { get; }
+    public string Name { get; }
+    public string Description { get; }
     CommandParameter[] Arguments { get; }
-    public Guid Id { get; }
+    public Guid Id { get; } = Guid.NewGuid();
   }
 }

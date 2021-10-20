@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace AresLib
+﻿namespace AresLib
 {
   class CommandParameterBuilder : IBuilder<CommandParameter>
   {
