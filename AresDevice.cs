@@ -1,19 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Ares.Core;
 
 namespace AresLib
 {
-  public abstract class AresDevice<T> : IAresDevice where T : DeviceCommand, new()
+  public abstract class AresDevice : IAresDevice
   {
-    public Guid Id { get; } = Guid.NewGuid();
-
-    public void ExecuteAbstractCommand(DeviceCommand command)
-    {
-      ExecuteGenericCommand((T) command);
-    }
-
-    protected abstract void ExecuteGenericCommand(T deviceSpecificCommand);
-
-    public ReadOnlyObservableCollection<CommandMetadata> AvailableCommands { get; }
+    public string Name { get; init; }
   }
 }

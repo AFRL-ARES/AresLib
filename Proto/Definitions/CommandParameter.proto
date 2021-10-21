@@ -5,6 +5,6 @@ package ares.core;
 import "CommandParameterMetadata.proto";
 
 message CommandParameter {
-	CommandParameterMetadata Metadata = 1; // Non-volatile information about the command parameter
-	float Value = 2; // Value of the parameter, represented as a floating point number for planner compatability
+	CommandParameterMetadata Metadata = 1; // Non-volatile information about the command argument/parameter
+	float Value = 2; // Value of the argument/parameter used for execution, represented as a floating point number for planner compatibility
 }

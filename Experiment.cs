@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Ares.Core;
 
 namespace AresLib
 {
   internal class Experiment
   {
-    public Guid Id { get; } = Guid.NewGuid();
-    public ExperimentStep[] Steps { get; init; }
+    public ExperimentTemplate Template { get; init; }
+    public ExperimentOutput Output { get; init; }
   }
 }

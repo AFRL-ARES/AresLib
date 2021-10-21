@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AresLib.AresCoreDevice
 {
-  internal interface ICoreDevice : IAresDevice<CoreDeviceCommand>
+  internal interface ICoreDevice : IAresDevice
   {
     void Wait(TimeSpan duration);
   }
