@@ -8,5 +8,5 @@ message CommandMetadata {
 	string Name = 1; // Name of the command, registered by a device
 	string Description = 2; // Helpful text describing the command
 	string DeviceName = 3; // Name of the device to lookup for execution/generation of the command
-	repeated CommandParameterMetadata Metadata = 4; // Collection of metadata describing parameters/arguments
+	repeated CommandParameterMetadata ParameterMetadatas = 4; // Collection of metadata describing parameters/arguments
 }

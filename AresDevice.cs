@@ -1,4 +1,6 @@
-﻿namespace AresLib
+﻿using System;
+
+namespace AresLib
 {
   public abstract class AresDevice : IAresDevice
   {

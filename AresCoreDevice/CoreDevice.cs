@@ -9,6 +9,5 @@ namespace AresLib.AresCoreDevice
     {
       Thread.Sleep(duration);
     }
-
   }
 }
