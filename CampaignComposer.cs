@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Ares.Core;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Ares.Core;
 
 namespace AresLib
 {
@@ -14,7 +11,7 @@ namespace AresLib
       var experimentCompilers =
         Template
           .ExperimentTemplates
-          .Select(experimentTemplate => 
+          .Select(experimentTemplate =>
                     new ExperimentComposer
                     {
                       Template = experimentTemplate,

@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Ares.Core;
 using System.Linq;
 using System.Threading.Tasks;
-using Ares.Core;
 
 namespace AresLib
 {
@@ -24,12 +23,12 @@ namespace AresLib
             )
           .ToArray();
 
-      var 
+      var
         commandCompilers
           .Select(cmdCompiler => cmdCompiler.GenerateExecutable())
           .ToArray();
 
-      return 
+      return
         Template.IsParallel
           ? Task.WhenAll(commandExecutables)
           : commandExecutables

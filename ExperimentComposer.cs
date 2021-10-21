@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Ares.Core;
 using System.Linq;
 using System.Threading.Tasks;
-using Ares.Core;
 
 namespace AresLib
 {
@@ -24,14 +22,14 @@ namespace AresLib
             )
           .ToArray();
 
-        var composedSteps = stepCompilers.Select(stepCompiler => stepCompiler.Compose());
-        return composedSteps
-          .Aggregate(
-                   async (current, next) =>
-                   {
-                     await current;
-                     await next;
-                   });
-    } 
+      var composedSteps = stepCompilers.Select(stepCompiler => stepCompiler.Compose());
+      return composedSteps
+        .Aggregate(
+                 async (current, next) =>
+                 {
+                   await current;
+                   await next;
+                 });
+    }
   }
 }

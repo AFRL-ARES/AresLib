@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Ares.Core;
-
-namespace AresLib
+﻿namespace AresLib
 {
   public abstract class AresDevice : IAresDevice
   {

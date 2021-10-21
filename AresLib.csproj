@@ -6,8 +6,11 @@
 
   <ItemGroup>
     <Compile Remove="Automation\**" />
+    <Compile Remove="Proto\**" />
     <EmbeddedResource Remove="Automation\**" />
+    <EmbeddedResource Remove="Proto\**" />
     <None Remove="Automation\**" />
+    <None Remove="Proto\**" />
   </ItemGroup>
 
   <ItemGroup>

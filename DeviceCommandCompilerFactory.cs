@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core;
+﻿using Ares.Core;
+using System;
 
 namespace AresLib
 {
@@ -14,7 +10,7 @@ namespace AresLib
     public IDeviceCommandCompiler Create(CommandTemplate commandTemplate)
     {
       var qualifiedDeviceAction = GetDeviceAction(commandTemplate);
-      return new DeviceCommandCompiler {DeviceAction = qualifiedDeviceAction};
+      return new DeviceCommandCompiler { DeviceAction = qualifiedDeviceAction };
     }
 
     protected abstract Action GetDeviceAction(CommandTemplate commandTemplate);
