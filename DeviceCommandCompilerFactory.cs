@@ -3,7 +3,7 @@ using System;
 
 namespace AresLib
 {
-  internal abstract class DeviceCommandCompilerFactory<QualifiedDevice> where QualifiedDevice : AresDevice
+  internal abstract class DeviceCommandCompilerFactory<QualifiedDevice> : IDeviceCommandCompilerFactory<QualifiedDevice> where QualifiedDevice : AresDevice
   {
     public QualifiedDevice Device { get; init; }
 

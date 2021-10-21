@@ -16,22 +16,22 @@ namespace AresLib
              commandTemplate =>
              {
                var commandCompilerFactoryLookup = DeviceCommandCompilerRepoBridge.Repo.Lookup(commandTemplate.Metadata.Name);
-               var commandCompilerFactory = commandCompilerLookup.Value;
-               var commandCompiler = commandCompilerFactory.Compile(commandTemplate);
+               var commandCompilerFactory = commandCompilerFactoryLookup.Value;
+               var commandCompiler = commandCompilerFactory.Create(commandTemplate);
                return commandCompiler;
              }
             )
           .ToArray();
 
-      var
+      var executables =
         commandCompilers
-          .Select(cmdCompiler => cmdCompiler.GenerateExecutable())
+          .Select(cmdCompiler => cmdCompiler.Compile())
           .ToArray();
 
       return
         Template.IsParallel
-          ? Task.WhenAll(commandExecutables)
-          : commandExecutables
+          ? Task.WhenAll(executables)
+          : executables
             .Aggregate(
                        async (current, next) =>
                        {

@@ -4,7 +4,7 @@ namespace AresLib
 {
   public class DeviceCommandCompilerRepoBridge
   {
-    public ISourceCache<IDeviceCommandCompiler, string> Repo { get; }
-      = new SourceCache<IDeviceCommandCompiler, string>(compiler => compiler.Device.Name);
+    public ISourceCache<IDeviceCommandCompilerFactory<AresDevice>, string> Repo { get; }
+      = new SourceCache<IDeviceCommandCompilerFactory<AresDevice>, string>(compiler => compiler.Device.Name);
   }
 }

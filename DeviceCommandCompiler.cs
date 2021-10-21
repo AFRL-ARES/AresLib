@@ -11,6 +11,6 @@ namespace AresLib
       return new Task(DeviceAction);
     }
 
-    public Action DeviceAction { get; set; }
+    public Action DeviceAction { get; init; }
   }
 }
