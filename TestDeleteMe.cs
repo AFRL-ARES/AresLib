@@ -15,7 +15,14 @@ namespace AresLib
   {
     private static CoreDevice _coreDevice = new CoreDevice { Name = "CORE" };
     private static IDeviceCommandCompilerFactory<CoreDevice> _coreCompFact;
-    public static async Task Do()
+
+    public static async Task TestTemplateBuilding()
+    {
+
+    }
+
+
+    public static async Task TestExecution()
     {
       _coreCompFact = new CoreDeviceCommandCompilerFactory { Device = _coreDevice };
       var factoryRepoBridge = new DeviceCommandCompilerFactoryRepoBridge();
@@ -112,16 +119,20 @@ namespace AresLib
     }
 
     public static CommandTemplate WaitCommand(int seconds)
-    {
-      return new CommandTemplate
-             {
-               Arguments = { DefaultWait(seconds) },
-               Metadata = new CommandMetadata
-                          {
-                            Name = $"{CoreDeviceCommandType.Wait}",
-                            DeviceName = $"{_coreDevice.Name}"
-                          }
-             };
-    }
+      =>
+        new CommandTemplate
+        {
+          Arguments =
+          {
+            DefaultWait(seconds)
+          },
+          Metadata =
+            new CommandMetadata
+            {
+              Name = $"{CoreDeviceCommandType.Wait}",
+              DeviceName = $"{_coreDevice.Name}"
+            }
+        };
+
   }
 }
