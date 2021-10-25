@@ -3,9 +3,9 @@ using Ares.Core;
 
 namespace AresLib.Composers
 {
-  internal class StepComposer : CommandComposer<StepTemplate>
+  internal class StepComposer : CommandComposer<StepTemplate, StepExecutor>
   {
-    public override ExecutableStep Compose()
+    public override StepExecutor Compose()
     {
       var commandCompilers =
         Template
@@ -14,7 +14,7 @@ namespace AresLib.Composers
             (
              commandTemplate =>
              {
-               var commandCompilerFactoryLookup = DeviceCommandCompilerRepoBridge.Repo.Lookup(commandTemplate.Metadata.DeviceName);
+               var commandCompilerFactoryLookup = DeviceCommandCompilerFactoryRepoBridge.Repo.Lookup(commandTemplate.Metadata.DeviceName);
                var commandCompilerFactory = commandCompilerFactoryLookup.Value;
                var commandCompiler = commandCompilerFactory.Create(commandTemplate);
                return commandCompiler;
@@ -27,7 +27,17 @@ namespace AresLib.Composers
           .Select(cmdCompiler => cmdCompiler.Compile())
           .ToArray();
 
-      return new ExecutableStep { Commands = executables, IsParallel = Template.IsParallel, Name = Template.Name };
+      return Template.IsParallel
+        ? new ParallelStepExecutor
+          {
+            Commands = executables,
+            Name = Template.Name
+          }
+        : new SequentialStepExecutor
+          {
+            Commands = executables,
+            Name = Template.Name
+          };
     }
   }
 }

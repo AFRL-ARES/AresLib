@@ -11,10 +11,11 @@ namespace AresLib.AresCoreDevice
     {
       Name = "Core";
     }
-    public Task Wait(TimeSpan duration)
+    public async Task Wait(TimeSpan duration)
     {
-      Console.WriteLine($"Waiting for {duration.TotalSeconds} seconds.");
-      return Task.Delay(duration);
+      await Task.Delay(duration);
+      Console.WriteLine($"Waited for {duration.TotalSeconds} seconds.");
+
     }
   }
 }

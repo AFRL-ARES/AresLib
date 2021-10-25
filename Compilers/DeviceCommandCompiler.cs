@@ -6,11 +6,11 @@ namespace AresLib.Compilers
   internal class DeviceCommandCompiler : IDeviceCommandCompiler
   {
 
-    public Func<Task> Compile()
+    public Task Compile()
     {
-      return DeviceAction;
+      return new Task(DeviceAction);
     }
 
-    public Func<Task> DeviceAction { get; init; }
+    public Action DeviceAction { get; init; }
   }
 }

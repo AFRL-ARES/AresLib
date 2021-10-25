@@ -10,7 +10,7 @@ using UnitsNet.Units;
 
 namespace AresLib.AresCoreDevice
 {
-  internal class CoreDeviceCommandCompilerFactory : DeviceCommandCompilerFactory<CoreDevice>
+  internal class CoreDeviceCommandCompilerFactory : DeviceCommandCompilerFactory<CoreDevice, CoreDeviceCommandType>
   {
     public CoreDeviceCommandCompilerFactory()
     {
@@ -97,24 +97,25 @@ namespace AresLib.AresCoreDevice
       return commandMetadata;
     }
 
-    protected override Func<Task>? GetDeviceAction(CommandTemplate commandTemplate)
-    {
-      if (commandTemplate.Metadata.Name.Equals(CoreDeviceCommandType.Wait.ToString(), StringComparison.OrdinalIgnoreCase) || commandTemplate.Metadata.Name.Equals(CoreDeviceCommandType.Delay.ToString(), StringComparison.OrdinalIgnoreCase))
-      {
-        return GenerateWaitAction(commandTemplate);
-      }
 
-      return null;
+    protected override void ParseAndPerformDeviceAction(CoreDeviceCommandType deviceCommandEnum, CommandParameter[] commandParameters)
+    {
+      switch (deviceCommandEnum)
+      {
+        case CoreDeviceCommandType.Delay:
+        case CoreDeviceCommandType.Wait:
+          ParseAndCallWait(commandParameters[0]);
+          break;
+        default:
+          throw new NotImplementedException($"Could not find function to parse parameters and route to {Device.Name}'s method for executing {deviceCommandEnum} at {GetType().Name}");
+      }
     }
 
-    private Func<Task> GenerateWaitAction(CommandTemplate commandTemplate)
+    private void ParseAndCallWait(CommandParameter durationParameter)
     {
-      var durationVal = commandTemplate.Arguments.FirstOrDefault();
-      if (durationVal is null)
-        throw new ArgumentException($"Wait command expected one argument, but no arguments were passed in.");
-      var duration = TimeSpan.FromSeconds(durationVal.Value);
-      var deviceAction = new Func<Task>(() => Device.Wait(duration));
-      return deviceAction;
+      // This wouldn't be so naive in reality. We'd check the units and do FromMS, or FromHours, etc if needed
+      var duration = TimeSpan.FromSeconds(durationParameter.Value);
+      Task.Run(() => Device.Wait(duration)).Wait();
     }
   }
 }

@@ -4,13 +4,9 @@ using AresLib.Compilers;
 
 namespace AresLib.Composers
 {
-  internal class CampaignComposer : CommandComposer<CampaignTemplate>
+  internal class CampaignComposer : CommandComposer<CampaignTemplate, CampaignExecutor>
   {
-    public CampaignComposer()
-    {
-      DeviceCommandCompilerRepoBridge = new DeviceCommandCompilerRepoBridge();
-    }
-    public override ExecutableCampaign Compose()
+    public override CampaignExecutor Compose()
     {
       var experimentCompilers =
         Template
@@ -19,7 +15,7 @@ namespace AresLib.Composers
                     new ExperimentComposer
                     {
                       Template = experimentTemplate,
-                      DeviceCommandCompilerRepoBridge = DeviceCommandCompilerRepoBridge
+                      DeviceCommandCompilerFactoryRepoBridge = DeviceCommandCompilerFactoryRepoBridge
                     })
           .ToArray();
 
@@ -28,7 +24,7 @@ namespace AresLib.Composers
           .Select(expComposer => expComposer.Compose())
           .ToArray();
 
-      return new ExecutableCampaign { Experiments = composedExperiments };
+      return new CampaignExecutor { Experiments = composedExperiments };
     }
   }
 }

@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
 namespace AresLib
 {
-  internal class ExecutableCampaign : IBaseExecutable
+  internal class CampaignExecutor : IBaseExecutor
   {
-    public ExecutableExperiment[] Experiments { get; init; }
+    public ExperimentExecutor[] Experiments { get; init; }
 
     public async Task Execute()
     {

@@ -2,8 +2,8 @@
 
 namespace AresLib
 {
-  internal interface IBaseExecutable
+  internal interface IBaseExecutor
   {
-    public Task Execute();
+    Task Execute();
   }
 }

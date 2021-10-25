@@ -5,7 +5,7 @@ namespace AresLib.Compilers
 {
   public interface IDeviceCommandCompiler
   {
-    Func<Task> DeviceAction { init; }
-    Func<Task> Compile();
+    Action DeviceAction { init; }
+    Task Compile();
   }
 }

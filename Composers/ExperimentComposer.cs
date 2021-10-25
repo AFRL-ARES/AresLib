@@ -3,9 +3,9 @@ using Ares.Core;
 
 namespace AresLib.Composers
 {
-  internal class ExperimentComposer : CommandComposer<ExperimentTemplate>
+  internal class ExperimentComposer : CommandComposer<ExperimentTemplate,ExperimentExecutor>
   {
-    public override ExecutableExperiment Compose()
+    public override ExperimentExecutor Compose()
     {
       var stepCompilers =
         Template
@@ -16,13 +16,13 @@ namespace AresLib.Composers
                new StepComposer
                {
                  Template = stepTemplate,
-                 DeviceCommandCompilerRepoBridge = DeviceCommandCompilerRepoBridge
+                 DeviceCommandCompilerFactoryRepoBridge = DeviceCommandCompilerFactoryRepoBridge
                }
             )
           .ToArray();
 
       var composedSteps = stepCompilers.Select(stepCompiler => stepCompiler.Compose());
-      return new ExecutableExperiment { Steps = composedSteps.ToArray() };
+      return new ExperimentExecutor { Steps = composedSteps.ToArray() };
     }
   }
 }
