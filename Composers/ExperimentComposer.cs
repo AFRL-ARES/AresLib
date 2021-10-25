@@ -1,12 +1,11 @@
 ﻿using Ares.Core;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace AresLib
 {
   internal class ExperimentComposer : CommandComposer<ExperimentTemplate>
   {
-    public override Task Compose()
+    public override ExecutableExperiment Compose()
     {
       var stepCompilers =
         Template
@@ -23,13 +22,7 @@ namespace AresLib
           .ToArray();
 
       var composedSteps = stepCompilers.Select(stepCompiler => stepCompiler.Compose());
-      return composedSteps
-        .Aggregate(
-                 async (current, next) =>
-                 {
-                   await current;
-                   await next;
-                 });
+      return new ExecutableExperiment { Steps = composedSteps.ToArray() };
     }
   }
 }

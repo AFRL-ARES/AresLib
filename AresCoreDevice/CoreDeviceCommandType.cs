@@ -2,7 +2,7 @@
 {
   internal enum CoreDeviceCommandType
   {
-    DELAY,
-    WAIT,
+    Delay,
+    Wait,
   }
 }

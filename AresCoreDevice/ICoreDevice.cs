@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace AresLib.AresCoreDevice
 {
   internal interface ICoreDevice : IAresDevice
   {
-    void Wait(TimeSpan duration);
+    Task Wait(TimeSpan duration);
   }
 }

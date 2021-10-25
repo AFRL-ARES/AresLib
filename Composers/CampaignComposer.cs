@@ -1,12 +1,15 @@
 ﻿using Ares.Core;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace AresLib
 {
   internal class CampaignComposer : CommandComposer<CampaignTemplate>
   {
-    public override Task Compose()
+    public CampaignComposer()
+    {
+      DeviceCommandCompilerRepoBridge = new DeviceCommandCompilerRepoBridge();
+    }
+    public override ExecutableCampaign Compose()
     {
       var experimentCompilers =
         Template
@@ -24,13 +27,7 @@ namespace AresLib
           .Select(expComposer => expComposer.Compose())
           .ToArray();
 
-      return composedExperiments
-        .Aggregate(
-                   async (current, next) =>
-                   {
-                     await current;
-                     await next;
-                   });
+      return new ExecutableCampaign { Experiments = composedExperiments };
     }
   }
 }

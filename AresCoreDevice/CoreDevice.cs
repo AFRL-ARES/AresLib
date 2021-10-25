@@ -1,13 +1,20 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace AresLib.AresCoreDevice
 {
   internal class CoreDevice : AresDevice, ICoreDevice
   {
-    public void Wait(TimeSpan duration)
+    public CoreDevice()
     {
-      Thread.Sleep(duration);
+      Name = "Core";
+    }
+    public Task Wait(TimeSpan duration)
+    {
+      Console.WriteLine($"Waiting for {duration.TotalSeconds} seconds.");
+      return Task.Delay(duration);
     }
   }
 }

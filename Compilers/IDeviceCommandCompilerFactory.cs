@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Ares.Core;
+using System;
 using System.Collections.ObjectModel;
-using Ares.Core;
 
 namespace AresLib
 {
-  public interface IDeviceCommandCompilerFactory<QualifiedDevice, DeviceCommandEnum> 
-    where QualifiedDevice : IAresDevice
-    where DeviceCommandEnum : Enum
+  public interface IDeviceCommandCompilerFactory<out TQualifiedDevice>
+    where TQualifiedDevice : IAresDevice
   {
     IDeviceCommandCompiler Create(CommandTemplate commandTemplate);
-    void RegisterCommandMetadatas();
-    QualifiedDevice Device { get; init; }
-    ReadOnlyObservableCollection<CommandMetadata> AvailableCommandMetadatas { get; init; }
+    TQualifiedDevice Device { get; }
+    ReadOnlyObservableCollection<CommandMetadata> AvailableCommandMetadatas { get; }
   }
 }

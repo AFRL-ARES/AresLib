@@ -1,17 +1,15 @@
 ﻿using Ares.Core;
+using DynamicData;
 using System;
 using System.Collections.ObjectModel;
-using System.Data.SqlTypes;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using DynamicData;
+using System.Threading.Tasks;
 
 namespace AresLib
 {
-  internal abstract class DeviceCommandCompilerFactory<QualifiedDevice, DeviceCommandEnum> 
-    : IDeviceCommandCompilerFactory<QualifiedDevice, DeviceCommandEnum>
-    where QualifiedDevice : AresDevice
-    where DeviceCommandEnum : struct, Enum
+  internal abstract class DeviceCommandCompilerFactory<TQualifiedDevice>
+    : IDeviceCommandCompilerFactory<TQualifiedDevice>
+    where TQualifiedDevice : AresDevice
   {
     protected DeviceCommandCompilerFactory()
     {
@@ -21,20 +19,7 @@ namespace AresLib
         .Subscribe();
 
       AvailableCommandMetadatas = readonlyAvailableCommandMetadatas;
-
-      var enumeratedCommandEnums = Enum.GetValues<DeviceCommandEnum>();
-
     }
-
-    public void RegisterCommandMetadatas()
-    {
-      var deviceCommandEnumValues = Enum.GetValues<DeviceCommandEnum>();
-      var commandMetadatas = deviceCommandEnumValues.Select(GenerateCommandMetadata).ToArray();
-      AvailableCommandMetadatasSource.AddOrUpdate(commandMetadatas);
-    }
-
-
-    public abstract CommandMetadata GenerateCommandMetadata(DeviceCommandEnum deviceCommandEnum);
 
     public IDeviceCommandCompiler Create(CommandTemplate commandTemplate)
     {
@@ -43,9 +28,9 @@ namespace AresLib
     }
 
 
-    protected abstract Action GetDeviceAction(CommandTemplate commandTemplate);
+    protected abstract Func<Task> GetDeviceAction(CommandTemplate commandTemplate);
 
-    public QualifiedDevice Device { get; init; }
+    public TQualifiedDevice Device { get; init; }
 
     public ReadOnlyObservableCollection<CommandMetadata> AvailableCommandMetadatas { get; }
 
