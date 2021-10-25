@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace AresLib
+namespace AresLib.Compilers
 {
   internal class DeviceCommandCompiler : IDeviceCommandCompiler
   {

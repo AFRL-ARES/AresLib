@@ -1,7 +1,7 @@
-﻿using Ares.Core;
-using System.Linq;
+﻿using System.Linq;
+using Ares.Core;
 
-namespace AresLib
+namespace AresLib.Composers
 {
   internal class ExperimentComposer : CommandComposer<ExperimentTemplate>
   {

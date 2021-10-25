@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using AresLib.AresCoreDevice;
+﻿using AresLib.AresCoreDevice;
 using DynamicData;
 
-namespace AresLib
+namespace AresLib.Compilers
 {
   public class DeviceCommandCompilerRepoBridge
   {

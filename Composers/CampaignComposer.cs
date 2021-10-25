@@ -1,7 +1,8 @@
-﻿using Ares.Core;
-using System.Linq;
+﻿using System.Linq;
+using Ares.Core;
+using AresLib.Compilers;
 
-namespace AresLib
+namespace AresLib.Composers
 {
   internal class CampaignComposer : CommandComposer<CampaignTemplate>
   {

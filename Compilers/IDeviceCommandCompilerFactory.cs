@@ -1,8 +1,7 @@
-﻿using Ares.Core;
-using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using Ares.Core;
 
-namespace AresLib
+namespace AresLib.Compilers
 {
   public interface IDeviceCommandCompilerFactory<out TQualifiedDevice>
     where TQualifiedDevice : IAresDevice

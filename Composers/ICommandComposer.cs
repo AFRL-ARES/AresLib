@@ -1,6 +1,7 @@
-﻿using Google.Protobuf;
+﻿using AresLib.Compilers;
+using Google.Protobuf;
 
-namespace AresLib
+namespace AresLib.Composers
 {
   internal interface ICommandComposer<DbTemplate> where DbTemplate : IMessage
   {
