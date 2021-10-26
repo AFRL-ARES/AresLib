@@ -1,6 +1,6 @@
 ﻿namespace AresLib.Builders
 {
-  internal interface IBuilder<T>
+  public interface IBuilder<T>
   {
     T Build();
   }

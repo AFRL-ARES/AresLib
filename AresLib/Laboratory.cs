@@ -10,26 +10,16 @@ using DynamicData.Binding;
 
 namespace AresLib
 {
-  // TODO? Proto messagify? figure it out later on, but keep it POD (maybe readonly observable transformation binding subscriptions)
   public class Laboratory
   {
-    public Laboratory()
+    public Laboratory(string name, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> deviceInterpreters)
     {
-      AvailableDeviceCommandCompilerFactoriesSource
-        .Connect()
-        .Bind(out var availableDeviceCommandCompilerFactories)
-        .Subscribe();
-      AvailableDeviceCommandCompilerFactories = availableDeviceCommandCompilerFactories;
+      Name = name;
+      DeviceInterpreters = deviceInterpreters;
     }
 
     public string Name { get; }
 
-    internal ISourceCache<IDeviceCommandInterpreter<AresDevice>, string> AvailableDeviceCommandCompilerFactoriesSource { get; }
-      = new SourceCache<IDeviceCommandInterpreter<AresDevice>, string>(deviceCommandCompilerFactory => deviceCommandCompilerFactory.Device.Name);
-
-    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandCompilerFactories { get; }
-
-
-    // TODO: Planners? Analyzers? 
+    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> DeviceInterpreters { get; }
   }
 }

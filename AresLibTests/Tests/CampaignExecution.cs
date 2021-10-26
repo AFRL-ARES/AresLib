@@ -9,7 +9,7 @@ namespace AresLibTests.Tests
   {
 
     [TestMethod]
-    public void Run()
+    public void NoExceptions()
     {
       Console.WriteLine("Yay, a test");
       var testLabManager = new TestLaboratoryManager();

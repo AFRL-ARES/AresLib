@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Ares.Core;
 using AresLib;
 using AresLib.Device;
+using DynamicData;
 
 namespace AresLibTests.DummyModels
 {
@@ -22,9 +23,19 @@ namespace AresLibTests.DummyModels
           .Select(device => new TestCoreDeviceCommandInterpreter(device))
           .ToArray();
 
-      DeviceCommandInterpreters = coreDeviceInterpreters;
+      DeviceCommandInterpretersSource.AddOrUpdate(coreDeviceInterpreters);
     }
 
-    protected override IDeviceCommandInterpreter<AresDevice>[] DeviceCommandInterpreters { get; }
+    protected override Laboratory BuildLab()
+    {
+      DeviceCommandInterpretersSource
+        .Connect()
+        .Bind(out var managedDeviceInterpreters)
+        .Subscribe();
+
+      var testLab = new Laboratory("TestLaboratory", managedDeviceInterpreters);
+
+      return testLab;
+    }
   }
 }

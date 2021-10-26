@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Ares.Core;
 using AresLib.Builders;
 
 namespace AresLib
@@ -11,5 +12,6 @@ namespace AresLib
   {
     // TODO: User, authentication/availability, etc.
     Laboratory Lab { get; }
+    ITemplateBuilder<CampaignTemplate> GenerateCampaignBuilder(string campaignName);
   }
 }
