@@ -4,8 +4,13 @@ namespace AresLib.Executors
 {
   internal abstract class StepExecutor : IBaseExecutor
   {
-    public Task[] Commands { get; init; }
-    public string Name { get; init; }
+    public StepExecutor(string name, Task[] commands)
+    {
+      Name = name;
+      Commands = commands;
+    }
+    public Task[] Commands { get; }
+    public string Name { get; }
 
     public abstract Task Execute();
   }

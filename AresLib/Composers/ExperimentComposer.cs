@@ -24,7 +24,7 @@ namespace AresLib.Composers
           .ToArray();
 
       var composedSteps = stepCompilers.Select(stepCompiler => stepCompiler.Compose());
-      return new ExperimentExecutor { Steps = composedSteps.ToArray() };
+      return new ExperimentExecutor(composedSteps.ToArray());
     }
   }
 }

@@ -5,10 +5,14 @@ namespace AresLib.Executors
 {
   internal class ExperimentExecutor : IBaseExecutor
   {
-    public StepExecutor[] Steps { get; init; }
+    public ExperimentExecutor(StepExecutor[] stepExecutors)
+    {
+      StepExecutors = stepExecutors;
+    }
+    public StepExecutor[] StepExecutors { get; }
     public async Task Execute()
     {
-      foreach (var executableStep in Steps)
+      foreach (var executableStep in StepExecutors)
       {
         var startTime = DateTime.Now;
         await executableStep.Execute();

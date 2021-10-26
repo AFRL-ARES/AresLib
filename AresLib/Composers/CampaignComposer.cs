@@ -25,7 +25,7 @@ namespace AresLib.Composers
           .Select(expComposer => expComposer.Compose())
           .ToArray();
 
-      return new CampaignExecutor { Experiments = composedExperiments };
+      return new CampaignExecutor(composedExperiments);
     }
   }
 }

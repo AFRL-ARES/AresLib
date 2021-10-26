@@ -5,6 +5,10 @@ namespace AresLib.Executors
 {
   internal class ParallelStepExecutor : StepExecutor
   {
+    public ParallelStepExecutor(string name, Task[] commands) : base(name, commands)
+    {
+    }
+
     public override Task Execute()
     {
       var startTime = DateTime.Now;
@@ -14,5 +18,6 @@ namespace AresLib.Executors
       }
       return Task.WhenAll(Commands);
     }
+
   }
 }

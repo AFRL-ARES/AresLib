@@ -5,6 +5,10 @@ namespace AresLib.Executors
 {
   internal class SequentialStepExecutor : StepExecutor
   {
+    public SequentialStepExecutor(string name, Task[] commands) : base(name, commands)
+    {
+    }
+
     public override async Task Execute()
     {
       Console.WriteLine($"Executing Step: {Name}");
@@ -14,5 +18,7 @@ namespace AresLib.Executors
         await command;
       }
     }
+
+    
   }
 }

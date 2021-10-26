@@ -37,16 +37,9 @@ namespace AresLib.Composers
           .ToArray();
 
       return Template.IsParallel
-        ? new ParallelStepExecutor
-          {
-            Commands = executables,
-            Name = Template.Name
-          }
-        : new SequentialStepExecutor
-          {
-            Commands = executables,
-            Name = Template.Name
-          };
+               ? new ParallelStepExecutor(Template.Name, executables)
+               : new SequentialStepExecutor(Template.Name, executables)
+        as StepExecutor;
     }
 
 

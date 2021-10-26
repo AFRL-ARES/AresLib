@@ -4,11 +4,15 @@ namespace AresLib.Executors
 {
   internal class CampaignExecutor : IBaseExecutor
   {
-    public ExperimentExecutor[] Experiments { get; init; }
+    public CampaignExecutor(ExperimentExecutor[] experimentExecutors)
+    {
+      ExperimentExecutors = experimentExecutors;
+    }
+    public ExperimentExecutor[] ExperimentExecutors { get; }
 
     public async Task Execute()
     {
-      foreach (var executableExperiment in Experiments)
+      foreach (var executableExperiment in ExperimentExecutors)
       {
         await executableExperiment.Execute();
       }
