@@ -1,34 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Ares.Core;
-using DynamicData;
 
 namespace AresLib.Builders
 {
-  internal class CommandTemplateBuilder : TemplateBuilder<CommandTemplate, ITemplateBuilder<CommandParameter>>
+  internal class CommandTemplateBuilder : TemplateBuilder<CommandTemplate>, ICommandTemplateBuilder
   {
-    public CommandTemplateBuilder(string name) : base(name)
+    public CommandTemplateBuilder(CommandMetadata commandMetadata) : base(commandMetadata.Name)
     {
-    }
-
-    protected override ReadOnlyObservableCollection<ITemplateBuilder<CommandParameter>> DeriveSubBildersSource()
-    {
-      SubBuildersSource = new SourceCache<ITemplateBuilder<CommandParameter>, string>(subBuilder => subBuilder.Name);
-      SubBuildersSource
-        .Connect()
-        .Bind(out var subBuilders)
-        .Subscribe();
-
-      return subBuilders;
+      Metadata = commandMetadata;
+      ParameterBuilders =
+        Metadata
+          .ParameterMetadatas
+          .Select(parameterMetadata => new CommandParameterBuilder(parameterMetadata))
+          .Cast<ICommandParameterBuilder>()
+          .ToArray();
     }
 
     public override CommandTemplate Build()
     {
-      throw new NotImplementedException();
+      var commandParameters = ParameterBuilders.Select(parameterBuilder => parameterBuilder.Build());
+      var commandTemplate = new CommandTemplate();
+      commandTemplate.Arguments.AddRange(commandParameters);
+      commandTemplate.Metadata = Metadata;
+      return commandTemplate;
     }
+
+
+    public ICommandParameterBuilder[] ParameterBuilders { get; }
+
+    public CommandMetadata Metadata { get; }
   }
 }

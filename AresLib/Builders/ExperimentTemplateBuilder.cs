@@ -9,26 +9,42 @@ using DynamicData;
 
 namespace AresLib.Builders
 {
-  internal class ExperimentTemplateBuilder : TemplateBuilder<ExperimentTemplate, ITemplateBuilder<StepTemplate>>
+  internal class ExperimentTemplateBuilder : TemplateBuilder<ExperimentTemplate>, IExperimentTemplateBuilder
   {
     public ExperimentTemplateBuilder(string name) : base(name)
     {
-    }
-
-    protected override ReadOnlyObservableCollection<ITemplateBuilder<StepTemplate>> DeriveSubBildersSource()
-    {
-      SubBuildersSource = new SourceCache<ITemplateBuilder<StepTemplate>, string>(subBuilder => subBuilder.Name);
-      SubBuildersSource
+      StepTemplateBuildersSource
         .Connect()
-        .Bind(out var subBuilders)
+        .Bind(out var stepTemplateBuilders)
         .Subscribe();
 
-      return subBuilders;
+      StepTemplateBuilders = stepTemplateBuilders;
     }
+
 
     public override ExperimentTemplate Build()
     {
-      throw new NotImplementedException();
+      var stepTemplates = StepTemplateBuilders.Select(stepTemplateBuilder => stepTemplateBuilder.Build());
+      var experimentTemplate = new ExperimentTemplate();
+      experimentTemplate.StepTemplates.AddRange(stepTemplates);
+      experimentTemplate.Name = Name;
+      return experimentTemplate;
     }
+
+    public IStepTemplateBuilder AddStepTemplateBuilder(string stepName)
+    {
+      var stepTemplateBuilder = new StepTemplateBuilder(stepName);
+      StepTemplateBuildersSource.AddOrUpdate(stepTemplateBuilder);
+      return stepTemplateBuilder;
+    }
+
+    public void RemoveStepTemplateBuilder(string stepName)
+    {
+      StepTemplateBuildersSource.Remove(stepName);
+    }
+
+    private ISourceCache<IStepTemplateBuilder, string> StepTemplateBuildersSource { get; }
+    = new SourceCache<IStepTemplateBuilder, string>(stepTemplateBuilder => stepTemplateBuilder.Name);
+    public ReadOnlyObservableCollection<IStepTemplateBuilder> StepTemplateBuilders { get; }
   }
 }

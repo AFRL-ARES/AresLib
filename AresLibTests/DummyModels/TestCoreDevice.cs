@@ -14,7 +14,7 @@ namespace AresLibTests.DummyModels
     {
       Address = adress;
     }
-    public async Task Delay(TimeSpan duration)
+    public async Task Wait(TimeSpan duration)
     {
       var start = DateTime.Now;
       await Task.Delay(duration);

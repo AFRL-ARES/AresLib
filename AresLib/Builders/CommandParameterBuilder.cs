@@ -9,13 +9,21 @@ namespace AresLib.Builders
 {
   internal class CommandParameterBuilder : ICommandParameterBuilder
   {
-    public CommandParameter Build()
+    public CommandParameterBuilder(CommandParameterMetadata parameterMetadata)
     {
-      throw new NotImplementedException();
+      Metadata = parameterMetadata;
     }
 
-    public CommandParameterMetadata Metadata { get; init; }
+    public CommandParameter Build()
+    {
+      var commandParameter = new CommandParameter();
+      commandParameter.Metadata = Metadata;
+      commandParameter.Value = (float)Value;
+      return commandParameter;
+    }
 
-    public double Value { get; init; }
+    public CommandParameterMetadata Metadata { get; }
+
+    public double Value { get; set; }
   }
 }

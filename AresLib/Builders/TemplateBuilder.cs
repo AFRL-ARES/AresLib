@@ -9,21 +9,15 @@ using Google.Protobuf;
 
 namespace AresLib.Builders
 {
-  internal abstract class TemplateBuilder<TemplateMessage, OwnedBuilders>
-    : ITemplateBuilder<TemplateMessage>
+  internal abstract class TemplateBuilder<TemplateMessage> : ITemplateBuilder<TemplateMessage>
     where TemplateMessage : IMessage
   {
     protected TemplateBuilder(string name)
     {
       Name = name;
-      ManagedSubBuilders = DeriveSubBildersSource();
     }
-
-    protected abstract ReadOnlyObservableCollection<OwnedBuilders> DeriveSubBildersSource();
     public abstract TemplateMessage Build();
 
-    protected ISourceCache<OwnedBuilders, string> SubBuildersSource { get; set; }
-    internal ReadOnlyObservableCollection<OwnedBuilders> ManagedSubBuilders { get; }
     public string Name { get; }
   }
 }

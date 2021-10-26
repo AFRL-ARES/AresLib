@@ -12,6 +12,7 @@ namespace AresLib
   {
     // TODO: User, authentication/availability, etc.
     Laboratory Lab { get; }
-    ITemplateBuilder<CampaignTemplate> GenerateCampaignBuilder(string campaignName);
+    ICampaignTemplateBuilder GenerateCampaignBuilder(string campaignName);
+    void RunCampaign(CampaignTemplate campaignTemplate);
   }
 }

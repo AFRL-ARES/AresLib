@@ -1,22 +1,23 @@
-﻿using System.Linq;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
 using Ares.Core;
+using AresLib.Device;
 using AresLib.Executors;
 
 namespace AresLib.Composers
 {
   internal class CampaignComposer : CommandComposer<CampaignTemplate, CampaignExecutor>
   {
+    public CampaignComposer(
+      CampaignTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters) { }
+
     public override CampaignExecutor Compose()
     {
       var experimentCompilers =
         Template
           .ExperimentTemplates
           .Select(experimentTemplate =>
-                    new ExperimentComposer
-                    {
-                      Template = experimentTemplate,
-                      CommandNamesToInterpreters = CommandNamesToInterpreters
-                    })
+                    new ExperimentComposer(experimentTemplate, AvailableDeviceCommandInterpreters))
           .ToArray();
 
       var composedExperiments =

@@ -25,12 +25,13 @@ namespace Ares.Core {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChhFeHBlcmltZW50VGVtcGxhdGUucHJvdG8SCWFyZXMuY29yZRoSU3RlcFRl",
-            "bXBsYXRlLnByb3RvIkQKEkV4cGVyaW1lbnRUZW1wbGF0ZRIuCg1TdGVwVGVt",
-            "cGxhdGVzGAEgAygLMhcuYXJlcy5jb3JlLlN0ZXBUZW1wbGF0ZWIGcHJvdG8z"));
+            "bXBsYXRlLnByb3RvIlIKEkV4cGVyaW1lbnRUZW1wbGF0ZRIuCg1TdGVwVGVt",
+            "cGxhdGVzGAEgAygLMhcuYXJlcy5jb3JlLlN0ZXBUZW1wbGF0ZRIMCgROYW1l",
+            "GAIgASgJYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Ares.Core.StepTemplateReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.ExperimentTemplate), global::Ares.Core.ExperimentTemplate.Parser, new[]{ "StepTemplates" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.ExperimentTemplate), global::Ares.Core.ExperimentTemplate.Parser, new[]{ "StepTemplates", "Name" }, null, null, null, null)
           }));
     }
     #endregion
@@ -63,6 +64,7 @@ namespace Ares.Core {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ExperimentTemplate(ExperimentTemplate other) : this() {
       stepTemplates_ = other.stepTemplates_.Clone();
+      name_ = other.name_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -84,6 +86,20 @@ namespace Ares.Core {
       get { return stepTemplates_; }
     }
 
+    /// <summary>Field number for the "Name" field.</summary>
+    public const int NameFieldNumber = 2;
+    private string name_ = "";
+    /// <summary>
+    /// Name of the experiment, most likely automatically generated relative to the campaign name
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string Name {
+      get { return name_; }
+      set {
+        name_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ExperimentTemplate);
@@ -98,6 +114,7 @@ namespace Ares.Core {
         return true;
       }
       if(!stepTemplates_.Equals(other.stepTemplates_)) return false;
+      if (Name != other.Name) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -105,6 +122,7 @@ namespace Ares.Core {
     public override int GetHashCode() {
       int hash = 1;
       hash ^= stepTemplates_.GetHashCode();
+      if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -119,6 +137,10 @@ namespace Ares.Core {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       stepTemplates_.WriteTo(output, _repeated_stepTemplates_codec);
+      if (Name.Length != 0) {
+        output.WriteRawTag(18);
+        output.WriteString(Name);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -128,6 +150,9 @@ namespace Ares.Core {
     public int CalculateSize() {
       int size = 0;
       size += stepTemplates_.CalculateSize(_repeated_stepTemplates_codec);
+      if (Name.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -140,6 +165,9 @@ namespace Ares.Core {
         return;
       }
       stepTemplates_.Add(other.stepTemplates_);
+      if (other.Name.Length != 0) {
+        Name = other.Name;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -153,6 +181,10 @@ namespace Ares.Core {
             break;
           case 10: {
             stepTemplates_.AddEntriesFrom(input, _repeated_stepTemplates_codec);
+            break;
+          }
+          case 18: {
+            Name = input.ReadString();
             break;
           }
         }

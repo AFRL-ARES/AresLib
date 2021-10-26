@@ -1,11 +1,16 @@
-﻿using System.Linq;
+﻿using System.Collections.ObjectModel;
+using System.Linq;
 using Ares.Core;
+using AresLib.Device;
 using AresLib.Executors;
 
 namespace AresLib.Composers
 {
   internal class ExperimentComposer : CommandComposer<ExperimentTemplate,ExperimentExecutor>
   {
+    public ExperimentComposer(
+      ExperimentTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters) { }
+
     public override ExperimentExecutor Compose()
     {
       var stepCompilers =
@@ -14,11 +19,7 @@ namespace AresLib.Composers
           .Select
             (
              stepTemplate =>
-               new StepComposer
-               {
-                 Template = stepTemplate,
-                 CommandNamesToInterpreters = CommandNamesToInterpreters
-               }
+               new StepComposer(stepTemplate, AvailableDeviceCommandInterpreters)
             )
           .ToArray();
 

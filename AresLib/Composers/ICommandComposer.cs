@@ -10,8 +10,6 @@ namespace AresLib.Composers
     where CoreExecutable : IBaseExecutor
   {
     CoreExecutable Compose();
-    DbTemplate Template { get; init; }
-
-    IDictionary<string, IDeviceCommandInterpreter<AresDevice>> CommandNamesToInterpreters { get; init; }
+    DbTemplate Template { get; }
   }
 }
