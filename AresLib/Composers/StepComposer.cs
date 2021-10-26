@@ -38,8 +38,7 @@ namespace AresLib.Composers
 
       return Template.IsParallel
                ? new ParallelStepExecutor(Template.Name, executables)
-               : new SequentialStepExecutor(Template.Name, executables)
-        as StepExecutor;
+               : new SequentialStepExecutor(Template.Name, executables);
     }
 
 

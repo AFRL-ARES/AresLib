@@ -18,7 +18,7 @@ namespace AresLib.Device
     // We want this abstract class to handle as much conversion/routing of protobuf/db to
     // lib representations as possible, making it easier/obvious for extensions to "know what to do".
     // couldn't think of something better to say, but its a comment that will get deleted anyway.
-    protected abstract void ParseAndPerformDeviceAction(DeviceCommandEnum deviceCommandEnum, CommandParameter[] commandParameters);
+    protected abstract void ParseAndPerformDeviceAction(DeviceCommandEnum deviceCommandEnum, Parameter[] commandParameters);
     
     private void RouteDeviceAction(CommandTemplate commandTemplate)
     {

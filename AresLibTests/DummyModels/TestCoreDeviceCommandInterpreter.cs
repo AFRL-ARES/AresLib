@@ -15,7 +15,7 @@ namespace AresLibTests.DummyModels
     { }
 
     protected override void ParseAndPerformDeviceAction(
-      TestCoreDeviceCommand deviceCommandEnum, CommandParameter[] commandParameters)
+      TestCoreDeviceCommand deviceCommandEnum, Parameter[] commandParameters)
     {
       switch (deviceCommandEnum)
       {
@@ -26,7 +26,7 @@ namespace AresLibTests.DummyModels
     }
 
 
-    private void ParseAndPerformWait(CommandParameter durationParameter)
+    private void ParseAndPerformWait(Parameter durationParameter)
     {
       var duration = TimeSpan.FromSeconds(durationParameter.Value);
       Device.Wait(duration).Wait();
@@ -39,10 +39,12 @@ namespace AresLibTests.DummyModels
       waitCommandMetadata.DeviceName = Device.Name;
       waitCommandMetadata.Description = "Simply waits for the specified duration";
 
-      var durationParameterMetadata = new CommandParameterMetadata();
+      var durationParameterMetadata = new ParameterMetadata();
       durationParameterMetadata.Name = Duration.Info.Name;
-      durationParameterMetadata.Constraints.Add(1);
-      durationParameterMetadata.Constraints.Add(3);
+      var durationParameterLimits = new Limits();
+      durationParameterLimits.Minimum = 1;
+      durationParameterLimits.Maximum = 3;
+      durationParameterMetadata.Constraints.Add(durationParameterLimits);
       durationParameterMetadata.Unit = Duration.Info.BaseUnitInfo.Name;
       waitCommandMetadata.ParameterMetadatas.Add(durationParameterMetadata);
 

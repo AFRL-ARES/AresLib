@@ -2,10 +2,10 @@ syntax = "proto3";
 
 package ares.core;
 
-import "CommandParameter.proto";
+import "Parameter.proto";
 import "CommandMetadata.proto";
 
 message CommandTemplate {
 	CommandMetadata Metadata = 1; // Non-volatile information about the command to be generated for execution
-	repeated CommandParameter Arguments = 2; // Collection of command parameters/arguments used for generating an executable (device qualified) command
+	repeated Parameter Arguments = 2; // Collection of command parameters/arguments used for generating an executable (device qualified) command
 }

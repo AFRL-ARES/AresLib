@@ -23,6 +23,8 @@ namespace AresLibTests.Tests
       // Add new experiment builder
       var experimentTemplateBuilder = testCampaignBuilder.AddExperimentTemplateBuilder();
       var step1 = experimentTemplateBuilder.AddStepTemplateBuilder("First Test Step");
+      var step2 = experimentTemplateBuilder.AddStepTemplateBuilder("Second Test Step");
+      var step3 = experimentTemplateBuilder.AddStepTemplateBuilder("Third Test Step");
 
       var waitCommandMetadata =
         testLabManager
@@ -43,8 +45,8 @@ namespace AresLibTests.Tests
           .ParameterMetadatas
           .First(parameterMetadata => parameterMetadata.Name.Equals(Duration.Info.Name));
 
-      var waitCommandBuilder = step1.AddCommandTemplateBuilder(waitCommandMetadata);
-      var durationParameterBuilder = waitCommandBuilder.ParameterBuilders.First
+      var commandBuilder11 = step1.AddCommandTemplateBuilder(waitCommandMetadata);
+      var durationParameterBuilder = commandBuilder11.ParameterBuilders.First
         (
          parameterBuilder =>
            parameterBuilder

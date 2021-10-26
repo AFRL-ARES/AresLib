@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.10.26.165048" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.10.26.181141" />
     <PackageReference Include="DynamicData" Version="7.4.1" />
     <PackageReference Include="UnitsNet" Version="4.102.0" />
   </ItemGroup>

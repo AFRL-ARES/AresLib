@@ -24,13 +24,13 @@ namespace Ares.Core {
     static CommandMetadataReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "ChVDb21tYW5kTWV0YWRhdGEucHJvdG8SCWFyZXMuY29yZRoeQ29tbWFuZFBh",
-            "cmFtZXRlck1ldGFkYXRhLnByb3RvIokBCg9Db21tYW5kTWV0YWRhdGESDAoE",
-            "TmFtZRgBIAEoCRITCgtEZXNjcmlwdGlvbhgCIAEoCRISCgpEZXZpY2VOYW1l",
-            "GAMgASgJEj8KElBhcmFtZXRlck1ldGFkYXRhcxgEIAMoCzIjLmFyZXMuY29y",
-            "ZS5Db21tYW5kUGFyYW1ldGVyTWV0YWRhdGFiBnByb3RvMw=="));
+            "ChVDb21tYW5kTWV0YWRhdGEucHJvdG8SCWFyZXMuY29yZRoXUGFyYW1ldGVy",
+            "TWV0YWRhdGEucHJvdG8iggEKD0NvbW1hbmRNZXRhZGF0YRIMCgROYW1lGAEg",
+            "ASgJEhMKC0Rlc2NyaXB0aW9uGAIgASgJEhIKCkRldmljZU5hbWUYAyABKAkS",
+            "OAoSUGFyYW1ldGVyTWV0YWRhdGFzGAQgAygLMhwuYXJlcy5jb3JlLlBhcmFt",
+            "ZXRlck1ldGFkYXRhYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
-          new pbr::FileDescriptor[] { global::Ares.Core.CommandParameterMetadataReflection.Descriptor, },
+          new pbr::FileDescriptor[] { global::Ares.Core.ParameterMetadataReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.CommandMetadata), global::Ares.Core.CommandMetadata.Parser, new[]{ "Name", "Description", "DeviceName", "ParameterMetadatas" }, null, null, null, null)
           }));
@@ -120,14 +120,14 @@ namespace Ares.Core {
 
     /// <summary>Field number for the "ParameterMetadatas" field.</summary>
     public const int ParameterMetadatasFieldNumber = 4;
-    private static readonly pb::FieldCodec<global::Ares.Core.CommandParameterMetadata> _repeated_parameterMetadatas_codec
-        = pb::FieldCodec.ForMessage(34, global::Ares.Core.CommandParameterMetadata.Parser);
-    private readonly pbc::RepeatedField<global::Ares.Core.CommandParameterMetadata> parameterMetadatas_ = new pbc::RepeatedField<global::Ares.Core.CommandParameterMetadata>();
+    private static readonly pb::FieldCodec<global::Ares.Core.ParameterMetadata> _repeated_parameterMetadatas_codec
+        = pb::FieldCodec.ForMessage(34, global::Ares.Core.ParameterMetadata.Parser);
+    private readonly pbc::RepeatedField<global::Ares.Core.ParameterMetadata> parameterMetadatas_ = new pbc::RepeatedField<global::Ares.Core.ParameterMetadata>();
     /// <summary>
     /// Collection of metadata describing parameters/arguments
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public pbc::RepeatedField<global::Ares.Core.CommandParameterMetadata> ParameterMetadatas {
+    public pbc::RepeatedField<global::Ares.Core.ParameterMetadata> ParameterMetadatas {
       get { return parameterMetadatas_; }
     }
 
