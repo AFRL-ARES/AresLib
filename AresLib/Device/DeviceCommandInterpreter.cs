@@ -1,18 +1,19 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Ares.Core;
-using DynamicData;
 
-namespace AresLib.Compilers
+namespace AresLib.Device
 {
-  internal abstract class DeviceCommandInterpreter<TQualifiedDevice, DeviceCommandEnum>
+  public abstract class DeviceCommandInterpreter<TQualifiedDevice, DeviceCommandEnum>
     : IDeviceCommandInterpreter<TQualifiedDevice>
     where TQualifiedDevice : AresDevice
     where DeviceCommandEnum : struct, Enum
   {
-
+    protected DeviceCommandInterpreter(TQualifiedDevice device)
+    {
+      Device = device;
+    }
     // NOTE: The intent of this command is to prevent protobuf message exposure to extensions. 
     // We want this abstract class to handle as much conversion/routing of protobuf/db to
     // lib representations as possible, making it easier/obvious for extensions to "know what to do".
@@ -35,7 +36,7 @@ namespace AresLib.Compilers
       return new Task(qualifiedDeviceAction);
     }
 
-    public TQualifiedDevice Device { get; init; }
+    public TQualifiedDevice Device { get; }
   }
 
 }

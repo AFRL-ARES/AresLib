@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
-namespace AresLib
+
+namespace AresLib.Executors
 {
   internal class CampaignExecutor : IBaseExecutor
   {

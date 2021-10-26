@@ -1,8 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Ares.Core;
 
-namespace AresLib.Compilers
+namespace AresLib.Device
 {
   public interface IDeviceCommandInterpreter<out TQualifiedDevice>
     where TQualifiedDevice : AresDevice

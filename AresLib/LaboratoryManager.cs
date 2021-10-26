@@ -3,30 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AresLib.Compilers;
+using AresLib.Device;
 
 namespace AresLib
 {
-  internal class LaboratoryManager : ILaboratoryManager
+  public abstract class LaboratoryManager : ILaboratoryManager
   {
-
-
-    public void Setup()
-    {
-      var commandNamesToInterpreters =
-        Lab.
-          AvailableDeviceCommandCompilerFactories.
-          SelectMany(interpreter => 
-                       interpreter
-                         .CommandsToMetadatas()
-                         .Select(commandMetadata => 
-                                   new KeyValuePair<string,IDeviceCommandInterpreter<AresDevice>>(StaticStuff.QualifyCommandName(interpreter, commandMetadata), interpreter)))
-          .ToArray();
-
-      var lookup = new Dictionary<string, IDeviceCommandInterpreter<AresDevice>>(commandNamesToInterpreters);
-
-    }
-
+    protected abstract IDeviceCommandInterpreter<AresDevice>[] DeviceCommandInterpreters { get; }
     public Laboratory Lab { get; }
   }
 }

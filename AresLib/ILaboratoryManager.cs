@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AresLib.Builders;
 
 namespace AresLib
 {
-  internal interface ILaboratoryManager
+  public interface ILaboratoryManager
   {
     // TODO: User, authentication/availability, etc.
-    void Setup();
     Laboratory Lab { get; }
   }
 }

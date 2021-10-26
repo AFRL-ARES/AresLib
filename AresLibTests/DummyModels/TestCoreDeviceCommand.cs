@@ -4,10 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AresLib
+namespace AresLibTests.DummyModels
 {
-  internal interface IBuilder<T>
+  public enum TestCoreDeviceCommand
   {
-    T Build();
+    Wait,
+    Test,
+    Derp
   }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace AresLib
+namespace AresLib.Executors
 {
   internal interface IBaseExecutor
   {

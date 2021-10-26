@@ -4,14 +4,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AresLib.Compilers;
+using AresLib.Device;
 using DynamicData;
 using DynamicData.Binding;
 
 namespace AresLib
 {
   // TODO? Proto messagify? figure it out later on, but keep it POD (maybe readonly observable transformation binding subscriptions)
-  internal class Laboratory
+  public class Laboratory
   {
     public Laboratory()
     {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using AresLib.Compilers;
+using AresLib.Device;
+using AresLib.Executors;
 using Google.Protobuf;
 
 namespace AresLib.Composers
