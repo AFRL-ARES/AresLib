@@ -1,11 +1,10 @@
 ﻿#nullable enable
 using Ares.Core;
+using AresLib.Compilers;
 using DynamicData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using AresLib.Compilers;
 using UnitsNet.Units;
 
 namespace AresLib.AresCoreDevice
@@ -115,7 +114,7 @@ namespace AresLib.AresCoreDevice
     {
       // This wouldn't be so naive in reality. We'd check the units and do FromMS, or FromHours, etc if needed
       var duration = TimeSpan.FromSeconds(durationParameter.Value);
-      Task.Run(() => Device.Wait(duration)).Wait();
+      Device.Wait(duration).Wait();
     }
   }
 }
