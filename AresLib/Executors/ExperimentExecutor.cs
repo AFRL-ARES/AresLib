@@ -14,11 +14,12 @@ namespace AresLib.Executors
     {
       foreach (var executableStep in StepExecutors)
       {
+        Console.WriteLine($"Started parallel step {executableStep.Name}");
         var startTime = DateTime.Now;
         await executableStep.Execute();
         var endTime = DateTime.Now;
         var duration = endTime - startTime;
-        Console.WriteLine($"Step {executableStep.Name} duration: {duration.TotalSeconds} seconds");
+        Console.WriteLine($"{executableStep.Name} Step duration: {duration.TotalSeconds} seconds");
       }
     }
   }

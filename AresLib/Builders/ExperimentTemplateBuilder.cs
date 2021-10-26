@@ -31,9 +31,9 @@ namespace AresLib.Builders
       return experimentTemplate;
     }
 
-    public IStepTemplateBuilder AddStepTemplateBuilder(string stepName)
+    public IStepTemplateBuilder AddStepTemplateBuilder(string stepName, bool isParallel)
     {
-      var stepTemplateBuilder = new StepTemplateBuilder(stepName);
+      var stepTemplateBuilder = new StepTemplateBuilder(stepName, isParallel);
       StepTemplateBuildersSource.AddOrUpdate(stepTemplateBuilder);
       return stepTemplateBuilder;
     }

@@ -12,8 +12,10 @@ namespace AresLib.Builders
   internal class StepTemplateBuilder : TemplateBuilder<StepTemplate>, IStepTemplateBuilder
   {
 
-    public StepTemplateBuilder(string name) : base(name)
+    public StepTemplateBuilder(string name, bool isParallel) : base(name)
     {
+      IsParallel = isParallel;
+
       CommandTemplateBuildersSource
         .Connect()
         .Bind(out var commandTemplateBuilders)
@@ -28,23 +30,26 @@ namespace AresLib.Builders
       var stepTemplate = new StepTemplate();
       stepTemplate.CommandTemplates.AddRange(commandTemplates);
       stepTemplate.Name = Name;
+      stepTemplate.IsParallel = IsParallel;
       return stepTemplate;
     }
 
     public ICommandTemplateBuilder AddCommandTemplateBuilder(CommandMetadata commandMetadata)
     {
       var commandTemplateBuilder = new CommandTemplateBuilder(commandMetadata);
-      CommandTemplateBuildersSource.AddOrUpdate(commandTemplateBuilder);
+      CommandTemplateBuildersSource.Add(commandTemplateBuilder);
       return commandTemplateBuilder;
     }
 
-    public void RemoveCommandTemplateBuilder(string templateBuilderName)
+    public void RemoveCommandTemplateBuilder(ICommandTemplateBuilder templateBuilder)
     {
-      CommandTemplateBuildersSource.Remove(templateBuilderName);
+      CommandTemplateBuildersSource.Remove(templateBuilder);
     }
 
-    private ISourceCache<ICommandTemplateBuilder, string> CommandTemplateBuildersSource { get; }
-    = new SourceCache<ICommandTemplateBuilder, string>(commandTemplateBuilder => commandTemplateBuilder.Name);
+    private ISourceList<ICommandTemplateBuilder> CommandTemplateBuildersSource { get; }
+    = new SourceList<ICommandTemplateBuilder>();
     public ReadOnlyObservableCollection<ICommandTemplateBuilder> CommandTemplateBuilders { get; }
+
+    public bool IsParallel { get; } 
   }
 }

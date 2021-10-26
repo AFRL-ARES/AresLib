@@ -11,7 +11,6 @@ namespace AresLib.Executors
 
     public override async Task Execute()
     {
-      Console.WriteLine($"Executing Step: {Name}");
       foreach (var command in Commands)
       {
         command.Start();

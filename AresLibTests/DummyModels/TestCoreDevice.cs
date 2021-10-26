@@ -16,11 +16,8 @@ namespace AresLibTests.DummyModels
     }
     public async Task Wait(TimeSpan duration)
     {
-      var start = DateTime.Now;
       await Task.Delay(duration);
-      var finish = DateTime.Now;
-      var executionTime = finish - start;
-      Console.Write($"Delayed {executionTime.TotalSeconds}s");
+      Console.WriteLine($"Executed Wait");
     }
 
     public void Derp()
@@ -30,7 +27,7 @@ namespace AresLibTests.DummyModels
 
     public int Test()
     {
-      Console.Write("Executed Test (command)");
+      Console.WriteLine("Executed Test (command)");
       return 7;
     }
 
