@@ -1,4 +1,5 @@
-﻿using AresLib.Compilers;
+﻿using System.Collections.Generic;
+using AresLib.Compilers;
 using Google.Protobuf;
 
 namespace AresLib.Composers
@@ -10,6 +11,6 @@ namespace AresLib.Composers
     CoreExecutable Compose();
     DbTemplate Template { get; init; }
 
-    DeviceCommandCompilerFactoryRepoBridge DeviceCommandCompilerFactoryRepoBridge { get; init; }
+    IDictionary<string, IDeviceCommandInterpreter<AresDevice>> CommandNamesToInterpreters { get; init; }
   }
 }

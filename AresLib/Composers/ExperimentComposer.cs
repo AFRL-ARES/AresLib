@@ -16,7 +16,7 @@ namespace AresLib.Composers
                new StepComposer
                {
                  Template = stepTemplate,
-                 DeviceCommandCompilerFactoryRepoBridge = DeviceCommandCompilerFactoryRepoBridge
+                 CommandNamesToInterpreters = CommandNamesToInterpreters
                }
             )
           .ToArray();

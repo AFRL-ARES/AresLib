@@ -4,13 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using AresLib.AresCoreDevice;
 using AresLib.Compilers;
 using DynamicData;
+using DynamicData.Binding;
 
 namespace AresLib
 {
-  // TODO? Proto messagify?
+  // TODO? Proto messagify? figure it out later on, but keep it POD (maybe readonly observable transformation binding subscriptions)
   internal class Laboratory
   {
     public Laboratory()
@@ -24,10 +24,11 @@ namespace AresLib
 
     public string Name { get; }
 
-    internal ISourceCache<IDeviceCommandCompilerFactory<IAresDevice>, string> AvailableDeviceCommandCompilerFactoriesSource { get; }
-      = new SourceCache<IDeviceCommandCompilerFactory<IAresDevice>, string>(deviceCommandCompilerFactory => deviceCommandCompilerFactory.Device.Name);
+    internal ISourceCache<IDeviceCommandInterpreter<AresDevice>, string> AvailableDeviceCommandCompilerFactoriesSource { get; }
+      = new SourceCache<IDeviceCommandInterpreter<AresDevice>, string>(deviceCommandCompilerFactory => deviceCommandCompilerFactory.Device.Name);
 
-    public ReadOnlyObservableCollection<IDeviceCommandCompilerFactory<IAresDevice>> AvailableDeviceCommandCompilerFactories { get; }
+    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandCompilerFactories { get; }
+
 
     // TODO: Planners? Analyzers? 
   }

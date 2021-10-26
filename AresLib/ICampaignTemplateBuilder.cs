@@ -11,6 +11,5 @@ namespace AresLib
   internal interface ICampaignTemplateBuilder : ITemplateBuilder<CampaignTemplate>
   {
     ISourceCache<IExperimentTemplateBuilder, string> ExperimentTemplateBuildersSource { get; }
-
   }
 }

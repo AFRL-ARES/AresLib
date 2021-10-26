@@ -7,24 +7,18 @@ namespace AresLib.Composers
   {
     public override StepExecutor Compose()
     {
-      var commandCompilers =
+      var executables =
         Template
           .CommandTemplates
           .Select
             (
              commandTemplate =>
              {
-               var commandCompilerFactoryLookup = DeviceCommandCompilerFactoryRepoBridge.Repo.Lookup(commandTemplate.Metadata.DeviceName);
-               var commandCompilerFactory = commandCompilerFactoryLookup.Value;
-               var commandCompiler = commandCompilerFactory.Create(commandTemplate);
-               return commandCompiler;
+               var commandInterpreter = CommandNamesToInterpreters[StaticStuff.QualifyCommandName(commandTemplate.Metadata)];
+               var executable = commandInterpreter.TemplateToDeviceCommand(commandTemplate);
+               return executable;
              }
             )
-          .ToArray();
-
-      var executables =
-        commandCompilers
-          .Select(cmdCompiler => cmdCompiler.Compile())
           .ToArray();
 
       return Template.IsParallel

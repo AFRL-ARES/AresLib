@@ -15,7 +15,7 @@ namespace AresLib.Composers
                     new ExperimentComposer
                     {
                       Template = experimentTemplate,
-                      DeviceCommandCompilerFactoryRepoBridge = DeviceCommandCompilerFactoryRepoBridge
+                      CommandNamesToInterpreters = CommandNamesToInterpreters
                     })
           .ToArray();
 

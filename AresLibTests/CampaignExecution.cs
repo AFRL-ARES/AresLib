@@ -15,6 +15,7 @@ namespace AresLibTests
     public void Run()
     {
       Console.WriteLine("Yay, a test");
+      
 //      _coreCompFact = new CoreDeviceCommandCompilerFactory { Device = _coreDevice };
 //      var factoryRepoBridge = new DeviceCommandCompilerFactoryRepoBridge();
 //      factoryRepoBridge.Repo.AddOrUpdate(_coreCompFact);
