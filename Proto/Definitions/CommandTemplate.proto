@@ -8,6 +8,5 @@ import "CommandMetadata.proto";
 message CommandTemplate {
 	CommandMetadata Metadata = 1; // Non-volatile information about the command to be generated for execution
 	repeated Parameter Arguments = 2; // Collection of command parameters/arguments used for generating an executable (device qualified) command
-	string UniqueIdText = 3; // Unique ID in text for use as database primary key, allowing model tracking
-
+	int64 Index = 3; // Index of the collection in which executed this template
 }

@@ -25,14 +25,14 @@ namespace Ares.Core {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChVDb21tYW5kVGVtcGxhdGUucHJvdG8SCWFyZXMuY29yZRoPUGFyYW1ldGVy",
-            "LnByb3RvGhVDb21tYW5kTWV0YWRhdGEucHJvdG8ifgoPQ29tbWFuZFRlbXBs",
+            "LnByb3RvGhVDb21tYW5kTWV0YWRhdGEucHJvdG8idwoPQ29tbWFuZFRlbXBs",
             "YXRlEiwKCE1ldGFkYXRhGAEgASgLMhouYXJlcy5jb3JlLkNvbW1hbmRNZXRh",
             "ZGF0YRInCglBcmd1bWVudHMYAiADKAsyFC5hcmVzLmNvcmUuUGFyYW1ldGVy",
-            "EhQKDFVuaXF1ZUlkVGV4dBgDIAEoCWIGcHJvdG8z"));
+            "Eg0KBUluZGV4GAMgASgDYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Ares.Core.ParameterReflection.Descriptor, global::Ares.Core.CommandMetadataReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.CommandTemplate), global::Ares.Core.CommandTemplate.Parser, new[]{ "Metadata", "Arguments", "UniqueIdText" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.CommandTemplate), global::Ares.Core.CommandTemplate.Parser, new[]{ "Metadata", "Arguments", "Index" }, null, null, null, null)
           }));
     }
     #endregion
@@ -66,7 +66,7 @@ namespace Ares.Core {
     public CommandTemplate(CommandTemplate other) : this() {
       metadata_ = other.metadata_ != null ? other.metadata_.Clone() : null;
       arguments_ = other.arguments_.Clone();
-      uniqueIdText_ = other.uniqueIdText_;
+      index_ = other.index_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -102,17 +102,17 @@ namespace Ares.Core {
       get { return arguments_; }
     }
 
-    /// <summary>Field number for the "UniqueIdText" field.</summary>
-    public const int UniqueIdTextFieldNumber = 3;
-    private string uniqueIdText_ = "";
+    /// <summary>Field number for the "Index" field.</summary>
+    public const int IndexFieldNumber = 3;
+    private long index_;
     /// <summary>
-    /// Unique ID in text for use as database primary key, allowing model tracking
+    /// Index of the collection in which executed this template
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string UniqueIdText {
-      get { return uniqueIdText_; }
+    public long Index {
+      get { return index_; }
       set {
-        uniqueIdText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        index_ = value;
       }
     }
 
@@ -131,7 +131,7 @@ namespace Ares.Core {
       }
       if (!object.Equals(Metadata, other.Metadata)) return false;
       if(!arguments_.Equals(other.arguments_)) return false;
-      if (UniqueIdText != other.UniqueIdText) return false;
+      if (Index != other.Index) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -140,7 +140,7 @@ namespace Ares.Core {
       int hash = 1;
       if (metadata_ != null) hash ^= Metadata.GetHashCode();
       hash ^= arguments_.GetHashCode();
-      if (UniqueIdText.Length != 0) hash ^= UniqueIdText.GetHashCode();
+      if (Index != 0L) hash ^= Index.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -159,9 +159,9 @@ namespace Ares.Core {
         output.WriteMessage(Metadata);
       }
       arguments_.WriteTo(output, _repeated_arguments_codec);
-      if (UniqueIdText.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteString(UniqueIdText);
+      if (Index != 0L) {
+        output.WriteRawTag(24);
+        output.WriteInt64(Index);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -175,8 +175,8 @@ namespace Ares.Core {
         size += 1 + pb::CodedOutputStream.ComputeMessageSize(Metadata);
       }
       size += arguments_.CalculateSize(_repeated_arguments_codec);
-      if (UniqueIdText.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueIdText);
+      if (Index != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Index);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -196,8 +196,8 @@ namespace Ares.Core {
         Metadata.MergeFrom(other.Metadata);
       }
       arguments_.Add(other.arguments_);
-      if (other.UniqueIdText.Length != 0) {
-        UniqueIdText = other.UniqueIdText;
+      if (other.Index != 0L) {
+        Index = other.Index;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -221,8 +221,8 @@ namespace Ares.Core {
             arguments_.AddEntriesFrom(input, _repeated_arguments_codec);
             break;
           }
-          case 26: {
-            UniqueIdText = input.ReadString();
+          case 24: {
+            Index = input.ReadInt64();
             break;
           }
         }

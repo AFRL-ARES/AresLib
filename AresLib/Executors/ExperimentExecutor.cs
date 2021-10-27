@@ -14,7 +14,7 @@ namespace AresLib.Executors
     {
       foreach (var executableStep in StepExecutors)
       {
-        Console.WriteLine($"Started parallel step {executableStep.Name}");
+        Console.WriteLine($"Started step {executableStep.Name}");
         var startTime = DateTime.Now;
         await executableStep.Execute();
         var endTime = DateTime.Now;

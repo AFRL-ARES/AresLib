@@ -9,6 +9,4 @@ message CommandMetadata {
 	string Description = 2; // Helpful text describing the command
 	string DeviceName = 3; // Name of the device to lookup for execution/generation of the command
 	repeated ParameterMetadata ParameterMetadatas = 4; // Collection of metadata describing parameters/arguments
-	string UniqueIdText = 5; // Unique ID in text for use as database primary key, allowing model tracking
-
 }

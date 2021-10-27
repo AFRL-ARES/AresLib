@@ -8,5 +8,4 @@ message Analysis {
 	CompletedExperiment CompletedExperiment = 1; // Completed experiment in which data was used to provide result
 	float Result = 2; // Result of the process performed on the completed experiment's output
 	string AnalyzerName = 3; // Name of the analyzer providing the process result
-	string UniqueIdText = 4; // Unique ID in text for use as database primary key, allowing model tracking
 }

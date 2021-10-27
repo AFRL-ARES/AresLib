@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Ares.Core;
+using AresLibTests.Tests.Database.EntityConfigurations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Npgsql;
 
 namespace AresLibTests.Tests
@@ -12,7 +16,7 @@ namespace AresLibTests.Tests
   public class CoreDatabaseContext : DbContext
   {
 
-//    public DbSet<CampaignTemplate> CampaignTemplates { get; set; }
+    public DbSet<CampaignTemplate> CampaignTemplates { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -26,7 +30,7 @@ namespace AresLibTests.Tests
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-//      modelBuilder.Entity<CampaignTemplate>()
+      modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetAssembly(typeof(CoreDatabaseContext)));
     }
   }
 }

@@ -25,14 +25,13 @@ namespace Ares.Core {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cg5BbmFseXNpcy5wcm90bxIJYXJlcy5jb3JlGhlDb21wbGV0ZWRFeHBlcmlt",
-            "ZW50LnByb3RvIoMBCghBbmFseXNpcxI7ChNDb21wbGV0ZWRFeHBlcmltZW50",
-            "GAEgASgLMh4uYXJlcy5jb3JlLkNvbXBsZXRlZEV4cGVyaW1lbnQSDgoGUmVz",
-            "dWx0GAIgASgCEhQKDEFuYWx5emVyTmFtZRgDIAEoCRIUCgxVbmlxdWVJZFRl",
-            "eHQYBCABKAliBnByb3RvMw=="));
+            "ZW50LnByb3RvIm0KCEFuYWx5c2lzEjsKE0NvbXBsZXRlZEV4cGVyaW1lbnQY",
+            "ASABKAsyHi5hcmVzLmNvcmUuQ29tcGxldGVkRXhwZXJpbWVudBIOCgZSZXN1",
+            "bHQYAiABKAISFAoMQW5hbHl6ZXJOYW1lGAMgASgJYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Ares.Core.CompletedExperimentReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.Analysis), global::Ares.Core.Analysis.Parser, new[]{ "CompletedExperiment", "Result", "AnalyzerName", "UniqueIdText" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.Analysis), global::Ares.Core.Analysis.Parser, new[]{ "CompletedExperiment", "Result", "AnalyzerName" }, null, null, null, null)
           }));
     }
     #endregion
@@ -67,7 +66,6 @@ namespace Ares.Core {
       completedExperiment_ = other.completedExperiment_ != null ? other.completedExperiment_.Clone() : null;
       result_ = other.result_;
       analyzerName_ = other.analyzerName_;
-      uniqueIdText_ = other.uniqueIdText_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -118,20 +116,6 @@ namespace Ares.Core {
       }
     }
 
-    /// <summary>Field number for the "UniqueIdText" field.</summary>
-    public const int UniqueIdTextFieldNumber = 4;
-    private string uniqueIdText_ = "";
-    /// <summary>
-    /// Unique ID in text for use as database primary key, allowing model tracking
-    /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string UniqueIdText {
-      get { return uniqueIdText_; }
-      set {
-        uniqueIdText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
-      }
-    }
-
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Analysis);
@@ -148,7 +132,6 @@ namespace Ares.Core {
       if (!object.Equals(CompletedExperiment, other.CompletedExperiment)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Result, other.Result)) return false;
       if (AnalyzerName != other.AnalyzerName) return false;
-      if (UniqueIdText != other.UniqueIdText) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -158,7 +141,6 @@ namespace Ares.Core {
       if (completedExperiment_ != null) hash ^= CompletedExperiment.GetHashCode();
       if (Result != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Result);
       if (AnalyzerName.Length != 0) hash ^= AnalyzerName.GetHashCode();
-      if (UniqueIdText.Length != 0) hash ^= UniqueIdText.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -184,10 +166,6 @@ namespace Ares.Core {
         output.WriteRawTag(26);
         output.WriteString(AnalyzerName);
       }
-      if (UniqueIdText.Length != 0) {
-        output.WriteRawTag(34);
-        output.WriteString(UniqueIdText);
-      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -204,9 +182,6 @@ namespace Ares.Core {
       }
       if (AnalyzerName.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(AnalyzerName);
-      }
-      if (UniqueIdText.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueIdText);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -230,9 +205,6 @@ namespace Ares.Core {
       }
       if (other.AnalyzerName.Length != 0) {
         AnalyzerName = other.AnalyzerName;
-      }
-      if (other.UniqueIdText.Length != 0) {
-        UniqueIdText = other.UniqueIdText;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -258,10 +230,6 @@ namespace Ares.Core {
           }
           case 26: {
             AnalyzerName = input.ReadString();
-            break;
-          }
-          case 34: {
-            UniqueIdText = input.ReadString();
             break;
           }
         }

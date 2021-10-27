@@ -25,13 +25,13 @@ namespace Ares.Core {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChhFeHBlcmltZW50VGVtcGxhdGUucHJvdG8SCWFyZXMuY29yZRoSU3RlcFRl",
-            "bXBsYXRlLnByb3RvImgKEkV4cGVyaW1lbnRUZW1wbGF0ZRIuCg1TdGVwVGVt",
+            "bXBsYXRlLnByb3RvImEKEkV4cGVyaW1lbnRUZW1wbGF0ZRIuCg1TdGVwVGVt",
             "cGxhdGVzGAEgAygLMhcuYXJlcy5jb3JlLlN0ZXBUZW1wbGF0ZRIMCgROYW1l",
-            "GAIgASgJEhQKDFVuaXF1ZUlkVGV4dBgDIAEoCWIGcHJvdG8z"));
+            "GAIgASgJEg0KBUluZGV4GAMgASgDYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Ares.Core.StepTemplateReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.ExperimentTemplate), global::Ares.Core.ExperimentTemplate.Parser, new[]{ "StepTemplates", "Name", "UniqueIdText" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.ExperimentTemplate), global::Ares.Core.ExperimentTemplate.Parser, new[]{ "StepTemplates", "Name", "Index" }, null, null, null, null)
           }));
     }
     #endregion
@@ -65,7 +65,7 @@ namespace Ares.Core {
     public ExperimentTemplate(ExperimentTemplate other) : this() {
       stepTemplates_ = other.stepTemplates_.Clone();
       name_ = other.name_;
-      uniqueIdText_ = other.uniqueIdText_;
+      index_ = other.index_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -101,17 +101,17 @@ namespace Ares.Core {
       }
     }
 
-    /// <summary>Field number for the "UniqueIdText" field.</summary>
-    public const int UniqueIdTextFieldNumber = 3;
-    private string uniqueIdText_ = "";
+    /// <summary>Field number for the "Index" field.</summary>
+    public const int IndexFieldNumber = 3;
+    private long index_;
     /// <summary>
-    /// Unique ID in text for use as database primary key, allowing model tracking
+    /// Index of the collection in which executed this template
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    public string UniqueIdText {
-      get { return uniqueIdText_; }
+    public long Index {
+      get { return index_; }
       set {
-        uniqueIdText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+        index_ = value;
       }
     }
 
@@ -130,7 +130,7 @@ namespace Ares.Core {
       }
       if(!stepTemplates_.Equals(other.stepTemplates_)) return false;
       if (Name != other.Name) return false;
-      if (UniqueIdText != other.UniqueIdText) return false;
+      if (Index != other.Index) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -139,7 +139,7 @@ namespace Ares.Core {
       int hash = 1;
       hash ^= stepTemplates_.GetHashCode();
       if (Name.Length != 0) hash ^= Name.GetHashCode();
-      if (UniqueIdText.Length != 0) hash ^= UniqueIdText.GetHashCode();
+      if (Index != 0L) hash ^= Index.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -158,9 +158,9 @@ namespace Ares.Core {
         output.WriteRawTag(18);
         output.WriteString(Name);
       }
-      if (UniqueIdText.Length != 0) {
-        output.WriteRawTag(26);
-        output.WriteString(UniqueIdText);
+      if (Index != 0L) {
+        output.WriteRawTag(24);
+        output.WriteInt64(Index);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -174,8 +174,8 @@ namespace Ares.Core {
       if (Name.Length != 0) {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Name);
       }
-      if (UniqueIdText.Length != 0) {
-        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueIdText);
+      if (Index != 0L) {
+        size += 1 + pb::CodedOutputStream.ComputeInt64Size(Index);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -192,8 +192,8 @@ namespace Ares.Core {
       if (other.Name.Length != 0) {
         Name = other.Name;
       }
-      if (other.UniqueIdText.Length != 0) {
-        UniqueIdText = other.UniqueIdText;
+      if (other.Index != 0L) {
+        Index = other.Index;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -214,8 +214,8 @@ namespace Ares.Core {
             Name = input.ReadString();
             break;
           }
-          case 26: {
-            UniqueIdText = input.ReadString();
+          case 24: {
+            Index = input.ReadInt64();
             break;
           }
         }

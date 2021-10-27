@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Data.Common;
 using System.Linq;
+using System.Threading;
 using System.Windows.Input;
 using Ares.Core;
 using AresLib;
 using AresLib.Builders;
 using AresLibTests.DummyModels;
+using Google.Protobuf;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Npgsql;
 using UnitsNet;
@@ -127,64 +130,57 @@ namespace AresLibTests.Tests
       parameterBuilder321.Value = 1;
 
       var testCampaignTemplate = testCampaignBuilder.Build();
-      // TODO: push template to database
-      // TODO: replace template in RunCampaign with template lookup to database (force execution to be from database)
+
 
 
 
 
       // Database stuff for learning purposes
       var dbContext = new CoreDatabaseContext();
+      var deleted = dbContext.Database.EnsureDeleted();
+      if (deleted)
+      {
+        Console.WriteLine("Deleted database");
+      }
       var exists = dbContext.Database.EnsureCreated();
       if (exists)
       {
-        Console.WriteLine("YAYYY Database created without having to do anything by hand.");
+        Console.WriteLine("Database created");
       }
-
-//      dbContext.CampaignTemplates.Add(testCampaignTemplate);
-//      dbContext.SaveChanges();
-
+      dbContext.Add(testCampaignTemplate);
+      dbContext.SaveChanges();
 
 
+      var freshDbConnection = new CoreDatabaseContext();
+      var dbCampaignTemplate = freshDbConnection
+                               .CampaignTemplates
+//                               .Include(campaignTemplate => campaignTemplate.ExperimentTemplates)
+//                               .ThenInclude(experimentTemplate => experimentTemplate.StepTemplates)
+//                               .ThenInclude(stepTemplate => stepTemplate.CommandTemplates)
+//                               .ThenInclude(commandTemplate => commandTemplate.Arguments)
+//                               .ThenInclude(parameter => parameter.Metadata)
+//                               .ThenInclude(parameterMetadata => parameterMetadata.Constraints)
+                               .ToArray()
+                               .Last();
 
+      // TODO: force template in RunCampaign to be database lookup
+      var cmpr = dbCampaignTemplate.ToString();
+      var src = testCampaignTemplate.ToString();
+      for (int i = 0; i < src.Length; i++)
+      {
+        if (src[i] != cmpr[i])
+        {
+          Console.Write("ú");
+          continue;
+        }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        Console.Write(" ");
+      }
+      Console.WriteLine();
+      Console.WriteLine(src);
+      Console.WriteLine(cmpr);
+      Assert.AreEqual(testCampaignTemplate.ToString().Length, dbCampaignTemplate.ToString().Length);
+      testLabManager.RunCampaign(dbCampaignTemplate);
       Console.WriteLine("Did test things");
     }
 
