@@ -1,10 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using DynamicData;
-using Google.Protobuf;
+﻿using Google.Protobuf;
 
 namespace AresLib.Builders
 {
-  public interface ITemplateBuilder<TemplateMessage> : IBuilder<TemplateMessage> 
+  public interface ITemplateBuilder<TemplateMessage> : IBuilder<TemplateMessage>
     where TemplateMessage : IMessage
 
   {

@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core;
-using AresLibTests.Tests.Database.EntityConfigurations;
+﻿using Ares.Core;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Npgsql;
+using System.Reflection;
 
 namespace AresLibTests.Tests
 {

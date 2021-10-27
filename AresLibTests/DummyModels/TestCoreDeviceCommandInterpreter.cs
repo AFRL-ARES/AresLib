@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core;
+﻿using Ares.Core;
 using AresLib.Device;
+using System;
+using System.Collections.Generic;
 using UnitsNet;
 
 namespace AresLibTests.DummyModels

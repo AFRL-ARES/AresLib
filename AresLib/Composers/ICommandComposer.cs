@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using AresLib.Device;
-using AresLib.Executors;
+﻿using AresLib.Executors;
 using Google.Protobuf;
 
 namespace AresLib.Composers
 {
-  internal interface ICommandComposer<DbTemplate, out CoreExecutable> 
+  internal interface ICommandComposer<DbTemplate, out CoreExecutable>
     where DbTemplate : IMessage
     where CoreExecutable : IBaseExecutor
   {

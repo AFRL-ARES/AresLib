@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core;
+﻿using Ares.Core;
 using AresLib.Builders;
 using AresLib.Composers;
 using AresLib.Device;
-using AresLib.Executors;
 using DynamicData;
+using System;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace AresLib
 {
@@ -49,6 +45,6 @@ namespace AresLib
     protected ISourceCache<IDeviceCommandInterpreter<AresDevice>, string> DeviceCommandInterpretersSource { get; }
       = new SourceCache<IDeviceCommandInterpreter<AresDevice>, string>(interpreter => interpreter.Device.Name);
 
-    private ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandInterpreters {get;}
+    private ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandInterpreters { get; }
   }
 }

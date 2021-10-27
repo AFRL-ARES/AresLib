@@ -1,6 +1,5 @@
-﻿using System;
+﻿using Ares.Core;
 using System.Linq;
-using Ares.Core;
 
 namespace AresLib.Builders
 {

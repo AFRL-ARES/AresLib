@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using AresLib.Device;
+﻿using AresLib.Device;
 using AresLib.Executors;
 using Google.Protobuf;
+using System.Collections.ObjectModel;
 
 namespace AresLib.Composers
 {
-  internal abstract class CommandComposer<DbTemplate, CoreExecutable> : ICommandComposer<DbTemplate, CoreExecutable> 
+  internal abstract class CommandComposer<DbTemplate, CoreExecutable> : ICommandComposer<DbTemplate, CoreExecutable>
     where DbTemplate : IMessage
     where CoreExecutable : IBaseExecutor
   {

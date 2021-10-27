@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Ares.Core;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AresLibTests.Tests.Database.EntityConfigurations
@@ -14,6 +8,10 @@ namespace AresLibTests.Tests.Database.EntityConfigurations
     public override void Configure(EntityTypeBuilder<ParameterMetadata> builder)
     {
       base.Configure(builder);
+      builder.HasMany(parameterMetadata => parameterMetadata.Constraints)
+        .WithOne()
+        .IsRequired();
+      // TODO figure out how to cleanup metadata, see CampaignMetadataEntityConfiguration for details
       builder.Navigation(parameterMetada => parameterMetada.Constraints)
              .AutoInclude();
     }

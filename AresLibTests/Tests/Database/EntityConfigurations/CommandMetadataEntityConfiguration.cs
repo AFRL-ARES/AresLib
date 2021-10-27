@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core;
-using Google.Protobuf.Collections;
-using Microsoft.EntityFrameworkCore;
+﻿using Ares.Core;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace AresLibTests.Tests.Database.EntityConfigurations
 {
@@ -16,6 +8,16 @@ namespace AresLibTests.Tests.Database.EntityConfigurations
     public override void Configure(EntityTypeBuilder<CommandMetadata> builder)
     {
       base.Configure(builder);
+      builder.HasMany(commandMetadata => commandMetadata.ParameterMetadatas)
+        .WithOne()
+        .IsRequired();
+      // TODO figure out how to deal with/remove metadata upon removal of a command template
+      // the commented code below works only if there is a new instance of a CommandMetadata every time
+      // it is used, otherwise the foreign key gets overwritten with every update
+      // builder.HasOne<CommandTemplate>()
+      //   .WithOne(commandTemplate => commandTemplate.Metadata)
+      //   .HasForeignKey<CommandMetadata>("CommandTemplateId")
+      //   .IsRequired();
       builder.Navigation(commandMetadata => commandMetadata.ParameterMetadatas)
              .AutoInclude();
     }

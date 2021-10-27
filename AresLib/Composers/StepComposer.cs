@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Ares.Core;
+﻿using Ares.Core;
 using AresLib.Device;
 using AresLib.Executors;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace AresLib.Composers
 {
@@ -24,12 +23,12 @@ namespace AresLib.Composers
              {
                var commandInterpreter =
                  AvailableDeviceCommandInterpreters
-                   .First(interpreter => 
+                   .First(interpreter =>
                             interpreter
                               .Device
                               .Name
                               .Equals(commandTemplate.Metadata.DeviceName));
-               
+
                var executable = commandInterpreter.TemplateToDeviceCommand(commandTemplate);
                return executable;
              }

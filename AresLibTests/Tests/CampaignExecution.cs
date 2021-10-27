@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Data.Common;
 using System.Linq;
-using System.Threading;
-using System.Windows.Input;
-using Ares.Core;
-using AresLib;
-using AresLib.Builders;
 using AresLibTests.DummyModels;
-using Google.Protobuf;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Npgsql;
 using UnitsNet;
 
 namespace AresLibTests.Tests
