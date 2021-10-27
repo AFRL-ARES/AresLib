@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Linq;
 using System.Windows.Input;
 using Ares.Core;
@@ -6,6 +7,7 @@ using AresLib;
 using AresLib.Builders;
 using AresLibTests.DummyModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Npgsql;
 using UnitsNet;
 
 namespace AresLibTests.Tests
@@ -40,7 +42,7 @@ namespace AresLibTests.Tests
           .CommandsToMetadatas()
           .First(commandMetadata => commandMetadata.Name.Equals($"{TestCoreDeviceCommand.Wait}"));
 
-      var waitCommandDurationParameterMetadata = 
+      var waitCommandDurationParameterMetadata =
         waitCommandMetadata
           .ParameterMetadatas
           .First(parameterMetadata => parameterMetadata.Name.Equals(Duration.Info.Name));
@@ -127,7 +129,63 @@ namespace AresLibTests.Tests
       var testCampaignTemplate = testCampaignBuilder.Build();
       // TODO: push template to database
       // TODO: replace template in RunCampaign with template lookup to database (force execution to be from database)
-      testLabManager.RunCampaign(testCampaignTemplate);
+
+
+
+
+      // Database stuff for learning purposes
+      var dbContext = new CoreDatabaseContext();
+      var exists = dbContext.Database.EnsureCreated();
+      if (exists)
+      {
+        Console.WriteLine("YAYYY Database created without having to do anything by hand.");
+      }
+
+//      dbContext.CampaignTemplates.Add(testCampaignTemplate);
+//      dbContext.SaveChanges();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Console.WriteLine("Did test things");
     }
 
   }

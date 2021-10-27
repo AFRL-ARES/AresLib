@@ -24,12 +24,13 @@ namespace Ares.Core {
     static LimitsReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
-            "CgxMaW1pdHMucHJvdG8SCWFyZXMuY29yZSIqCgZMaW1pdHMSDwoHTWluaW11",
-            "bRgBIAEoAhIPCgdNYXhpbXVtGAIgASgCYgZwcm90bzM="));
+            "CgxMaW1pdHMucHJvdG8SCWFyZXMuY29yZSJACgZMaW1pdHMSDwoHTWluaW11",
+            "bRgBIAEoAhIPCgdNYXhpbXVtGAIgASgCEhQKDFVuaXF1ZUlkVGV4dBgDIAEo",
+            "CWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.Limits), global::Ares.Core.Limits.Parser, new[]{ "Minimum", "Maximum" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.Limits), global::Ares.Core.Limits.Parser, new[]{ "Minimum", "Maximum", "UniqueIdText" }, null, null, null, null)
           }));
     }
     #endregion
@@ -63,6 +64,7 @@ namespace Ares.Core {
     public Limits(Limits other) : this() {
       minimum_ = other.minimum_;
       maximum_ = other.maximum_;
+      uniqueIdText_ = other.uniqueIdText_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -99,6 +101,20 @@ namespace Ares.Core {
       }
     }
 
+    /// <summary>Field number for the "UniqueIdText" field.</summary>
+    public const int UniqueIdTextFieldNumber = 3;
+    private string uniqueIdText_ = "";
+    /// <summary>
+    /// Unique ID in text for use as database primary key, allowing model tracking
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string UniqueIdText {
+      get { return uniqueIdText_; }
+      set {
+        uniqueIdText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Limits);
@@ -114,6 +130,7 @@ namespace Ares.Core {
       }
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Minimum, other.Minimum)) return false;
       if (!pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.Equals(Maximum, other.Maximum)) return false;
+      if (UniqueIdText != other.UniqueIdText) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -122,6 +139,7 @@ namespace Ares.Core {
       int hash = 1;
       if (Minimum != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Minimum);
       if (Maximum != 0F) hash ^= pbc::ProtobufEqualityComparers.BitwiseSingleEqualityComparer.GetHashCode(Maximum);
+      if (UniqueIdText.Length != 0) hash ^= UniqueIdText.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -143,6 +161,10 @@ namespace Ares.Core {
         output.WriteRawTag(21);
         output.WriteFloat(Maximum);
       }
+      if (UniqueIdText.Length != 0) {
+        output.WriteRawTag(26);
+        output.WriteString(UniqueIdText);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -156,6 +178,9 @@ namespace Ares.Core {
       }
       if (Maximum != 0F) {
         size += 1 + 4;
+      }
+      if (UniqueIdText.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueIdText);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -174,6 +199,9 @@ namespace Ares.Core {
       if (other.Maximum != 0F) {
         Maximum = other.Maximum;
       }
+      if (other.UniqueIdText.Length != 0) {
+        UniqueIdText = other.UniqueIdText;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -191,6 +219,10 @@ namespace Ares.Core {
           }
           case 21: {
             Maximum = input.ReadFloat();
+            break;
+          }
+          case 26: {
+            UniqueIdText = input.ReadString();
             break;
           }
         }

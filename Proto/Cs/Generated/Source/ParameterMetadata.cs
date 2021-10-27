@@ -25,13 +25,13 @@ namespace Ares.Core {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChdQYXJhbWV0ZXJNZXRhZGF0YS5wcm90bxIJYXJlcy5jb3JlGgxMaW1pdHMu",
-            "cHJvdG8iVwoRUGFyYW1ldGVyTWV0YWRhdGESDAoETmFtZRgBIAEoCRIMCgRV",
+            "cHJvdG8ibQoRUGFyYW1ldGVyTWV0YWRhdGESDAoETmFtZRgBIAEoCRIMCgRV",
             "bml0GAIgASgJEiYKC0NvbnN0cmFpbnRzGAMgAygLMhEuYXJlcy5jb3JlLkxp",
-            "bWl0c2IGcHJvdG8z"));
+            "bWl0cxIUCgxVbmlxdWVJZFRleHQYBCABKAliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Ares.Core.LimitsReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.ParameterMetadata), global::Ares.Core.ParameterMetadata.Parser, new[]{ "Name", "Unit", "Constraints" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.ParameterMetadata), global::Ares.Core.ParameterMetadata.Parser, new[]{ "Name", "Unit", "Constraints", "UniqueIdText" }, null, null, null, null)
           }));
     }
     #endregion
@@ -66,6 +66,7 @@ namespace Ares.Core {
       name_ = other.name_;
       unit_ = other.unit_;
       constraints_ = other.constraints_.Clone();
+      uniqueIdText_ = other.uniqueIdText_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -115,6 +116,20 @@ namespace Ares.Core {
       get { return constraints_; }
     }
 
+    /// <summary>Field number for the "UniqueIdText" field.</summary>
+    public const int UniqueIdTextFieldNumber = 4;
+    private string uniqueIdText_ = "";
+    /// <summary>
+    /// Unique ID in text for use as database primary key, allowing model tracking
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string UniqueIdText {
+      get { return uniqueIdText_; }
+      set {
+        uniqueIdText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as ParameterMetadata);
@@ -131,6 +146,7 @@ namespace Ares.Core {
       if (Name != other.Name) return false;
       if (Unit != other.Unit) return false;
       if(!constraints_.Equals(other.constraints_)) return false;
+      if (UniqueIdText != other.UniqueIdText) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -140,6 +156,7 @@ namespace Ares.Core {
       if (Name.Length != 0) hash ^= Name.GetHashCode();
       if (Unit.Length != 0) hash ^= Unit.GetHashCode();
       hash ^= constraints_.GetHashCode();
+      if (UniqueIdText.Length != 0) hash ^= UniqueIdText.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -162,6 +179,10 @@ namespace Ares.Core {
         output.WriteString(Unit);
       }
       constraints_.WriteTo(output, _repeated_constraints_codec);
+      if (UniqueIdText.Length != 0) {
+        output.WriteRawTag(34);
+        output.WriteString(UniqueIdText);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -177,6 +198,9 @@ namespace Ares.Core {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(Unit);
       }
       size += constraints_.CalculateSize(_repeated_constraints_codec);
+      if (UniqueIdText.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueIdText);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -195,6 +219,9 @@ namespace Ares.Core {
         Unit = other.Unit;
       }
       constraints_.Add(other.constraints_);
+      if (other.UniqueIdText.Length != 0) {
+        UniqueIdText = other.UniqueIdText;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -216,6 +243,10 @@ namespace Ares.Core {
           }
           case 26: {
             constraints_.AddEntriesFrom(input, _repeated_constraints_codec);
+            break;
+          }
+          case 34: {
+            UniqueIdText = input.ReadString();
             break;
           }
         }

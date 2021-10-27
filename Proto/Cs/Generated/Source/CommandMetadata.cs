@@ -25,14 +25,14 @@ namespace Ares.Core {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChVDb21tYW5kTWV0YWRhdGEucHJvdG8SCWFyZXMuY29yZRoXUGFyYW1ldGVy",
-            "TWV0YWRhdGEucHJvdG8iggEKD0NvbW1hbmRNZXRhZGF0YRIMCgROYW1lGAEg",
+            "TWV0YWRhdGEucHJvdG8imAEKD0NvbW1hbmRNZXRhZGF0YRIMCgROYW1lGAEg",
             "ASgJEhMKC0Rlc2NyaXB0aW9uGAIgASgJEhIKCkRldmljZU5hbWUYAyABKAkS",
             "OAoSUGFyYW1ldGVyTWV0YWRhdGFzGAQgAygLMhwuYXJlcy5jb3JlLlBhcmFt",
-            "ZXRlck1ldGFkYXRhYgZwcm90bzM="));
+            "ZXRlck1ldGFkYXRhEhQKDFVuaXF1ZUlkVGV4dBgFIAEoCWIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Ares.Core.ParameterMetadataReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.CommandMetadata), global::Ares.Core.CommandMetadata.Parser, new[]{ "Name", "Description", "DeviceName", "ParameterMetadatas" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Ares.Core.CommandMetadata), global::Ares.Core.CommandMetadata.Parser, new[]{ "Name", "Description", "DeviceName", "ParameterMetadatas", "UniqueIdText" }, null, null, null, null)
           }));
     }
     #endregion
@@ -68,6 +68,7 @@ namespace Ares.Core {
       description_ = other.description_;
       deviceName_ = other.deviceName_;
       parameterMetadatas_ = other.parameterMetadatas_.Clone();
+      uniqueIdText_ = other.uniqueIdText_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -131,6 +132,20 @@ namespace Ares.Core {
       get { return parameterMetadatas_; }
     }
 
+    /// <summary>Field number for the "UniqueIdText" field.</summary>
+    public const int UniqueIdTextFieldNumber = 5;
+    private string uniqueIdText_ = "";
+    /// <summary>
+    /// Unique ID in text for use as database primary key, allowing model tracking
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    public string UniqueIdText {
+      get { return uniqueIdText_; }
+      set {
+        uniqueIdText_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as CommandMetadata);
@@ -148,6 +163,7 @@ namespace Ares.Core {
       if (Description != other.Description) return false;
       if (DeviceName != other.DeviceName) return false;
       if(!parameterMetadatas_.Equals(other.parameterMetadatas_)) return false;
+      if (UniqueIdText != other.UniqueIdText) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -158,6 +174,7 @@ namespace Ares.Core {
       if (Description.Length != 0) hash ^= Description.GetHashCode();
       if (DeviceName.Length != 0) hash ^= DeviceName.GetHashCode();
       hash ^= parameterMetadatas_.GetHashCode();
+      if (UniqueIdText.Length != 0) hash ^= UniqueIdText.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -184,6 +201,10 @@ namespace Ares.Core {
         output.WriteString(DeviceName);
       }
       parameterMetadatas_.WriteTo(output, _repeated_parameterMetadatas_codec);
+      if (UniqueIdText.Length != 0) {
+        output.WriteRawTag(42);
+        output.WriteString(UniqueIdText);
+      }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
       }
@@ -202,6 +223,9 @@ namespace Ares.Core {
         size += 1 + pb::CodedOutputStream.ComputeStringSize(DeviceName);
       }
       size += parameterMetadatas_.CalculateSize(_repeated_parameterMetadatas_codec);
+      if (UniqueIdText.Length != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(UniqueIdText);
+      }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
       }
@@ -223,6 +247,9 @@ namespace Ares.Core {
         DeviceName = other.DeviceName;
       }
       parameterMetadatas_.Add(other.parameterMetadatas_);
+      if (other.UniqueIdText.Length != 0) {
+        UniqueIdText = other.UniqueIdText;
+      }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -248,6 +275,10 @@ namespace Ares.Core {
           }
           case 34: {
             parameterMetadatas_.AddEntriesFrom(input, _repeated_parameterMetadatas_codec);
+            break;
+          }
+          case 42: {
+            UniqueIdText = input.ReadString();
             break;
           }
         }

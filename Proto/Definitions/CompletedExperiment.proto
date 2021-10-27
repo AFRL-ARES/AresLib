@@ -8,4 +8,6 @@ message CompletedExperiment {
 	ExperimentTemplate Template = 1; // Template used to generate the executable experiment providing the results
 	bytes SerializedData = 2; // Serialized data representation of the experiment output
 	string Format = 3; // Text indicating the format of serialized data, hopefully useful for deserializing.
+	string UniqueIdText = 5; // Unique ID in text for use as database primary key, allowing model tracking
+
 }

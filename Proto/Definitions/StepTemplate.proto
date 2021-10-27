@@ -8,4 +8,5 @@ message StepTemplate {
 	string Name = 1; // Name identification
 	bool IsParallel = 2; // Flag indicating whether or not commands are to be executed sequentially or in parallel
 	repeated CommandTemplate CommandTemplates = 3; // Collection of (unqalified) command templates used to generate executable (device qualified) commands
+	string UniqueIdText = 4; // Unique ID in text for use as database primary key, allowing model tracking
 }

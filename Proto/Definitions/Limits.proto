@@ -5,4 +5,5 @@ package ares.core;
 message Limits {
 	float Minimum = 1; // Lower bound
 	float Maximum = 2; // Upper bound
+	string UniqueIdText = 3; // Unique ID in text for use as database primary key, allowing model tracking
 }
