@@ -7,7 +7,7 @@ namespace AresLib.Device
     where TQualifiedDevice : AresDevice
   {
     Task TemplateToDeviceCommand(CommandTemplate commandTemplate);
-    CommandMetadata[] CommandsToMetadatas();
+    CommandMetadata[] CommandsToIndexedMetadatas();
     TQualifiedDevice Device { get; }
   }
 }

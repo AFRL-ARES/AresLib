@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Ares.Core;
 using AresLibTests.DummyModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitsNet;
@@ -30,10 +31,10 @@ namespace AresLibTests.Tests
             (
              interpeter =>
                interpeter
-                 .CommandsToMetadatas()
+                 .CommandsToIndexedMetadatas()
                  .Any(commandMetadata => commandMetadata.Name.Equals($"{TestCoreDeviceCommand.Wait}"))
             )
-          .CommandsToMetadatas()
+          .CommandsToIndexedMetadatas()
           .First(commandMetadata => commandMetadata.Name.Equals($"{TestCoreDeviceCommand.Wait}"));
 
       var waitCommandDurationParameterMetadata =
@@ -43,7 +44,8 @@ namespace AresLibTests.Tests
 
       // Step 1 stuff. Sigh. So much code.
       var commandBuilder11 = step1.AddCommandTemplateBuilder(waitCommandMetadata);
-      var commandBuilder12 = step1.AddCommandTemplateBuilder(waitCommandMetadata);
+//      var commandBuilder12 = step1.AddCommandTemplateBuilder(waitCommandMetadata);
+      var commandBuilder12 = step1.AddCommandTemplateBuilder(new CommandMetadata(waitCommandMetadata));
       var parameterBuilder111 = commandBuilder11.ParameterBuilders.First
         (
          parameterBuilder =>
@@ -93,7 +95,7 @@ namespace AresLibTests.Tests
              .Equals(waitCommandDurationParameterMetadata.Name)
         );
 
-      parameterBuilder221.Value = 3;
+      parameterBuilder211.Value = 3;
       parameterBuilder221.Value = 2;
       parameterBuilder231.Value = 3;
 
@@ -145,15 +147,17 @@ namespace AresLibTests.Tests
       var freshDbConnection = new CoreDatabaseContext();
       var dbCampaignTemplate = freshDbConnection
                                .CampaignTemplates
-//                               .Include(campaignTemplate => campaignTemplate.ExperimentTemplates)
-//                               .ThenInclude(experimentTemplate => experimentTemplate.StepTemplates)
-//                               .ThenInclude(stepTemplate => stepTemplate.CommandTemplates)
-//                               .ThenInclude(commandTemplate => commandTemplate.Arguments)
-//                               .ThenInclude(parameter => parameter.Metadata)
-//                               .ThenInclude(parameterMetadata => parameterMetadata.Constraints)
                                .ToArray()
                                .Last();
 
+
+      var beforeDerps = freshDbConnection.Set<CommandMetadata>()
+                                                     .ToArray();
+      freshDbConnection.Remove(dbCampaignTemplate);
+      freshDbConnection.SaveChanges();
+
+      var derps = freshDbConnection.Set<CommandMetadata>()
+                                   .ToArray();
       // TODO: force template in RunCampaign to be database lookup
       var cmpr = dbCampaignTemplate.ToString();
       var src = testCampaignTemplate.ToString();
@@ -170,7 +174,7 @@ namespace AresLibTests.Tests
       Console.WriteLine();
       Console.WriteLine(src);
       Console.WriteLine(cmpr);
-      Assert.AreEqual(testCampaignTemplate.ToString().Length, dbCampaignTemplate.ToString().Length);
+      Assert.AreEqual(testCampaignTemplate, dbCampaignTemplate);
       testLabManager.RunCampaign(dbCampaignTemplate);
       Console.WriteLine("Did test things");
     }

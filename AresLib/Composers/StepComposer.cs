@@ -17,6 +17,7 @@ namespace AresLib.Composers
       var executables =
         Template
           .CommandTemplates
+          .OrderBy(template => template.Index)
           .Select
             (
              commandTemplate =>

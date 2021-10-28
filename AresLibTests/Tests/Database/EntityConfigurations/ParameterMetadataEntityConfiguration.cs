@@ -1,4 +1,5 @@
 ﻿using Ares.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace AresLibTests.Tests.Database.EntityConfigurations
@@ -11,6 +12,11 @@ namespace AresLibTests.Tests.Database.EntityConfigurations
       builder.HasMany(parameterMetadata => parameterMetadata.Constraints)
         .WithOne()
         .IsRequired();
+      builder.HasOne<Parameter>()
+             .WithOne(parameter => parameter.Metadata)
+             .HasForeignKey<ParameterMetadata>("ParameterId")
+             .OnDelete(DeleteBehavior.Cascade);
+
       // TODO figure out how to cleanup metadata, see CampaignMetadataEntityConfiguration for details
       builder.Navigation(parameterMetada => parameterMetada.Constraints)
              .AutoInclude();

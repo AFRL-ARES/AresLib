@@ -4,6 +4,6 @@ namespace AresLib.Builders
 {
   public interface ICommandTemplateBuilder : ITemplateBuilder<CommandTemplate>
   {
-    ICommandParameterBuilder[] ParameterBuilders { get; }
+    IParameterBuilder[] ParameterBuilders { get; }
   }
 }

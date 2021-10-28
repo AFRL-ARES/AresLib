@@ -7,26 +7,32 @@ namespace AresLib.Builders
   {
     public CommandTemplateBuilder(CommandMetadata commandMetadata) : base(commandMetadata.Name)
     {
-      Metadata = commandMetadata;
+      Metadata = new CommandMetadata(commandMetadata);
       ParameterBuilders =
         Metadata
           .ParameterMetadatas
-          .Select(parameterMetadata => new CommandParameterBuilder(parameterMetadata))
-          .Cast<ICommandParameterBuilder>()
+          .Select(parameterMetadata => new ParameterBuilder(parameterMetadata))
+          .Cast<IParameterBuilder>()
           .ToArray();
     }
 
     public override CommandTemplate Build()
     {
-      var commandParameters = ParameterBuilders.Select(parameterBuilder => parameterBuilder.Build());
+      var parameters = ParameterBuilders.Select((parameterBuilder, index) =>
+                                                       {
+                                                         var parameter = parameterBuilder.Build();
+                                                         parameter.Index = index;
+                                                         return parameter;
+                                                       }
+                                                      );
       var commandTemplate = new CommandTemplate();
-      commandTemplate.Arguments.AddRange(commandParameters);
+      commandTemplate.Arguments.AddRange(parameters);
       commandTemplate.Metadata = Metadata;
       return commandTemplate;
     }
 
 
-    public ICommandParameterBuilder[] ParameterBuilders { get; }
+    public IParameterBuilder[] ParameterBuilders { get; }
 
     public CommandMetadata Metadata { get; }
   }

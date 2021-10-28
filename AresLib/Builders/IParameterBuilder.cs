@@ -2,7 +2,7 @@
 
 namespace AresLib.Builders
 {
-  public interface ICommandParameterBuilder : IBuilder<Parameter>
+  public interface IParameterBuilder : IBuilder<Parameter>
   {
     ParameterMetadata Metadata { get; }
     double Value { get; set; }

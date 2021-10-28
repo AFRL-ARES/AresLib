@@ -21,7 +21,12 @@ namespace AresLib.Builders
 
     public override ExperimentTemplate Build()
     {
-      var stepTemplates = StepTemplateBuilders.Select(stepTemplateBuilder => stepTemplateBuilder.Build());
+      var stepTemplates = StepTemplateBuilders.Select((stepTemplateBuilder, index) =>
+                                                      {
+                                                        var stepTemplate = stepTemplateBuilder.Build();
+                                                        stepTemplate.Index = index;
+                                                        return stepTemplate;
+                                                      });
       var experimentTemplate = new ExperimentTemplate();
       experimentTemplate.StepTemplates.AddRange(stepTemplates);
       experimentTemplate.Name = Name;

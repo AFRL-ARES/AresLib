@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Ares.Core;
+using DynamicData;
+using Google.Protobuf.Collections;
 
 namespace AresLib.Device
 {
@@ -18,17 +20,65 @@ namespace AresLib.Device
     // We want this abstract class to handle as much conversion/routing of protobuf/db to
     // lib representations as possible, making it easier/obvious for extensions to "know what to do".
     // couldn't think of something better to say, but its a comment that will get deleted anyway.
-    protected abstract void ParseAndPerformDeviceAction(DeviceCommandEnum deviceCommandEnum, Parameter[] commandParameters);
+    protected abstract void ParseAndPerformDeviceAction(DeviceCommandEnum deviceCommandEnum, Parameter[] parameters);
     
     private void RouteDeviceAction(CommandTemplate commandTemplate)
     {
       var deviceCommandEnum = Enum.Parse<DeviceCommandEnum>(commandTemplate.Metadata.Name);
-      var arguments = commandTemplate.Arguments.ToArray();
+      var arguments = commandTemplate.Arguments.OrderBy(argument => argument.Index).ToArray();
       ParseAndPerformDeviceAction(deviceCommandEnum, arguments);
     }
 
-    public abstract CommandMetadata[] CommandsToMetadatas();
+    protected abstract CommandMetadata[] CommandsToMetadatas();
 
+    private void OrderCommandMetadata(CommandMetadata commandMetadata)
+    {
+      var parameterMetadatasAscending = commandMetadata.ParameterMetadatas.ToArray();
+
+      if (parameterMetadatasAscending.Length > 1)
+      {
+        if (parameterMetadatasAscending.All(parameterMetadata => parameterMetadata.Index == default))
+        {
+          parameterMetadatasAscending = parameterMetadatasAscending.Select
+                                                                     (
+                                                                      (parameter, index) =>
+                                                                      {
+                                                                        parameter.Index = index;
+                                                                        return parameter;
+                                                                      }
+                                                                     )
+                                                                   .ToArray();
+        }
+        else
+        {
+          // Improperly ordered
+          var distinctParameterIndexes =
+            parameterMetadatasAscending
+              .Select(parameter => parameter.Index)
+              .Distinct()
+              .ToArray();
+          if (distinctParameterIndexes.Length != parameterMetadatasAscending.Length)
+          {
+            throw new Exception($"{GetType().Name} error parsing {commandMetadata.Name} parameters, parameter Indexes are not distinct");
+          }
+        }
+      }
+
+      parameterMetadatasAscending = parameterMetadatasAscending.OrderBy(parameterMetadata => parameterMetadata.Index)
+                                                               .ToArray();
+      commandMetadata.ParameterMetadatas.Clear();
+      commandMetadata.ParameterMetadatas.AddRange(parameterMetadatasAscending);
+    }
+
+    public CommandMetadata[] CommandsToIndexedMetadatas()
+    {
+      var commandMetadatas = CommandsToMetadatas();
+      foreach (var commandMetadata in commandMetadatas)
+      {
+        OrderCommandMetadata(commandMetadata);
+      }
+      return commandMetadatas;
+    }
 
     public Task TemplateToDeviceCommand(CommandTemplate commandTemplate)
     {

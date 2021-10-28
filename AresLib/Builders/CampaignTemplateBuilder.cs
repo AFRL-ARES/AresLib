@@ -21,7 +21,13 @@ namespace AresLib.Builders
     public override CampaignTemplate Build()
     {
       var experimentTemplates =
-        ExperimentTemplateBuilders.Select(experimentTemplateBuilder => experimentTemplateBuilder.Build());
+        ExperimentTemplateBuilders.Select((experimentTemplateBuilder, index) =>
+                                          {
+                                            var experimentTemplate = experimentTemplateBuilder.Build();
+                                            experimentTemplate.Index = index;
+                                            return experimentTemplate;
+                                          }
+                                         );
 
       var campaignTemplate = new CampaignTemplate();
       campaignTemplate.ExperimentTemplates.AddRange(experimentTemplates);

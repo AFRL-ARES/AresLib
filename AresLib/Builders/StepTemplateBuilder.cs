@@ -23,7 +23,13 @@ namespace AresLib.Builders
 
     public override StepTemplate Build()
     {
-      var commandTemplates = CommandTemplateBuilders.Select(commandTemplateBuilder => commandTemplateBuilder.Build());
+      var commandTemplates = CommandTemplateBuilders.Select((commandTemplateBuilder, index) =>
+                                                            {
+                                                              var commandTemplate = commandTemplateBuilder.Build();
+                                                              commandTemplate.Index = index;
+                                                              return commandTemplate;
+                                                            }
+                                                           );
       var stepTemplate = new StepTemplate();
       stepTemplate.CommandTemplates.AddRange(commandTemplates);
       stepTemplate.Name = Name;

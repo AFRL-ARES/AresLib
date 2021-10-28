@@ -2,6 +2,7 @@
 using AresLib.Device;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnitsNet;
 
 namespace AresLibTests.DummyModels
@@ -12,12 +13,12 @@ namespace AresLibTests.DummyModels
     { }
 
     protected override void ParseAndPerformDeviceAction(
-      TestCoreDeviceCommand deviceCommandEnum, Parameter[] commandParameters)
+      TestCoreDeviceCommand deviceCommandEnum, Parameter[] parameters)
     {
       switch (deviceCommandEnum)
       {
         case TestCoreDeviceCommand.Wait:
-          ParseAndPerformWait(commandParameters[0]);
+          ParseAndPerformWait(parameters.First(parameter => parameter.Metadata.Name.Equals(Duration.Info.Name)));
           break;
       }
     }
@@ -45,11 +46,17 @@ namespace AresLibTests.DummyModels
       durationParameterMetadata.Unit = Duration.Info.BaseUnitInfo.Name;
       waitCommandMetadata.ParameterMetadatas.Add(durationParameterMetadata);
 
+      var testIgnoreDeleteMeParameterMetadata = new ParameterMetadata(durationParameterMetadata);
+      testIgnoreDeleteMeParameterMetadata.Name = nameof(testIgnoreDeleteMeParameterMetadata);
+      testIgnoreDeleteMeParameterMetadata.Constraints.First().Minimum = 555;
+      testIgnoreDeleteMeParameterMetadata.Constraints.First().Maximum = 666;
+      waitCommandMetadata.ParameterMetadatas.Add(testIgnoreDeleteMeParameterMetadata);
 
       return waitCommandMetadata;
     }
 
-    public override CommandMetadata[] CommandsToMetadatas()
+
+    protected override CommandMetadata[] CommandsToMetadatas()
     {
       var commandMetadatas = new List<CommandMetadata>();
 

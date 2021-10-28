@@ -16,6 +16,7 @@ namespace AresLib.Composers
       var stepCompilers =
         Template
           .StepTemplates
+          .OrderBy(template => template.Index)
           .Select
             (
              stepTemplate =>

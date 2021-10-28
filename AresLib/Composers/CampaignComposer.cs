@@ -16,8 +16,8 @@ namespace AresLib.Composers
       var experimentCompilers =
         Template
           .ExperimentTemplates
-          .Select(experimentTemplate =>
-                    new ExperimentComposer(experimentTemplate, AvailableDeviceCommandInterpreters))
+          .OrderBy(template => template.Index)
+          .Select(experimentTemplate => new ExperimentComposer(experimentTemplate, AvailableDeviceCommandInterpreters))
           .ToArray();
 
       var composedExperiments =

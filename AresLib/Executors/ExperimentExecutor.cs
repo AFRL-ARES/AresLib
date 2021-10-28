@@ -12,14 +12,15 @@ namespace AresLib.Executors
     public StepExecutor[] StepExecutors { get; }
     public async Task Execute()
     {
-      foreach (var executableStep in StepExecutors)
+      for (int i = 0; i < StepExecutors.Length; i++)
       {
-        Console.WriteLine($"Started step {executableStep.Name}");
+        var executableStep = StepExecutors[i];
+        Console.WriteLine($"Started step {i}: {executableStep.Name}");
         var startTime = DateTime.Now;
         await executableStep.Execute();
         var endTime = DateTime.Now;
         var duration = endTime - startTime;
-        Console.WriteLine($"{executableStep.Name} Step duration: {duration.TotalSeconds} seconds");
+        Console.WriteLine($"{executableStep.Name} Step {i} duration: {duration.TotalSeconds} seconds");
       }
     }
   }

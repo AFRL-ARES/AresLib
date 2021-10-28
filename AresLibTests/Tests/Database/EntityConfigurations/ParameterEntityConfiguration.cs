@@ -8,11 +8,10 @@ namespace AresLibTests.Tests.Database.EntityConfigurations
     public override void Configure(EntityTypeBuilder<Parameter> builder)
     {
       base.Configure(builder);
-      // builder.HasOne(parameter => parameter.Metadata)
-      //   .WithOne()
-      //   .IsRequired();
       builder.Navigation(parameter => parameter.Metadata)
              .AutoInclude();
+      builder.HasOne<ParameterMetadata>()
+             .WithOne();
     }
   }
 }

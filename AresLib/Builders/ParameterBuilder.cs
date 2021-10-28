@@ -2,18 +2,21 @@
 
 namespace AresLib.Builders
 {
-  internal class CommandParameterBuilder : ICommandParameterBuilder
+  internal class ParameterBuilder : IParameterBuilder
   {
-    public CommandParameterBuilder(ParameterMetadata parameterMetadata)
+    public ParameterBuilder(ParameterMetadata parameterMetadata)
     {
       Metadata = parameterMetadata;
     }
 
     public Parameter Build()
     {
-      var commandParameter = new Parameter();
-      commandParameter.Metadata = Metadata;
-      commandParameter.Value = (float)Value;
+      var commandParameter =
+        new Parameter
+        {
+          Metadata = new ParameterMetadata(Metadata),
+          Value = (float) Value
+        };
       return commandParameter;
     }
 
