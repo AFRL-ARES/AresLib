@@ -1,13 +1,16 @@
-﻿using AresLib;
-using DynamicData;
-using System;
-using System.Linq;
+﻿using System.Linq;
+using AresDevicePluginBase;
+using AresLib;
 
 namespace AresLibTests.DummyModels
 {
   public class TestLaboratoryManager : LaboratoryManager
   {
-    public TestLaboratoryManager()
+    public TestLaboratoryManager() : base ("TestLaboratory")
+    {
+    }
+
+    protected override IDeviceCommandInterpreter<AresDevice>[] GenerateDeviceCommandInterpreters()
     {
       var devices =
         Enumerable.Range(1, 3)
@@ -18,19 +21,7 @@ namespace AresLibTests.DummyModels
           .Select(device => new TestCoreDeviceCommandInterpreter(device))
           .ToArray();
 
-      DeviceCommandInterpretersSource.AddOrUpdate(coreDeviceInterpreters);
-    }
-
-    protected override Laboratory BuildLab()
-    {
-      DeviceCommandInterpretersSource
-        .Connect()
-        .Bind(out var managedDeviceInterpreters)
-        .Subscribe();
-
-      var testLab = new Laboratory("TestLaboratory", managedDeviceInterpreters);
-
-      return testLab;
+      return coreDeviceInterpreters;
     }
   }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using Ares.Core;
-using AresLib.Device;
+using AresDevicePluginBase;
 using AresLib.Executors;
 
 namespace AresLib.Composers

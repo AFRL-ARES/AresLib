@@ -1,5 +1,5 @@
-﻿using AresLib.Device;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using AresDevicePluginBase;
 
 namespace AresLib
 {

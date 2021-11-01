@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Ares.Core;
 
-namespace AresLib.Device
+namespace AresDevicePluginBase
 {
   public interface IDeviceCommandInterpreter<out TQualifiedDevice>
     where TQualifiedDevice : AresDevice

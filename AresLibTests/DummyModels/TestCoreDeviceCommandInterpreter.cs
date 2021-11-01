@@ -1,8 +1,8 @@
 ﻿using Ares.Core;
-using AresLib.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AresDevicePluginBase;
 using UnitsNet;
 
 namespace AresLibTests.DummyModels

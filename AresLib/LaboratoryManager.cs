@@ -1,30 +1,31 @@
 ﻿using Ares.Core;
 using AresLib.Builders;
 using AresLib.Composers;
-using AresLib.Device;
 using DynamicData;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using AresDevicePluginBase;
 
 namespace AresLib
 {
   public abstract class LaboratoryManager : ILaboratoryManager
   {
-    protected LaboratoryManager()
+    protected LaboratoryManager(string name)
     {
+      Name = name;
       DeviceCommandInterpretersSource
         .Connect()
         .Bind(out var availableDeviceCommandInterpreters)
         .Subscribe();
 
       AvailableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
-      Lab = BuildLab();
+      Lab = new Laboratory(Name, AvailableDeviceCommandInterpreters);
+      var deviceCommandInterpreters = GenerateDeviceCommandInterpreters();
+      DeviceCommandInterpretersSource.AddOrUpdate(deviceCommandInterpreters);
     }
 
-    protected abstract Laboratory BuildLab();
-
-
+    protected abstract IDeviceCommandInterpreter<AresDevice>[] GenerateDeviceCommandInterpreters();
 
     public Laboratory Lab { get; }
 
@@ -46,5 +47,7 @@ namespace AresLib
       = new SourceCache<IDeviceCommandInterpreter<AresDevice>, string>(interpreter => interpreter.Device.Name);
 
     private ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandInterpreters { get; }
+
+    public string Name { get; }
   }
 }

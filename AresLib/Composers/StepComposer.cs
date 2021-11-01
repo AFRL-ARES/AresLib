@@ -1,8 +1,8 @@
 ﻿using Ares.Core;
-using AresLib.Device;
 using AresLib.Executors;
 using System.Collections.ObjectModel;
 using System.Linq;
+using AresDevicePluginBase;
 
 namespace AresLib.Composers
 {

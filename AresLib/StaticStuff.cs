@@ -1,5 +1,5 @@
 ﻿using Ares.Core;
-using AresLib.Device;
+using AresDevicePluginBase;
 
 namespace AresLib
 {

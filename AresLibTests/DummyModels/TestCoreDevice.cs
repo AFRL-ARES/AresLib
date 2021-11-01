@@ -1,6 +1,6 @@
-﻿using AresLib.Device;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using AresDevicePluginBase;
 
 namespace AresLibTests.DummyModels
 {

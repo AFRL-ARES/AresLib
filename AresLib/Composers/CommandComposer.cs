@@ -1,7 +1,7 @@
-﻿using AresLib.Device;
-using AresLib.Executors;
+﻿using AresLib.Executors;
 using Google.Protobuf;
 using System.Collections.ObjectModel;
+using AresDevicePluginBase;
 
 namespace AresLib.Composers
 {

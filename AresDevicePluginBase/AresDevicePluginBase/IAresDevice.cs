@@ -1,4 +1,4 @@
-﻿namespace AresLib.Device
+﻿namespace AresDevicePluginBase
 {
   public interface IAresDevice
   {

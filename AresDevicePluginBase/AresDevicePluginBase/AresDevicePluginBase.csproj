@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
@@ -6,31 +6,23 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Infoscitex</Authors>
     <Company>Infoscitex</Company>
-    <Product>AresCoreMessages</Product>
-    <PackageId>AresCoreMessages.dll</PackageId>
-    <Description>Proto messages compiled into CS. Database-friendly models used by AresLib.
+    <Product>AresDevicePluginBase</Product>
+    <PackageId>AresDevicePluginBase.dll</PackageId>
+    <Description>
+      Ares device plugin base.
     </Description>
-  
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
-    <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+
+  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
     <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
   </Target>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>$(SolutionDir)bin\</OutputPath>
+    <OutputPath>bin\</OutputPath>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="$(SolutionDir)..\Generated\Source\**" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.10.28.144630" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.11.2" />
-  </ItemGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="$(SolutionDir)..\..\generate.bat" />
-  </Target>
-
 
 </Project>

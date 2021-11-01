@@ -1,7 +1,25 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Infoscitex</Authors>
+    <Company>Infoscitex</Company>
+    <Product>AresLib</Product>
+    <PackageId>AresLib.dll</PackageId>
+    <Description>
+      Ares core library, responsible for generation, routing, and execution of campaign-heirarchial components.
+    </Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+    <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+  </Target>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.10.28.120741" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.10.28.144630" />
     <PackageReference Include="DynamicData" Version="7.4.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="5.0.11" />
@@ -24,5 +42,13 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
     <PackageReference Include="UnitsNet" Version="4.102.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AresDevicePluginBase\AresDevicePluginBase\AresDevicePluginBase.csproj" />
+  </ItemGroup>
+
+
+
+
 
 </Project>
