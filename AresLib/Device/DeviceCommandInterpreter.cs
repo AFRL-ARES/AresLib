@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Ares.Core;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Ares.Core;
-using DynamicData;
-using Google.Protobuf.Collections;
 
 namespace AresLib.Device
 {
-  public abstract class DeviceCommandInterpreter<TQualifiedDevice, DeviceCommandEnum>
+  public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandEnum>
     : IDeviceCommandInterpreter<TQualifiedDevice>
     where TQualifiedDevice : AresDevice
-    where DeviceCommandEnum : struct, Enum
+    where TDeviceCommandEnum : struct, Enum
   {
     protected DeviceCommandInterpreter(TQualifiedDevice device)
     {
@@ -20,11 +18,11 @@ namespace AresLib.Device
     // We want this abstract class to handle as much conversion/routing of protobuf/db to
     // lib representations as possible, making it easier/obvious for extensions to "know what to do".
     // couldn't think of something better to say, but its a comment that will get deleted anyway.
-    protected abstract void ParseAndPerformDeviceAction(DeviceCommandEnum deviceCommandEnum, Parameter[] parameters);
-    
+    protected abstract void ParseAndPerformDeviceAction(TDeviceCommandEnum deviceCommandEnum, Parameter[] parameters);
+
     private void RouteDeviceAction(CommandTemplate commandTemplate)
     {
-      var deviceCommandEnum = Enum.Parse<DeviceCommandEnum>(commandTemplate.Metadata.Name);
+      var deviceCommandEnum = Enum.Parse<TDeviceCommandEnum>(commandTemplate.Metadata.Name);
       var arguments = commandTemplate.Arguments.OrderBy(argument => argument.Index).ToArray();
       ParseAndPerformDeviceAction(deviceCommandEnum, arguments);
     }
@@ -82,8 +80,10 @@ namespace AresLib.Device
 
     public Task TemplateToDeviceCommand(CommandTemplate commandTemplate)
     {
-      Action qualifiedDeviceAction = () => RouteDeviceAction(commandTemplate);
-      return new Task(qualifiedDeviceAction);
+      void QualifiedDeviceAction()
+        => RouteDeviceAction(commandTemplate);
+
+      return new Task(QualifiedDeviceAction);
     }
 
     public TQualifiedDevice Device { get; }

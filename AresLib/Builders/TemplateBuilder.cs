@@ -2,14 +2,14 @@
 
 namespace AresLib.Builders
 {
-  internal abstract class TemplateBuilder<TemplateMessage> : ITemplateBuilder<TemplateMessage>
-    where TemplateMessage : IMessage
+  internal abstract class TemplateBuilder<TTemplateMessage> : ITemplateBuilder<TTemplateMessage>
+    where TTemplateMessage : IMessage
   {
     protected TemplateBuilder(string name)
     {
       Name = name;
     }
-    public abstract TemplateMessage Build();
+    public abstract TTemplateMessage Build();
 
     public string Name { get; }
   }

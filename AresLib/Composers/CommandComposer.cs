@@ -5,18 +5,18 @@ using System.Collections.ObjectModel;
 
 namespace AresLib.Composers
 {
-  internal abstract class CommandComposer<DbTemplate, CoreExecutable> : ICommandComposer<DbTemplate, CoreExecutable>
-    where DbTemplate : IMessage
-    where CoreExecutable : IBaseExecutor
+  internal abstract class CommandComposer<TDbTemplate, TExecutor> : ICommandComposer<TDbTemplate, TExecutor>
+    where TDbTemplate : IMessage
+    where TExecutor : IBaseExecutor
   {
-    protected CommandComposer(DbTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters)
+    protected CommandComposer(TDbTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters)
     {
       Template = template;
       AvailableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
     }
-    public abstract CoreExecutable Compose();
+    public abstract TExecutor Compose();
 
-    public DbTemplate Template { get; }
+    public TDbTemplate Template { get; }
 
     public ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandInterpreters { get; protected set; }
   }

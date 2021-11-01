@@ -3,11 +3,11 @@ using Google.Protobuf;
 
 namespace AresLib.Composers
 {
-  internal interface ICommandComposer<DbTemplate, out CoreExecutable>
-    where DbTemplate : IMessage
-    where CoreExecutable : IBaseExecutor
+  internal interface ICommandComposer<out TDbTemplate, out TExecutor>
+    where TDbTemplate : IMessage
+    where TExecutor : IBaseExecutor
   {
-    CoreExecutable Compose();
-    DbTemplate Template { get; }
+    TExecutor Compose();
+    TDbTemplate Template { get; }
   }
 }

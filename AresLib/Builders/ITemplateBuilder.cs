@@ -2,8 +2,8 @@
 
 namespace AresLib.Builders
 {
-  public interface ITemplateBuilder<TemplateMessage> : IBuilder<TemplateMessage>
-    where TemplateMessage : IMessage
+  public interface ITemplateBuilder<out TTemplateMessage> : IBuilder<TTemplateMessage>
+    where TTemplateMessage : IMessage
 
   {
     string Name { get; }
