@@ -1,18 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Infoscitex</Authors>
     <Company>Infoscitex</Company>
-    <Product>AresDevicePluginBase</Product>
-    <PackageId>AresDevicePluginBase.dll</PackageId>
+    <Product>AresSerial</Product>
+    <PackageId>AresSerial.dll</PackageId>
     <Description>
-      Ares device plugin base.
+      Ares serial library which assists with Serial device connection IO stuff.
     </Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
+
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
     <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
@@ -21,9 +23,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>
   </PropertyGroup>
-
+  
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.2.192450" />
+    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
+    <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
 </Project>

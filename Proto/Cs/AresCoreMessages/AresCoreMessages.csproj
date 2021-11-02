@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Infoscitex</Authors>
@@ -21,15 +22,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SolutionDir)..\Generated\Source\**" />
+    <Compile Include="$(SolutionDir)Proto\Cs\Generated\Source\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.11.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="nuget\" />
+  </ItemGroup>
+
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="$(SolutionDir)..\..\generate.bat" />
+    <Exec Command="$(SolutionDir)Proto\generate.bat" />
   </Target>
 
 
