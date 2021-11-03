@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Ares.Core;
+using Ares.Core.Messages;
 using AresLibTests.DummyModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using UnitsNet;

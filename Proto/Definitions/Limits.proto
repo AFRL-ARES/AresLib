@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package ares.core;
-
-message Limits {
-	float Minimum = 1; // Lower bound
-	float Maximum = 2; // Upper bound
-	int64 Index = 3; // Index of the collection in which executed this template
-}

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AresSerial
+﻿namespace AresSerial
 {
   public abstract class SerialDevice<TConnection> : ISerialDevice<TConnection> where TConnection : SerialConnection, new()
   {

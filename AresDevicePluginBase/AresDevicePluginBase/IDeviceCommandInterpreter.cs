@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Ares.Core;
+using Ares.Core.Messages;
 
 namespace AresDevicePluginBase
 {

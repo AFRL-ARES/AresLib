@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresDevicePluginBase", "Are
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresSerial", "AresSerial\AresSerial\AresSerial.csproj", "{ED748563-40DE-47D7-860D-C40A4411521A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreMessages", "Proto\Cs\AresCoreMessages\AresCoreMessages.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreMessaging", "AresCoreMessaging\AresCoreMessaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

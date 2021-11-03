@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ares.core.messages;
+
+import "ParameterMetadata.proto";
+
+message Parameter {
+	ParameterMetadata Metadata = 1; // Non-volatile information about the command argument/parameter
+	float Value = 2; // Value of the argument/parameter used for execution, represented as a floating point number for planner compatibility
+	int64 Index = 3; // Index of the collection in which executed this template
+}

@@ -1,4 +1,4 @@
-﻿using Ares.Core;
+﻿using Ares.Core.Messages;
 
 namespace AresLibTests.Tests.Database.EntityConfigurations
 {

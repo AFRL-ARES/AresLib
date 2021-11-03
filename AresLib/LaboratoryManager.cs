@@ -1,10 +1,10 @@
-﻿using Ares.Core;
-using AresLib.Builders;
+﻿using AresLib.Builders;
 using AresLib.Composers;
 using DynamicData;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Ares.Core.Messages;
 using AresDevicePluginBase;
 
 namespace AresLib

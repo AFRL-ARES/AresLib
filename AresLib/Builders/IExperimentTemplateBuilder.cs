@@ -1,5 +1,5 @@
-﻿using Ares.Core;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
+using Ares.Core.Messages;
 
 namespace AresLib.Builders
 {

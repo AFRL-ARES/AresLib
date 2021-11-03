@@ -1,7 +1,7 @@
-﻿using Ares.Core;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using System.Reflection;
+using Ares.Core.Messages;
 
 namespace AresLibTests.Tests
 {

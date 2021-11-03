@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
-using Ares.Core;
+using Ares.Core.Messages;
 using AresDevicePluginBase;
 using AresLib.Executors;
 

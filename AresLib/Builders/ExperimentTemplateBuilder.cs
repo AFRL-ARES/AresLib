@@ -1,8 +1,8 @@
-﻿using Ares.Core;
-using DynamicData;
+﻿using DynamicData;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Ares.Core.Messages;
 
 namespace AresLib.Builders
 {

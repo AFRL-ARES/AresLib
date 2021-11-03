@@ -1,4 +1,4 @@
-﻿using Ares.Core;
+﻿using Ares.Core.Messages;
 using DynamicData;
 using System;
 using System.Collections.ObjectModel;
