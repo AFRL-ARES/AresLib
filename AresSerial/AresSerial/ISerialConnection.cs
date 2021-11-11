@@ -7,9 +7,11 @@ namespace AresSerial
   public interface ISerialConnection
   {
     CancellationTokenSource ListenerCancellationTokenSource { get; }
-    IObservable<ConnectionResult> StatusUpdates { get; }
+    IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
+    IObservable<ListenerStatus> ListenerStatusUpdates { get; }
+    IObservable<SerialCommandResponse> Responses { get; }
     void Connect();
-    Task Listen();
+    void StartListening();
     void SendCommand(SerialCommandRequest request);
     SerialCommandRequest GenerateValidationRequest();
   }

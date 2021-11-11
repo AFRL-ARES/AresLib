@@ -16,33 +16,34 @@ namespace AresSerial
     public override async Task<bool> Activate()
     {
       Connection = EstablishConnection();
-      var connectionStatus = await Connection.StatusUpdates.Take(1);
-      if (connectionStatus != ConnectionResult.Unattempted)
+      var connectionStatus = await Connection.ConnectionStatusUpdates.Take(1);
+      if (connectionStatus != ConnectionStatus.Unattempted)
       {
         throw new Exception("This really shouldn't ever be thrown, probably only used for testing purposes");
       }
 
       Connection.Connect();
-      connectionStatus = await Connection.StatusUpdates.Take(1);
-      if (connectionStatus != ConnectionResult.Connected)
+      connectionStatus = await Connection.ConnectionStatusUpdates.Take(1);
+      if (connectionStatus != ConnectionStatus.Connected)
       {
-        throw new Exception($"Failing to connect should result in {ConnectionResult.FailedConnection} and throw before this statement, or be {ConnectionResult.Connected}. Result is {connectionStatus}");
+        throw new Exception($"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}");
       }
-      Connection.Listen();
+      Connection.StartListening();
       await Task.Delay(1000);
-      connectionStatus = await Connection.StatusUpdates.Take(1);
-      if (connectionStatus != ConnectionResult.Listening)
+      var listenerStatus = await Connection.ListenerStatusUpdates.Take(1);
+      if (listenerStatus != ListenerStatus.Listening)
       {
         return false;
       }
 
+      var validationRequest = Connection.GenerateValidationRequest();
       var responseWaiter =
         Connection
-          .StatusUpdates
-          .TakeWhile(status => status < ConnectionResult.ListenerPaused)
+          .Responses
+          .Where(response => response.SourceRequest == validationRequest)
+          .Take(1)
           .ToTask();
-      var validationRequest = Connection.GenerateValidationRequest();
-      var timeout = TimeSpan.FromSeconds(3);
+      var timeout = TimeSpan.FromSeconds(5);
       var responseTimeout = Task.Delay(timeout);
       Connection.SendCommand(validationRequest);
       var fasterTask = await Task.WhenAny(responseWaiter, responseTimeout);
@@ -51,23 +52,19 @@ namespace AresSerial
         throw new TimeoutException($"Did not receive an expected valid response within {timeout}");
       }
 
-      connectionStatus = await Connection.StatusUpdates.Take(1);
-      if (connectionStatus == ConnectionResult.ListenerPaused)
-      {
-        return false;
-      }
+      listenerStatus = await Connection.ListenerStatusUpdates.Take(1);
 
-      if (connectionStatus == ConnectionResult.InvalidResponse)
-      {
-        throw new Exception($"Received an invalid response from device");
-      }
+      return listenerStatus != ListenerStatus.Paused;
 
-      if (connectionStatus != ConnectionResult.ValidResponse)
-      {
-        throw new Exception($"Not sure if it's supposed to possible to reach this exception. What still needs to be handled?");
-      }
-
-      return true;
+      // if (connectionStatus == ConnectionStatus.InvalidResponse)
+      // {
+      //   throw new Exception($"Received an invalid response from device");
+      // }
+      //
+      // if (connectionStatus != ConnectionStatus.ValidResponse)
+      // {
+      //   throw new Exception($"Not sure if it's supposed to possible to reach this exception. What still needs to be handled?");
+      // }
     }
 
     public abstract TConnection EstablishConnection();

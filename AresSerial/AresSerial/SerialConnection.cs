@@ -12,32 +12,33 @@ namespace AresSerial
 #if SIM
     private bool _simBlock = true;
 #endif
-    private ISubject<ConnectionResult> StatusUpdatesSource { get; } = new BehaviorSubject<ConnectionResult>(ConnectionResult.Unattempted);
+    private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
+    private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
     private ISubject<SerialCommandResponse> ResponsePublisher { get; } = new Subject<SerialCommandResponse>();
     private SerialPort Port { get; }
-    protected IObservable<SerialCommandResponse> Responses { get; }
     private SerialCommandRequest LatestCommandRequest { get; set; }
-
     public CancellationTokenSource ListenerCancellationTokenSource { get; private set; }
-
-    public IObservable<ConnectionResult> StatusUpdates { get; }
+    public IObservable<SerialCommandResponse> Responses { get; }
+    public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
+    public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
 
     public SerialConnection(SerialPort port)
     {
-      StatusUpdates = StatusUpdatesSource.AsObservable();
+      ConnectionStatusUpdates = ConnectionStatusUpdatesSource.AsObservable();
       Responses = ResponsePublisher.AsObservable();
+      ListenerStatusUpdates = ListenerStatusUpdatesSource.AsObservable();
       Port = port;
       if (Port.ReadTimeout == default)
       {
         Port.ReadTimeout = 1000;
       }
-      StatusUpdatesSource.OnNext(ConnectionResult.Unattempted);
+      ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
     }
 
     public void Connect()
     {
 #if SIM
-      StatusUpdatesSource.OnNext(ConnectionResult.Connected);
+      ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Connected);
       return;
 #endif
       try
@@ -47,20 +48,20 @@ namespace AresSerial
       catch (Exception e)
       {
         Console.WriteLine(e);
-        StatusUpdatesSource.OnNext(ConnectionResult.FailedConnection);
+        ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Failed);
         throw;
       }
 
       if (!Port.IsOpen)
       {
-        StatusUpdatesSource.OnNext(ConnectionResult.FailedConnection);
+        ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Failed);
         return;
       }
 
-      StatusUpdatesSource.OnNext(ConnectionResult.Connected);
+      ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Connected);
     }
 
-    public async Task Listen()
+    public void StartListening()
     {
       ListenerCancellationTokenSource?.Cancel(true);
       ListenerCancellationTokenSource = new CancellationTokenSource();
@@ -68,25 +69,25 @@ namespace AresSerial
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        await Task.Run(() => Listen(cancellationToken), cancellationToken);
+        Task.Run(() => Listen(cancellationToken), cancellationToken);
       }
       catch (OperationCanceledException)
       {
         Console.WriteLine($"Cancelled {GetType().Name} listener loop");
-        StatusUpdatesSource.OnNext(ConnectionResult.ListenerPaused);
+        ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
       }
 
     }
 
-    private Task Listen(CancellationToken cancellationToken)
+    private void Listen(CancellationToken cancellationToken)
     {
-      Thread.CurrentThread.Name = $"{GetType().Name}";
+      Thread.CurrentThread.Name = $"{GetType().Name} Listener";
       while (!cancellationToken.IsCancellationRequested)
       {
         // TODO: Make sure we can cancel even when we're waiting for a message (thread safety)
         try
         {
-          StatusUpdatesSource.OnNext(ConnectionResult.Listening);
+          ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
 #if SIM
           if (_simBlock)
           {
@@ -104,13 +105,11 @@ namespace AresSerial
             {
               throw new NullReferenceException();
             }
-            StatusUpdatesSource.OnNext(ConnectionResult.ValidResponse);
             ResponsePublisher.OnNext(serialCommandResponse);
           }
           catch (Exception e)
           {
             Console.WriteLine(e);
-            StatusUpdatesSource.OnNext(ConnectionResult.InvalidResponse);
             throw;
           }
         }
@@ -123,7 +122,6 @@ namespace AresSerial
 #endif
       }
       cancellationToken.ThrowIfCancellationRequested();
-      return Task.CompletedTask;
     }
 
     public void SendCommand(SerialCommandRequest request)
