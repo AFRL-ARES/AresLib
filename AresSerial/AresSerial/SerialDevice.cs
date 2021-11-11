@@ -1,10 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using AresDevicePluginBase;
+using System;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
-using AresDevicePluginBase;
 
 namespace AresSerial
 {

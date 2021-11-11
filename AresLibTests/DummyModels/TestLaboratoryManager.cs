@@ -8,6 +8,10 @@ namespace AresLibTests.DummyModels
   {
     public TestLaboratoryManager() : base ("TestLaboratory")
     {
+      foreach (var interpreter in GenerateDeviceCommandInterpreters())
+      {
+        RegisterDeviceInterpreter(interpreter).Wait();
+      }
     }
 
     protected override IDeviceCommandInterpreter<AresDevice>[] GenerateDeviceCommandInterpreters()

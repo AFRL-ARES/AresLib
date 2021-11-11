@@ -30,7 +30,7 @@ namespace AresLibTests.DummyModels
     public int Address { get; }
     public override Task<bool> Activate()
     {
-      throw new NotImplementedException();
+      return Task.FromResult(true);
     }
   }
 }

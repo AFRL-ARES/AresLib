@@ -1,5 +1,4 @@
-﻿using System;
-using AresDevicePluginBase;
+﻿using AresDevicePluginBase;
 
 namespace AresSerial
 {

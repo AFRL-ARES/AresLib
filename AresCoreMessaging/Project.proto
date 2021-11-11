@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package ares.core.messages;
+
+import "CampaignTemplate.proto";
+import "CompletedExperiment.proto";
+
+message Project {
+	string Name = 1; // The name of the project
+	string Description = 2; // The description for the project
+	repeated CampaignTemplate CampaignTemplates = 3; // The campaign templates relevant to this project
+	repeated CompletedExperiment CompletedExperiments = 4; // Results for the experiments run within this project
+}
