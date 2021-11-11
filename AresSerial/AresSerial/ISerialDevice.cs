@@ -1,7 +1,10 @@
-﻿namespace AresSerial
-{
-  public interface ISerialDevice<TConnection> where TConnection : ISerialConnection
-  {
+﻿using System;
+using AresDevicePluginBase;
 
+namespace AresSerial
+{
+  public interface ISerialDevice<TConnection> : IAresDevice where TConnection : ISerialConnection
+  {
+    TConnection EstablishConnection();
   }
 }

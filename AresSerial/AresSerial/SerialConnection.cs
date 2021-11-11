@@ -7,25 +7,57 @@ using System.Threading.Tasks;
 
 namespace AresSerial
 {
-  public class SerialConnection : ISerialConnection
+  public abstract class SerialConnection : ISerialConnection
   {
-    private Subject<SerialCommandResponse> ResponsePublisher { get; } = new Subject<SerialCommandResponse>();
+#if SIM
+    private bool _simBlock = true;
+#endif
+    private ISubject<ConnectionResult> StatusUpdatesSource { get; } = new BehaviorSubject<ConnectionResult>(ConnectionResult.Unattempted);
+    private ISubject<SerialCommandResponse> ResponsePublisher { get; } = new Subject<SerialCommandResponse>();
     private SerialPort Port { get; }
-    private IObservable<SerialCommandResponse> Responses { get; }
+    protected IObservable<SerialCommandResponse> Responses { get; }
     private SerialCommandRequest LatestCommandRequest { get; set; }
-    private Subject<bool> ListeningSource { get; } = new Subject<bool>();
-    public IObservable<bool> Listening { get; }
 
     public CancellationTokenSource ListenerCancellationTokenSource { get; private set; }
+
+    public IObservable<ConnectionResult> StatusUpdates { get; }
+
     public SerialConnection(SerialPort port)
     {
-      Listening = ListeningSource.AsObservable();
+      StatusUpdates = StatusUpdatesSource.AsObservable();
       Responses = ResponsePublisher.AsObservable();
       Port = port;
       if (Port.ReadTimeout == default)
       {
         Port.ReadTimeout = 1000;
       }
+      StatusUpdatesSource.OnNext(ConnectionResult.Unattempted);
+    }
+
+    public void Connect()
+    {
+#if SIM
+      StatusUpdatesSource.OnNext(ConnectionResult.Connected);
+      return;
+#endif
+      try
+      {
+        Port.Open();
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e);
+        StatusUpdatesSource.OnNext(ConnectionResult.FailedConnection);
+        throw;
+      }
+
+      if (!Port.IsOpen)
+      {
+        StatusUpdatesSource.OnNext(ConnectionResult.FailedConnection);
+        return;
+      }
+
+      StatusUpdatesSource.OnNext(ConnectionResult.Connected);
     }
 
     public async Task Listen()
@@ -36,35 +68,59 @@ namespace AresSerial
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        await Listen(cancellationToken);
+        await Task.Run(() => Listen(cancellationToken), cancellationToken);
       }
       catch (OperationCanceledException)
       {
         Console.WriteLine($"Cancelled {GetType().Name} listener loop");
-      }
-      finally
-      {
-        ListeningSource.OnNext(false);
+        StatusUpdatesSource.OnNext(ConnectionResult.ListenerPaused);
       }
 
     }
 
     private Task Listen(CancellationToken cancellationToken)
     {
-      ListeningSource.OnNext(true);
+      Thread.CurrentThread.Name = $"{GetType().Name}";
       while (!cancellationToken.IsCancellationRequested)
       {
         // TODO: Make sure we can cancel even when we're waiting for a message (thread safety)
         try
         {
+          StatusUpdatesSource.OnNext(ConnectionResult.Listening);
+#if SIM
+          if (_simBlock)
+          {
+            Thread.Sleep(1000);
+            continue;
+          }
+          var responseMessage = "SIM";
+#else
           var responseMessage = Port.ReadLine(); // Blocking call, no ReadTimeout set
-          var serialCommandResponse = Deserialize(responseMessage, LatestCommandRequest);
-          ResponsePublisher.OnNext(serialCommandResponse);
+#endif
+          try
+          {
+            var serialCommandResponse = Deserialize(responseMessage, LatestCommandRequest);
+            if (serialCommandResponse == null)
+            {
+              throw new NullReferenceException();
+            }
+            StatusUpdatesSource.OnNext(ConnectionResult.ValidResponse);
+            ResponsePublisher.OnNext(serialCommandResponse);
+          }
+          catch (Exception e)
+          {
+            Console.WriteLine(e);
+            StatusUpdatesSource.OnNext(ConnectionResult.InvalidResponse);
+            throw;
+          }
         }
         catch (TimeoutException)
         {
           // We expect lots of these
         }
+#if SIM
+        _simBlock = true;
+#endif
       }
       cancellationToken.ThrowIfCancellationRequested();
       return Task.CompletedTask;
@@ -73,9 +129,16 @@ namespace AresSerial
     public void SendCommand(SerialCommandRequest request)
     {
       var commandStr = request.Serialize();
+#if !SIM
       Port.WriteLine(commandStr);
+#endif
       LatestCommandRequest = request;
+#if SIM
+      _simBlock = false;
+#endif
     }
+
+    public abstract SerialCommandRequest GenerateValidationRequest();
 
     protected virtual void ProcessResponse(SerialCommandResponse commandResponse)
     {

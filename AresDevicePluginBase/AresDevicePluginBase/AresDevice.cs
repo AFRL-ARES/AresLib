@@ -1,4 +1,6 @@
-﻿namespace AresDevicePluginBase
+﻿using System.Threading.Tasks;
+
+namespace AresDevicePluginBase
 {
   public abstract class AresDevice : IAresDevice
   {
@@ -7,5 +9,6 @@
       Name = name;
     }
     public string Name { get; }
+    public abstract Task<bool> Activate();
   }
 }

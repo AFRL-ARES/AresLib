@@ -22,11 +22,23 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE;SIM</DefineConstants>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="SerialPortMonitor.xaml" />
+  </ItemGroup>
   
   <ItemGroup>
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.10.144324" />
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Page Include="SerialPortMonitor.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 
 </Project>

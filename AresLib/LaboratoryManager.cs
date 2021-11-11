@@ -21,8 +21,6 @@ namespace AresLib
 
       AvailableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
       Lab = new Laboratory(Name, AvailableDeviceCommandInterpreters);
-      var deviceCommandInterpreters = GenerateDeviceCommandInterpreters();
-      DeviceCommandInterpretersSource.AddOrUpdate(deviceCommandInterpreters);
     }
 
     protected abstract IDeviceCommandInterpreter<AresDevice>[] GenerateDeviceCommandInterpreters();
@@ -41,6 +39,17 @@ namespace AresLib
       var campaignComposer = new CampaignComposer(campaignTemplate, AvailableDeviceCommandInterpreters);
       var campaignExecutor = campaignComposer.Compose();
       Task.Run(() => campaignExecutor.Execute()).Wait();
+    }
+
+    public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<AresDevice> deviceInterpreter)
+    {
+      var deviceActivated = await deviceInterpreter.Device.Activate();
+      if (!deviceActivated)
+      {
+        throw new Exception($"Could not activate device, not going to register");
+      }
+      DeviceCommandInterpretersSource.AddOrUpdate(deviceInterpreter);
+      return true;
     }
 
     protected ISourceCache<IDeviceCommandInterpreter<AresDevice>, string> DeviceCommandInterpretersSource { get; }
