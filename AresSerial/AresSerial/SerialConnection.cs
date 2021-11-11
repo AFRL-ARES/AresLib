@@ -61,7 +61,7 @@ namespace AresSerial
       ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Connected);
     }
 
-    public void StartListening()
+    public async void StartListening()
     {
       ListenerCancellationTokenSource?.Cancel(true);
       ListenerCancellationTokenSource = new CancellationTokenSource();
@@ -69,14 +69,21 @@ namespace AresSerial
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        Task.Run(() => Listen(cancellationToken), cancellationToken);
+        await Task.Run(() => Listen(cancellationToken), cancellationToken);
       }
       catch (OperationCanceledException)
       {
         Console.WriteLine($"Cancelled {GetType().Name} listener loop");
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine($"{GetType().Name} listener on thread {Thread.CurrentThread.Name} encountered an error: {e}");
+        throw;
+      }
+      finally
+      {
         ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
       }
-
     }
 
     private void Listen(CancellationToken cancellationToken)
@@ -100,6 +107,7 @@ namespace AresSerial
 #endif
           try
           {
+            ListenerStatusUpdatesSource.OnNext(ListenerStatus.Busy);
             var serialCommandResponse = Deserialize(responseMessage, LatestCommandRequest);
             if (serialCommandResponse == null)
             {
@@ -110,6 +118,7 @@ namespace AresSerial
           catch (Exception e)
           {
             Console.WriteLine(e);
+            ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
             throw;
           }
         }
