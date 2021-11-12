@@ -2,9 +2,9 @@
 {
   public enum ListenerStatus
   {
-    Idle = 1,
-    Listening = 2,
-    Paused = 3,
-    Busy = 4,
+    Idle = 0,
+    Listening = 1,
+    Paused = 2,
+    Busy = 3,
   }
 }

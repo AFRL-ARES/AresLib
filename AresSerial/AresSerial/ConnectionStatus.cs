@@ -2,10 +2,10 @@
 {
   public enum ConnectionStatus
   {
-    Unattempted = 1,
-    Failed = 2,
-    Connected = 3,
-    ManuallyClosed = 4,
-    AbruptlyDisconnected = 5,
+    Unattempted = 0,
+    Failed = 1,
+    Connected = 2,
+    ManuallyClosed = 3,
+    AbruptlyDisconnected = 4,
   }
 }
