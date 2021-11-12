@@ -9,38 +9,23 @@ namespace AresSerial
 {
   public abstract class SerialConnection : ISerialConnection
   {
-#if SIM
-    private bool _simBlock = true;
-#endif
     private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
     private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
     private ISubject<SerialCommandResponse> ResponsePublisher { get; } = new Subject<SerialCommandResponse>();
-    private SerialPort Port { get; }
+    private IAresSerialPort Port { get; }
     private SerialCommandRequest LatestCommandRequest { get; set; }
-    public CancellationTokenSource ListenerCancellationTokenSource { get; private set; }
-    public IObservable<SerialCommandResponse> Responses { get; }
-    public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
-    public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
 
-    public SerialConnection(SerialPort port)
+    public SerialConnection(IAresSerialPort port)
     {
+      Port = port;
       ConnectionStatusUpdates = ConnectionStatusUpdatesSource.AsObservable();
       Responses = ResponsePublisher.AsObservable();
       ListenerStatusUpdates = ListenerStatusUpdatesSource.AsObservable();
-      Port = port;
-      if (Port.ReadTimeout == default)
-      {
-        Port.ReadTimeout = 1000;
-      }
       ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
     }
 
     public void Connect()
     {
-#if SIM
-      ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Connected);
-      return;
-#endif
       try
       {
         Port.Open();
@@ -95,16 +80,8 @@ namespace AresSerial
         try
         {
           ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
-#if SIM
-          if (_simBlock)
-          {
-            Thread.Sleep(1000);
-            continue;
-          }
-          var responseMessage = "SIM";
-#else
           var responseMessage = Port.ReadLine(); // Blocking call, no ReadTimeout set
-#endif
+
           try
           {
             ListenerStatusUpdatesSource.OnNext(ListenerStatus.Busy);
@@ -126,23 +103,15 @@ namespace AresSerial
         {
           // We expect lots of these
         }
-#if SIM
-        _simBlock = true;
-#endif
       }
       cancellationToken.ThrowIfCancellationRequested();
     }
 
     public void SendCommand(SerialCommandRequest request)
     {
-      var commandStr = request.Serialize();
-#if !SIM
-      Port.WriteLine(commandStr);
-#endif
       LatestCommandRequest = request;
-#if SIM
-      _simBlock = false;
-#endif
+      var commandStr = request.Serialize();
+      Port.WriteLine(commandStr);
     }
 
     public abstract SerialCommandRequest GenerateValidationRequest();
@@ -160,5 +129,10 @@ namespace AresSerial
       Console.WriteLine($"Unimplemented {GetType().Name} {Port.PortName} does not have implementation for deserializing response: {source} for request of type {request.GetType()}");
       return new SerialCommandResponse(source, request);
     }
+
+    public CancellationTokenSource ListenerCancellationTokenSource { get; private set; }
+    public IObservable<SerialCommandResponse> Responses { get; }
+    public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
+    public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
   }
 }
