@@ -8,7 +8,7 @@ namespace AresLib.Composers
 {
   internal class StepComposer : CommandComposer<StepTemplate, StepExecutor>
   {
-    public StepComposer(StepTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters)
+    public StepComposer(StepTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters)
     {
     }
 

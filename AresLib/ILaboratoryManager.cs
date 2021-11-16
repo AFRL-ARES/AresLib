@@ -11,6 +11,6 @@ namespace AresLib
     Laboratory Lab { get; }
     ICampaignTemplateBuilder GenerateCampaignBuilder(string campaignName);
     void RunCampaign(CampaignTemplate campaignTemplate);
-    Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<AresDevice> deviceInterpreter);
+    Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter);
   }
 }

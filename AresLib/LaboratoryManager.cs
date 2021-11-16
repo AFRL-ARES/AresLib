@@ -23,7 +23,7 @@ namespace AresLib
       Lab = new Laboratory(Name, AvailableDeviceCommandInterpreters);
     }
 
-    protected abstract IDeviceCommandInterpreter<AresDevice>[] GenerateDeviceCommandInterpreters();
+    protected abstract IDeviceCommandInterpreter<IAresDevice>[] GenerateDeviceCommandInterpreters();
 
     public Laboratory Lab { get; }
 
@@ -41,7 +41,7 @@ namespace AresLib
       Task.Run(() => campaignExecutor.Execute()).Wait();
     }
 
-    public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<AresDevice> deviceInterpreter)
+    public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter)
     {
       var deviceActivated = await deviceInterpreter.Device.Activate();
       if (!deviceActivated)
@@ -52,10 +52,10 @@ namespace AresLib
       return true;
     }
 
-    protected ISourceCache<IDeviceCommandInterpreter<AresDevice>, string> DeviceCommandInterpretersSource { get; }
-      = new SourceCache<IDeviceCommandInterpreter<AresDevice>, string>(interpreter => interpreter.Device.Name);
+    protected ISourceCache<IDeviceCommandInterpreter<IAresDevice>, string> DeviceCommandInterpretersSource { get; }
+      = new SourceCache<IDeviceCommandInterpreter<IAresDevice>, string>(interpreter => interpreter.Device.Name);
 
-    private ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandInterpreters { get; }
+    private ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> AvailableDeviceCommandInterpreters { get; }
 
     public string Name { get; }
   }

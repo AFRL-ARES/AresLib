@@ -1,7 +1,9 @@
 ﻿using AresDevicePluginBase;
 using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AresSerial
@@ -15,7 +17,10 @@ namespace AresSerial
 
     public override async Task<bool> Activate()
     {
-      Connection = EstablishConnection();
+      if (Connection == null)
+      {
+        throw new Exception($"Cannot activate serial device before establishing connection. Try calling {nameof(EstablishConnection)}");
+      }
       var connectionStatus = await Connection.ConnectionStatusUpdates.Take(1);
       if (connectionStatus != ConnectionStatus.Unattempted)
       {
@@ -28,6 +33,7 @@ namespace AresSerial
       {
         throw new Exception($"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}");
       }
+
       Connection.StartListening();
       await Task.Delay(1000);
       var listenerStatus = await Connection.ListenerStatusUpdates.Take(1);
@@ -37,37 +43,52 @@ namespace AresSerial
       }
 
       var validationRequest = Connection.GenerateValidationRequest();
+
       var responseWaiter =
         Connection
           .Responses
-          .Where(response => response.SourceRequest == validationRequest)
           .Take(1)
           .ToTask();
       var timeout = TimeSpan.FromSeconds(5);
       var responseTimeout = Task.Delay(timeout);
-      Connection.SendCommand(validationRequest);
+      var sent = false;
+      while(!sent)
+      {
+        try
+        {
+          Connection.SendCommand(validationRequest);
+          sent = true;
+        }
+        catch (Exception e)
+        {
+          Console.WriteLine(e);
+          Thread.Sleep(500);
+        }
+      }
+
       var fasterTask = await Task.WhenAny(responseWaiter, responseTimeout);
       if (fasterTask == responseTimeout)
       {
         throw new TimeoutException($"Did not receive an expected valid response within {timeout}");
       }
 
+      var response = responseWaiter.Result;
+      if (validationRequest is SimSerialCommandRequest simRequest)
+      {
+        validationRequest = simRequest.ActualRequest;
+      }
+
+      if (response.SourceRequest != validationRequest)
+      {
+        throw new Exception($"Received an unexpected response for {validationRequest.Serialize()}\nResponse for: {response.SourceRequest.Serialize()}\nResponse: {response.Message}");
+      }
+
       listenerStatus = await Connection.ListenerStatusUpdates.Take(1);
 
       return listenerStatus != ListenerStatus.Paused;
-
-      // if (connectionStatus == ConnectionStatus.InvalidResponse)
-      // {
-      //   throw new Exception($"Received an invalid response from device");
-      // }
-      //
-      // if (connectionStatus != ConnectionStatus.ValidResponse)
-      // {
-      //   throw new Exception($"Not sure if it's supposed to possible to reach this exception. What still needs to be handled?");
-      // }
     }
 
-    public abstract TConnection EstablishConnection();
+    public abstract TConnection EstablishConnection(string portName);
 
     protected TConnection Connection { get; set; }
   }

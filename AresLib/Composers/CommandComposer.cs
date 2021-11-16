@@ -9,7 +9,7 @@ namespace AresLib.Composers
     where TDbTemplate : IMessage
     where TExecutor : IBaseExecutor
   {
-    protected CommandComposer(TDbTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters)
+    protected CommandComposer(TDbTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters)
     {
       Template = template;
       AvailableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
@@ -18,6 +18,6 @@ namespace AresLib.Composers
 
     public TDbTemplate Template { get; }
 
-    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> AvailableDeviceCommandInterpreters { get; protected set; }
+    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> AvailableDeviceCommandInterpreters { get; protected set; }
   }
 }

@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.10.194148" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.16.104429" />
   </ItemGroup>
 
 </Project>

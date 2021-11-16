@@ -5,7 +5,7 @@ namespace AresLib
 {
   public class Laboratory
   {
-    public Laboratory(string name, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> deviceInterpreters)
+    public Laboratory(string name, ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> deviceInterpreters)
     {
       Name = name;
       DeviceInterpreters = deviceInterpreters;
@@ -13,6 +13,6 @@ namespace AresLib
 
     public string Name { get; }
 
-    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> DeviceInterpreters { get; }
+    public ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> DeviceInterpreters { get; }
   }
 }

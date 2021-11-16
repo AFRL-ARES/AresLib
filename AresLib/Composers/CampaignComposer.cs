@@ -9,7 +9,7 @@ namespace AresLib.Composers
   internal class CampaignComposer : CommandComposer<CampaignTemplate, CampaignExecutor>
   {
     public CampaignComposer(
-      CampaignTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters) { }
+      CampaignTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters) { }
 
     public override CampaignExecutor Compose()
     {

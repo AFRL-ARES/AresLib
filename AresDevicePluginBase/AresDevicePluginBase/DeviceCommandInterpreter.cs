@@ -7,7 +7,7 @@ namespace AresDevicePluginBase
 {
   public abstract class DeviceCommandInterpreter<TQualifiedDevice, DeviceCommandEnum>
     : IDeviceCommandInterpreter<TQualifiedDevice>
-    where TQualifiedDevice : AresDevice
+    where TQualifiedDevice : IAresDevice
     where DeviceCommandEnum : struct, Enum
   {
     protected DeviceCommandInterpreter(TQualifiedDevice device)

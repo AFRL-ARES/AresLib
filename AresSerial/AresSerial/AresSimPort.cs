@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO.Ports;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -15,6 +16,20 @@ namespace AresSerial
       PortName = name;
     }
 
+    public void WriteLine(string input)
+    {
+      var simIo = SimSerialCommandRequest.GetSimulatedIo(input);
+      if (simIo[1] == null)
+      {
+        // response not expected
+        return;
+      }
+
+      Task.Delay(200)
+          .ContinueWith(_ => DeviceOutput.OnNext(simIo[1]));
+    }
+
+
     public string PortName { get; set; }
 
     public int ReadTimeout { get; set; } = 1000;
@@ -28,7 +43,7 @@ namespace AresSerial
 
     public string ReadLine()
     {
-      var valueTask = ValProvider.FirstAsync().ToTask();
+      var valueTask = DeviceOutput.FirstAsync().ToTask();
       var timeoutTask = Task.Delay(ReadTimeout);
       var completed = Task.WhenAny(valueTask, timeoutTask).Result;
       if (completed == timeoutTask)
@@ -36,12 +51,6 @@ namespace AresSerial
       return valueTask.Result;
     }
 
-    public virtual void WriteLine(string input)
-    {
-      Thread.Sleep(TimeSpan.FromSeconds(1));
-      ValProvider.OnNext($"SIM {input}");
-    }
-
-    protected Subject<string> ValProvider { get; } = new Subject<string>();
+    protected Subject<string> DeviceOutput { get; } = new Subject<string>();
   }
 }

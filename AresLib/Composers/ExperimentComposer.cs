@@ -9,7 +9,7 @@ namespace AresLib.Composers
   internal class ExperimentComposer : CommandComposer<ExperimentTemplate,ExperimentExecutor>
   {
     public ExperimentComposer(
-      ExperimentTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<AresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters) { }
+      ExperimentTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters) { }
 
     public override ExperimentExecutor Compose()
     {

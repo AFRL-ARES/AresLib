@@ -2,12 +2,12 @@
 {
   public interface IAresSerialPort
   {
-    public void Open();
+    void Open();
 
-    public string ReadLine();
+    string ReadLine();
 
-    public void WriteLine(string input);
-    public string PortName { get; set; }
-    public bool IsOpen { get; }
+    void WriteLine(string input);
+    string PortName { get; set; }
+    bool IsOpen { get; }
   }
 }
