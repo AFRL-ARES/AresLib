@@ -20,10 +20,11 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.16.104429" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.17.122422" />
   </ItemGroup>
 
 </Project>

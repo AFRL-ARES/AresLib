@@ -49,23 +49,17 @@ namespace AresSerial
           .Responses
           .Take(1)
           .ToTask();
+
       var timeout = TimeSpan.FromSeconds(5);
-      var responseTimeout = Task.Delay(timeout);
-      var sent = false;
-      while(!sent)
+      var send = Task.Run(() => Connection.SendCommand(validationRequest));
+      var sendTimeout = Task.Delay(timeout);
+      var completedSend = await Task.WhenAny(send, sendTimeout);
+      if (completedSend == sendTimeout)
       {
-        try
-        {
-          Connection.SendCommand(validationRequest);
-          sent = true;
-        }
-        catch (Exception e)
-        {
-          Console.WriteLine(e);
-          Thread.Sleep(500);
-        }
+        throw new TimeoutException($"Sending validation request timed out after {timeout}");
       }
 
+      var responseTimeout = Task.Delay(timeout);
       var fasterTask = await Task.WhenAny(responseWaiter, responseTimeout);
       if (fasterTask == responseTimeout)
       {

@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,7 +18,8 @@ namespace AresSerial
     private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
     private ISubject<SerialCommandResponse> ResponsePublisher { get; } = new Subject<SerialCommandResponse>();
     private IAresSerialPort Port { get; }
-    private ConcurrentQueue<SerialCommandRequest> QueuedCommandRequests { get; } = new ConcurrentQueue<SerialCommandRequest>();
+    private ISubject<string> PortResponsePublisher { get; } = new Subject<string>();
+    private object SenderLock { get; } = new object();
 
     public SerialConnection(IAresSerialPort port)
     {
@@ -49,7 +52,7 @@ namespace AresSerial
       ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Connected);
     }
 
-    public async void StartListening()
+    public void StartListening()
     {
       ListenerCancellationTokenSource?.Cancel(true);
       ListenerCancellationTokenSource = new CancellationTokenSource();
@@ -57,143 +60,76 @@ namespace AresSerial
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        await Task.Run(() => Listen(cancellationToken), cancellationToken);
+        Task.Run(() => Listen(cancellationToken), cancellationToken);
       }
       catch (OperationCanceledException)
       {
         Console.WriteLine($"Cancelled {GetType().Name} listener loop");
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine($"{GetType().Name} listener on thread {Thread.CurrentThread.Name} encountered an error: {e}");
-        throw;
-      }
-      finally
-      {
         ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
       }
     }
 
-    private void Listen(CancellationToken cancellationToken)
+    private Task Listen(CancellationToken cancellationToken)
     {
-      Thread.CurrentThread.Name = $"{GetType().Name} Listener";
+      Thread.CurrentThread.Name = $"{Port.PortName} Listener";
+      ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
       while (!cancellationToken.IsCancellationRequested)
       {
-        // TODO: Make sure we can cancel even when we're waiting for a message (thread safety)
-        SerialCommandRequest oldestRequestExpectingResponse = null;
         try
         {
-          ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
-          var responseMessage = Port.ReadLine(); // Blocking call, no ReadTimeout set
-          var expectsResponse = false;
-          while (!expectsResponse)
-          {
-            if (!QueuedCommandRequests.TryDequeue(out oldestRequestExpectingResponse))
-            {
-              throw new Exception($"Couldn't dequeue a request for received response {responseMessage}");
-            }
-            expectsResponse = oldestRequestExpectingResponse.ExpectsResponse;
-          }
-          try
-          {
-            ListenerStatusUpdatesSource.OnNext(ListenerStatus.Busy);
-            if (oldestRequestExpectingResponse is SimSerialCommandRequest simRequest)
-            {
-              oldestRequestExpectingResponse = simRequest.ActualRequest;
-            }
-            var serialCommandResponse = Deserialize(responseMessage, oldestRequestExpectingResponse);
-            if (serialCommandResponse == null)
-            {
-              throw new NullReferenceException();
-            }
-            ResponsePublisher.OnNext(serialCommandResponse);
-          }
-          catch (Exception e)
-          {
-            Console.WriteLine(e);
-            ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
-            throw;
-          }
+          var response = Port.ReadLine();
+          PortResponsePublisher.OnNext(response);
         }
-        catch (TimeoutException e)
+        catch (TimeoutException)
         {
-          // We expect lots of these
-          while (true)
-          {
-            if (!QueuedCommandRequests.TryPeek(out var cleanup))
-            {
-              break;
-            }
-
-            if (cleanup.ExpectsResponse)
-            {
-              break;
-            }
-            QueuedCommandRequests.TryDequeue(out cleanup);
-          }
+          // Timeouts are expected at a regular interval as to allow for handling cancellation
+          cancellationToken.ThrowIfCancellationRequested();
+          
         }
       }
-      cancellationToken.ThrowIfCancellationRequested();
+      return Task.CompletedTask;
     }
 
     public virtual void SendCommand(SerialCommandRequest request)
     {
-      if (QueuedCommandRequests.Contains(request))
+      lock (SenderLock)
       {
-        if (!QueuedCommandRequests.TryPeek(out var oldestRequest))
+        var deviceString = request.Serialize();
+        Task<string> syncer = null;
+        if (request.ExpectsResponse)
         {
-          throw new Exception($"Ridiculous exception, I just don't like ignoring Try<method> outputs");
+          syncer = PortResponsePublisher.Take(1)
+                                        .ToTask();
         }
 
-        if (oldestRequest != request)
+        Port.WriteLine(deviceString);
+
+        if (syncer == null)
         {
-          throw new Exception("This is an exception for now, but should be handled in the lib. We need to defer sending new commands until older ones have been responded to.");
+          PortResponsePublisher.OnNext(null);
         }
-        // Queue was behind and now caught up to the request
-      }
-      else
-      {
-        QueuedCommandRequests.Enqueue(request);
-        // Queue doesn't know about request
-        // Only the oldest if queue was originally
-        var syncer = Task.Run
-          (
-           () =>
-           {
-             Thread.CurrentThread.Name = "Requester";
-             SerialCommandRequest oldestRequest = null;
-             while (oldestRequest != request)
+        else
+        {
+          var latestPortResponse = syncer.Result;
+          Task.Run
+            (
+             () =>
              {
-               if (oldestRequest != null)
+               Thread.CurrentThread.Name = $"{Port.PortName} Deserializer";
+               if (request is SimSerialCommandRequest simRequest)
                {
-                 Debug.WriteLine($"Waiting to send {request}, {oldestRequest} is at top of queue");
-                 Thread.Sleep(500);
+                 request = simRequest.ActualRequest;
                }
 
-               if (!QueuedCommandRequests.TryPeek(out oldestRequest))
-               {
-                 throw new Exception($"Pretty much impossible to get here, not going to put helpful information in");
-               }
-
-               //          throw new Exception("This is an exception worth catching and handling, it indicates the queue is backlogged and not going to send the command when you expect");
+               var response = Deserialize(latestPortResponse, request);
+               ResponsePublisher.OnNext(response);
              }
-             // Request is top of queue, ready to send
-             var commandStr = request.Serialize();
-             Port.WriteLine(commandStr);
-           }
-          );
+            );
+        }
       }
     }
 
     public abstract SerialCommandRequest GenerateValidationRequest();
-
-    protected virtual void ProcessResponse(SerialCommandResponse commandResponse)
-    {
-      if (GetType() == typeof(SerialConnection))
-      {
-        Console.WriteLine($"{Port.PortName} Received: {commandResponse.Message} <--- {commandResponse.SourceRequest.Serialize()}");
-      }
-    }
 
     protected virtual SerialCommandResponse Deserialize(string source, SerialCommandRequest request)
     {
