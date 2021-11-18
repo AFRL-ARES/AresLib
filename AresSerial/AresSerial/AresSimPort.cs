@@ -43,11 +43,15 @@ namespace AresSerial
 
     public string ReadLine()
     {
-      var valueTask = DeviceOutput.FirstAsync().ToTask();
+      var cancelTokenSource = new CancellationTokenSource();
+      var valueTask = DeviceOutput.FirstAsync().ToTask(cancelTokenSource.Token);
       var timeoutTask = Task.Delay(ReadTimeout);
       var completed = Task.WhenAny(valueTask, timeoutTask).Result;
       if (completed == timeoutTask)
+      {
+        cancelTokenSource.Cancel();
         throw new TimeoutException("SimPort ReadLine timed out");
+      }
       return valueTask.Result;
     }
 
