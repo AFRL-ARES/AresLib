@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -33,7 +33,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.17.161426" />
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.17.200821" />
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
