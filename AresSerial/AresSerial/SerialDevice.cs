@@ -59,7 +59,7 @@ namespace AresSerial
       var completedSend = await Task.WhenAny(send, sendTimeout);
       if (completedSend == sendTimeout)
       {
-        throw new TimeoutException($"Sending validation request timed out after {timeout} for device {Name}");
+        throw new TimeoutException($"Sending validation request timed out after {timeout} for device {Name}, on thread {Thread.CurrentThread.Name}");
       }
 
       var responseTimeout = Task.Delay(timeout);

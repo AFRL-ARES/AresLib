@@ -16,9 +16,9 @@ namespace AresSerial
   {
     private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
     private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
-    private ISubject<SerialCommandResponse> ResponsePublisher { get; } = Subject.Synchronize(new Subject<SerialCommandResponse>());
+    private ISubject<SerialCommandResponse> ResponsePublisher { get; } = new Subject<SerialCommandResponse>();
     private IAresSerialPort Port { get; }
-    private ISubject<string> PortResponsePublisher { get; } = Subject.Synchronize(new Subject<string>());
+    private ISubject<string> PortResponsePublisher { get; } = new Subject<string>();
     private object SenderLock { get; } = new object();
 
     public SerialConnection(IAresSerialPort port)
@@ -81,7 +81,7 @@ namespace AresSerial
           var response = Port.ReadLine();
           PortResponsePublisher.OnNext(response);
         }
-        catch (TimeoutException)
+        catch (TimeoutException e)
         {
           // Timeouts are expected at a regular interval as to allow for handling cancellation
           cancellationToken.ThrowIfCancellationRequested();
@@ -95,10 +95,6 @@ namespace AresSerial
     {
       lock (SenderLock)
       {
-        if (Thread.CurrentThread.Name == null)
-        {
-          Thread.CurrentThread.Name = $"{Port.PortName} Sender Deadlock?";
-        }
         var deviceString = request.Serialize();
         Task<string> syncer = null;
         if (request.ExpectsResponse)

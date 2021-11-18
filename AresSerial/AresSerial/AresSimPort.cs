@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
-using System.IO.Ports;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace AresSerial
@@ -25,8 +21,11 @@ namespace AresSerial
         return;
       }
 
-      Task.Delay(200)
-          .ContinueWith(_ => DeviceOutput.OnNext(simIo[1]));
+      var rand = new Random();
+      var timeout = rand.Next(100, 500); // how long it takes the device to "produce" a response
+
+      Task.Delay(timeout)
+          .ContinueWith(async _ => await DeviceChannel.Writer.WriteAsync(simIo[1]));
     }
 
 
@@ -43,18 +42,21 @@ namespace AresSerial
 
     public string ReadLine()
     {
-      var cancelTokenSource = new CancellationTokenSource();
-      var valueTask = DeviceOutput.FirstAsync().ToTask(cancelTokenSource.Token);
+      var cancellationTokenSource = new CancellationTokenSource();
+      var valueTask = DeviceChannel.Reader.WaitToReadAsync(cancellationTokenSource.Token).AsTask();
       var timeoutTask = Task.Delay(ReadTimeout);
       var completed = Task.WhenAny(valueTask, timeoutTask).Result;
       if (completed == timeoutTask)
       {
-        cancelTokenSource.Cancel();
+        cancellationTokenSource.Cancel();
         throw new TimeoutException("SimPort ReadLine timed out");
       }
-      return valueTask.Result;
+      var resultRead = DeviceChannel.Reader.TryRead(out var result);
+      if (!resultRead)
+        throw new Exception("Sim DeviceChannel is closed");
+      return result;
     }
 
-    protected Subject<string> DeviceOutput { get; } = new Subject<string>();
+    private Channel<string> DeviceChannel { get; } = Channel.CreateBounded<string>(1);
   }
 }
