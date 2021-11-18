@@ -56,14 +56,14 @@ namespace AresSerial
       var completedSend = await Task.WhenAny(send, sendTimeout);
       if (completedSend == sendTimeout)
       {
-        throw new TimeoutException($"Sending validation request timed out after {timeout}");
+        throw new TimeoutException($"Sending validation request timed out after {timeout} for device {Name}");
       }
 
       var responseTimeout = Task.Delay(timeout);
       var fasterTask = await Task.WhenAny(responseWaiter, responseTimeout);
       if (fasterTask == responseTimeout)
       {
-        throw new TimeoutException($"Did not receive an expected valid response within {timeout}");
+        throw new TimeoutException($"Did not receive an expected valid response within {timeout} for device {Name}");
       }
 
       var response = responseWaiter.Result;
