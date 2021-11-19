@@ -51,10 +51,7 @@ namespace AresSerial
           .ToTask();
 
       var timeout = TimeSpan.FromSeconds(5);
-      var send = Task.Run(() => {
-        Thread.CurrentThread.Name = $"{Name} Activate command sender";
-        Connection.SendCommand(validationRequest);
-      });
+      var send = Connection.SendCommand(validationRequest);
       var sendTimeout = Task.Delay(timeout);
       var completedSend = await Task.WhenAny(send, sendTimeout);
       if (completedSend == sendTimeout)

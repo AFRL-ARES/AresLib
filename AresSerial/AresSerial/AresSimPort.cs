@@ -25,7 +25,7 @@ namespace AresSerial
       var timeout = rand.Next(100, 500); // how long it takes the device to "produce" a response
 
       Task.Delay(timeout)
-          .ContinueWith(async _ => await DeviceChannel.Writer.WriteAsync(simIo[1]));
+          .ContinueWith(_ => DeviceChannel.Writer.WriteAsync(simIo[1]));
     }
 
 

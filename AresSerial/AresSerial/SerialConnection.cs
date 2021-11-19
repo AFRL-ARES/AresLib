@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO.Ports;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
@@ -61,7 +57,7 @@ namespace AresSerial
       cancellationToken.ThrowIfCancellationRequested();
       try
       {
-        Task.Run(() => Listen(cancellationToken), cancellationToken);
+        Task.Factory.StartNew(_ => Listen(cancellationToken), cancellationToken, TaskCreationOptions.LongRunning);
       }
       catch (OperationCanceledException)
       {
@@ -81,52 +77,48 @@ namespace AresSerial
           var response = Port.ReadLine();
           PortResponsePublisher.OnNext(response);
         }
-        catch (TimeoutException e)
+        catch (TimeoutException)
         {
           // Timeouts are expected at a regular interval as to allow for handling cancellation
           cancellationToken.ThrowIfCancellationRequested();
-          
+
         }
       }
       return Task.CompletedTask;
     }
 
-    public virtual void SendCommand(SerialCommandRequest request)
+    public virtual async Task SendCommand(SerialCommandRequest request)
     {
+      var deviceString = request.Serialize();
+      Task<string> syncer = null;
+      if (request.ExpectsResponse)
+      {
+        syncer = PortResponsePublisher.Take(1)
+                                      .ToTask();
+      }
+
       lock (SenderLock)
       {
-        var deviceString = request.Serialize();
-        Task<string> syncer = null;
-        if (request.ExpectsResponse)
-        {
-          syncer = PortResponsePublisher.Take(1)
-                                        .ToTask();
-        }
-
         Port.WriteLine(deviceString);
+      }
 
-        if (syncer == null)
-        {
-          PortResponsePublisher.OnNext(null);
-        }
-        else
-        {
-          var latestPortResponse = syncer.Result;
-          Task.Run
-            (
-             () =>
+      if (syncer != null)
+      {
+        var latestPortResponse = await syncer;
+        await Task.Run
+          (
+           () =>
+           {
+             Thread.CurrentThread.Name = $"{Port.PortName} Deserializer";
+             if (request is SimSerialCommandRequest simRequest)
              {
-               Thread.CurrentThread.Name = $"{Port.PortName} Deserializer";
-               if (request is SimSerialCommandRequest simRequest)
-               {
-                 request = simRequest.ActualRequest;
-               }
-
-               var response = Deserialize(latestPortResponse, request);
-               ResponsePublisher.OnNext(response);
+               request = simRequest.ActualRequest;
              }
-            );
-        }
+
+             var response = Deserialize(latestPortResponse, request);
+             ResponsePublisher.OnNext(response);
+           }
+          );
       }
     }
 
