@@ -12,7 +12,8 @@ namespace AresSerial
     IObservable<SerialCommandResponse> Responses { get; }
     void Connect();
     void StartListening();
-    void SendCommand(SerialCommandRequest request);
+    void StopListening();
+    void SendAndWaitForReceipt(SerialCommandRequest request);
     SerialCommandRequest GenerateValidationRequest();
   }
 }

@@ -3,10 +3,12 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,8 +20,7 @@ namespace AresSerial
     private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
     private ISubject<SerialCommandResponse> ResponsePublisher { get; } = Subject.Synchronize(new Subject<SerialCommandResponse>());
     private IAresSerialPort Port { get; }
-    private ISubject<string> PortResponsePublisher { get; } = Subject.Synchronize(new Subject<string>());
-    private object SenderLock { get; } = new object();
+    private ReaderWriterLockSlim Lock { get; } = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
     public SerialConnection(IAresSerialPort port)
     {
@@ -55,13 +56,19 @@ namespace AresSerial
 
     public void StartListening()
     {
-      ListenerCancellationTokenSource?.Cancel(true);
-      ListenerCancellationTokenSource = new CancellationTokenSource();
-      var cancellationToken = ListenerCancellationTokenSource.Token;
-      cancellationToken.ThrowIfCancellationRequested();
+      var alreadyListening = ListenerCancellationTokenSource?.IsCancellationRequested ?? false;
+      if (!alreadyListening)
+      {
+        ListenerCancellationTokenSource = new CancellationTokenSource();
+      }
+      else
+      {
+        throw new Exception($"{Port.Name} Listener loop already started");
+      }
+
       try
       {
-        Task.Run(() => Listen(cancellationToken), cancellationToken);
+        Task.Run(() => ListenAsync(ListenerCancellationTokenSource.Token), ListenerCancellationTokenSource.Token);
       }
       catch (OperationCanceledException)
       {
@@ -70,75 +77,66 @@ namespace AresSerial
       }
     }
 
-    private Task Listen(CancellationToken cancellationToken)
+    public void StopListening()
     {
-      Thread.CurrentThread.Name = $"{Port.PortName} Listener";
+      ListenerCancellationTokenSource.Cancel();
+    }
+
+    private async Task ListenAsync(CancellationToken cancellationToken)
+    {
+      Thread.CurrentThread.Name = $"{Port.Name} Listener Loop";
       ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
       while (!cancellationToken.IsCancellationRequested)
       {
-        try
-        {
-          var response = Port.ReadLine();
-          PortResponsePublisher.OnNext(response);
-        }
-        catch (TimeoutException)
-        {
-          // Timeouts are expected at a regular interval as to allow for handling cancellation
-          cancellationToken.ThrowIfCancellationRequested();
-          
-        }
+          await Port.ListenForEntryAsync(cancellationToken);
       }
-      return Task.CompletedTask;
     }
 
-    public virtual void SendCommand(SerialCommandRequest request)
+    public virtual void SendAndWaitForReceipt(SerialCommandRequest request)
     {
-      lock (SenderLock)
-      {
         if (Thread.CurrentThread.Name == null)
         {
-          Thread.CurrentThread.Name = $"{Port.PortName} Sender Deadlock?";
-        }
-        var deviceString = request.Serialize();
-        Task<string> syncer = null;
-        if (request.ExpectsResponse)
-        {
-          syncer = PortResponsePublisher.Take(1)
-                                        .ToTask();
+          Thread.CurrentThread.Name = $"{Port.Name} Transaction";
         }
 
-        Port.WriteLine(deviceString);
+        var transactionSyncer = Port.InboundMessages.Take(1)
+                                                     .ToTask();
+        var outboundMessage = request.Serialize();
 
-        if (syncer == null)
+        Lock.EnterWriteLock();
+        Port.SendOutboundMessage(outboundMessage);
+        if (!request.ExpectsResponse)
         {
-          PortResponsePublisher.OnNext(null);
-        }
-        else
-        {
-          var latestPortResponse = syncer.Result;
-          Task.Run
-            (
-             () =>
-             {
-               Thread.CurrentThread.Name = $"{Port.PortName} Deserializer";
-               if (request is SimSerialCommandRequest simRequest)
-               {
-                 request = simRequest.ActualRequest;
-               }
-
-               var response = Deserialize(latestPortResponse, request);
-               ResponsePublisher.OnNext(response);
-             }
-            );
-        }
+          Lock.ExitWriteLock();
+          return;
       }
+        Lock.ExitWriteLock();
+
+      var latestPortResponse = transactionSyncer.Result;
+
+        Task.Run
+          (
+           () =>
+           {
+             Thread.CurrentThread.Name = $"{Port.Name} Deserializer";
+             if (request is SimSerialCommandRequest simRequest)
+             {
+               request = simRequest.ActualRequest;
+             }
+
+             var response = Deserialize(latestPortResponse, request);
+             ResponsePublisher.OnNext(response);
+           }
+          );
     }
+
+
 
     public abstract SerialCommandRequest GenerateValidationRequest();
 
     protected virtual SerialCommandResponse Deserialize(string source, SerialCommandRequest request)
     {
-      Console.WriteLine($"Unimplemented {GetType().Name} {Port.PortName} does not have implementation for deserializing response: {source} for request of type {request.GetType()}");
+      Console.WriteLine($"Unimplemented {GetType().Name} {Port.Name} does not have implementation for deserializing response: {source} for request of type {request.GetType()}");
       return new SerialCommandResponse(source, request);
     }
 

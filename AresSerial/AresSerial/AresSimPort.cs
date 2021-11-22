@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Reactive.Linq;
@@ -11,50 +12,76 @@ namespace AresSerial
 {
   public class AresSimPort : IAresSerialPort
   {
+    private ISubject<string> OutboundMessagePublisher { get; } = new Subject<string>();
+    private ISubject<string> InboundMessagePublisher { get; } // Mayyyybe don't need this if it isn't going to be exposed at the base level
+    private ISubject<string> ExpectedInboundMessages { get; } = new Subject<string>();
+
     public AresSimPort(string name)
     {
-      PortName = name;
+      Name = name;
+      OutboundMessages = OutboundMessagePublisher.AsObservable();
+      InboundMessagePublisher = ExpectedInboundMessages;
+      InboundMessages = ExpectedInboundMessages.AsObservable();
     }
 
-    public void WriteLine(string input)
-    {
-      var simIo = SimSerialCommandRequest.GetSimulatedIo(input);
-      if (simIo[1] == null)
-      {
-        // response not expected
-        return;
-      }
-
-      Task.Delay(200)
-          .ContinueWith(_ => DeviceOutput.OnNext(simIo[1]));
-    }
-
-
-    public string PortName { get; set; }
-
-    public int ReadTimeout { get; set; } = 1000;
+    public string Name { get; set; }
 
     public bool IsOpen { get; private set; }
+
+    public IObservable<string> OutboundMessages { get; }
+
+    public IObservable<string> InboundMessages { get; }
 
     public virtual void Open()
     {
       IsOpen = true;
     }
 
-    public string ReadLine()
+    public void SendOutboundMessage(string input)
     {
-      var cancelTokenSource = new CancellationTokenSource();
-      var valueTask = DeviceOutput.FirstAsync().ToTask(cancelTokenSource.Token);
-      var timeoutTask = Task.Delay(ReadTimeout);
-      var completed = Task.WhenAny(valueTask, timeoutTask).Result;
-      if (completed == timeoutTask)
+      var simIo = SimSerialCommandRequest.GetSimulatedIo(input);
+      OutboundMessagePublisher.OnNext(simIo[0]);
+      if (simIo[1] == null)
       {
-        cancelTokenSource.Cancel();
-        throw new TimeoutException("SimPort ReadLine timed out");
+        // response not expected
+        return;
       }
-      return valueTask.Result;
+
+      var fakeInput = simIo[1];
+      ExpectedInboundMessages.OnNext(fakeInput);
     }
 
-    protected Subject<string> DeviceOutput { get; } = new Subject<string>();
+    public Task ListenForEntryAsync(CancellationToken cancellationToken)
+    {
+      return Task.Run
+        (
+         async () =>
+         {
+           Thread.CurrentThread.Name ??= $"{Name} Inbound Message";
+           var reader = InboundMessages.Take(1)
+                                               .ToTask(cancellationToken);
+           while (!cancellationToken.IsCancellationRequested)
+           {
+             try
+             {
+               // To keep it similar to actual hardware logic
+               var completedTask = await Task.WhenAny(reader, Task.Delay(1000));
+               if (completedTask != reader)
+               {
+                 throw new TimeoutException($"SimPort {nameof(ListenForEntryAsync)} timed out");
+               }
+               InboundMessagePublisher.OnNext(reader.Result);
+             }
+             catch (Exception e)
+             {
+               cancellationToken.ThrowIfCancellationRequested();
+             }
+             break;
+           }
+
+         },
+         cancellationToken
+        );
+    }
   }
 }
