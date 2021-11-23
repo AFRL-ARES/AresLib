@@ -8,33 +8,58 @@ using System.Threading.Tasks;
 
 namespace AresSerial
 {
-  public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TConnection> where TConnection : ISerialConnection
+  public abstract class SerialDevice : AresDevice
   {
-
-    protected SerialDevice(string name) : base(name)
+    private string TargetPortName { get; set; }
+    protected SerialDevice(string name, ISerialConnection connection) : base(name)
     {
+      Connection = connection;
+    }
+
+    public void Connect(string portName)
+    {
+      TargetPortName = portName;
+      Connection.Connect(portName);
+    }
+
+    public void Disconnect()
+    {
+      Connection.Disconnect();
     }
 
     public override async Task<bool> Activate()
     {
       if (Connection == null)
       {
-        throw new Exception($"Cannot activate serial device before establishing connection. Try calling {nameof(EstablishConnection)}");
-      }
-      var connectionStatus = await Connection.ConnectionStatusUpdates.Take(1).ToTask();
-      if (connectionStatus != ConnectionStatus.Unattempted)
-      {
-        throw new Exception("This really shouldn't ever be thrown, probably only used for testing purposes");
+        throw new Exception($"Cannot activate serial device before providing connection.");
       }
 
-      Connection.Connect();
-      connectionStatus = await Connection.ConnectionStatusUpdates.Take(1).ToTask();
-      if (connectionStatus != ConnectionStatus.Connected)
+      if (Connection.Port.IsOpen)
       {
-        throw new Exception($"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}");
+        if (!Connection.ListenerCancellationTokenSource.IsCancellationRequested)
+        {
+          return true;
+        }
+      }
+      ConnectionStatus connectionStatus;
+      if (!Connection.Port.IsOpen)
+      {
+        connectionStatus = await Connection.ConnectionStatusUpdates.Take(1)
+                                           .ToTask();
+        Connect(TargetPortName);
+        if (connectionStatus != ConnectionStatus.Connected)
+        {
+          throw new Exception
+            (
+             $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}"
+            );
+        }
       }
 
-      Connection.StartListening();
+      if (Connection.ListenerCancellationTokenSource?.IsCancellationRequested ?? true)
+      {
+        Connection.StartListening();
+      }
       var listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
       if (listenerStatus != ListenerStatus.Listening)
       {
@@ -66,8 +91,6 @@ namespace AresSerial
       return listenerStatus != ListenerStatus.Paused;
     }
 
-    public abstract TConnection EstablishConnection(string portName);
-
-    protected TConnection Connection { get; set; }
+    public ISerialConnection Connection { get; private set; }
   }
 }

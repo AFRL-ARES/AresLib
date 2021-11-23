@@ -9,13 +9,13 @@ namespace AresSerial
 {
   public class AresHardwarePort : IAresSerialPort
   {
-    private ISubject<string> OutboundMessagesPublisher { get; } = new Subject<string>();
-    private ISubject<string> InboundMessagesPublisher { get; } = new Subject<string>();
-    private SerialPort SystemPort { get; }
+    private ISubject<string> OutboundMessagesPublisher { get; set; } = new Subject<string>();
+    private ISubject<string> InboundMessagesPublisher { get; set; } = new Subject<string>();
+    private SerialPort SystemPort { get; set; }
 
-    public AresHardwarePort(string portName, int baudRate, Parity parity, int dataBits, StopBits stopBits)
+    public AresHardwarePort(int baudRate, Parity parity, int dataBits, StopBits stopBits)
     {
-      SystemPort = new SerialPort(portName, baudRate, parity, dataBits, stopBits);
+      SystemPort = new SerialPort(null, baudRate, parity, dataBits, stopBits);
       OutboundMessages = OutboundMessagesPublisher.AsObservable();
       InboundMessages = InboundMessagesPublisher.AsObservable();
     }
@@ -30,11 +30,38 @@ namespace AresSerial
       get => SystemPort.IsOpen;
     }
 
-    public IObservable<string> OutboundMessages { get; }
+    public IObservable<string> OutboundMessages { get; private set; }
 
-    public IObservable<string> InboundMessages { get; }
+    public IObservable<string> InboundMessages { get; private set; }
 
-    public void Open() => SystemPort.Open();
+    public void Open(string portName)
+    {
+      // Make sure the port isn't already connected?
+      SystemPort.PortName = portName;
+      SystemPort.Open();
+    }
+
+    public void Close(Exception error = null)
+    {
+      if (error == null)
+      {
+        OutboundMessagesPublisher.OnCompleted();
+        InboundMessagesPublisher.OnCompleted();
+      }
+      else
+      {
+        OutboundMessagesPublisher.OnError(error);
+        InboundMessagesPublisher.OnError(error);
+      }
+
+      var unopenedCopy = new SerialPort(null, SystemPort.BaudRate, SystemPort.Parity, SystemPort.DataBits, SystemPort.StopBits);
+      SystemPort.Close();
+      OutboundMessagesPublisher = new Subject<string>();
+      InboundMessagesPublisher = new Subject<string>();
+      SystemPort = unopenedCopy;
+      OutboundMessages = OutboundMessagesPublisher.AsObservable();
+      InboundMessages = InboundMessagesPublisher.AsObservable();
+    }
 
     public async Task ListenForEntryAsync(CancellationToken cancellationToken)
     {

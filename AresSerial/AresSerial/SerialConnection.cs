@@ -14,12 +14,12 @@ using System.Threading.Tasks;
 
 namespace AresSerial
 {
-  public abstract class SerialConnection : ISerialConnection
+  public abstract class SerialConnection: ISerialConnection
   {
-    private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
-    private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
-    private ISubject<SerialCommandResponse> ResponsePublisher { get; } = Subject.Synchronize(new Subject<SerialCommandResponse>());
-    private IAresSerialPort Port { get; }
+    private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; set; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
+    private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; set; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
+    private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = Subject.Synchronize(new Subject<SerialCommandResponse>());
+    public IAresSerialPort Port { get; }
     private ReaderWriterLockSlim Lock { get; } = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
     public SerialConnection(IAresSerialPort port)
@@ -32,11 +32,11 @@ namespace AresSerial
       ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
     }
 
-    public void Connect()
+    public void Connect(string portName)
     {
       try
       {
-        Port.Open();
+        Port.Open(portName);
       }
       catch (Exception e)
       {
@@ -54,9 +54,26 @@ namespace AresSerial
       ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Connected);
     }
 
+    public void Disconnect()
+    {
+      ListenerCancellationTokenSource?.Cancel();
+      ListenerStatusUpdatesSource.OnCompleted();
+      ConnectionStatusUpdatesSource.OnCompleted();
+      ResponsePublisher.OnCompleted();
+      Port.Close();
+      ConnectionStatusUpdatesSource = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
+      ListenerStatusUpdatesSource = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
+      ResponsePublisher = Subject.Synchronize(new Subject<SerialCommandResponse>());
+
+      ConnectionStatusUpdates = ConnectionStatusUpdatesSource.AsObservable();
+      Responses = ResponsePublisher.AsObservable();
+      ListenerStatusUpdates = ListenerStatusUpdatesSource.AsObservable();
+      ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
+    }
+
     public void StartListening()
     {
-      var alreadyListening = ListenerCancellationTokenSource?.IsCancellationRequested ?? false;
+      var alreadyListening = !ListenerCancellationTokenSource?.Token.IsCancellationRequested ?? false;
       if (!alreadyListening)
       {
         ListenerCancellationTokenSource = new CancellationTokenSource();
@@ -65,21 +82,8 @@ namespace AresSerial
       {
         throw new Exception($"{Port.Name} Listener loop already started");
       }
-
-      try
-      {
-        Task.Run(() => ListenAsync(ListenerCancellationTokenSource.Token), ListenerCancellationTokenSource.Token);
-      }
-      catch (OperationCanceledException)
-      {
-        Console.WriteLine($"Cancelled {GetType().Name} listener loop");
-        ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
-      }
-    }
-
-    public void StopListening()
-    {
-      ListenerCancellationTokenSource.Cancel();
+      
+      Task.Run(() => ListenAsync(ListenerCancellationTokenSource.Token), ListenerCancellationTokenSource.Token);
     }
 
     private async Task ListenAsync(CancellationToken cancellationToken)
@@ -88,7 +92,16 @@ namespace AresSerial
       ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
       while (!cancellationToken.IsCancellationRequested)
       {
+        try
+        {
           await Port.ListenForEntryAsync(cancellationToken);
+        }
+
+        catch (OperationCanceledException)
+        {
+          Console.WriteLine($"Cancelled {GetType().Name} listener loop");
+          ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
+        }
       }
     }
 
@@ -141,8 +154,8 @@ namespace AresSerial
     }
 
     public CancellationTokenSource ListenerCancellationTokenSource { get; private set; }
-    public IObservable<SerialCommandResponse> Responses { get; }
-    public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
-    public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
+    public IObservable<SerialCommandResponse> Responses { get; private set; }
+    public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; private set; }
+    public IObservable<ListenerStatus> ListenerStatusUpdates { get; private set; }
   }
 }

@@ -2,8 +2,10 @@
 
 namespace AresSerial
 {
-  public interface ISerialDevice<TConnection> : IAresDevice where TConnection : ISerialConnection
+  public interface ISerialDevice : IAresDevice
   {
-    TConnection EstablishConnection(string portName);
+    ISerialConnection Connection { get; }
+    void Connect(string portName);
+    void Disconnect();
   }
 }
