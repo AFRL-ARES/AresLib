@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AresSerial
 {
@@ -6,7 +8,8 @@ namespace AresSerial
   {
     IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
     IObservable<ListenerStatus> ListenerStatusUpdates { get; }
-    IObservable<SerialCommandResponse> Responses { get; }
+    Task<T> GetResponse<T>(CancellationToken cancelToken);
+    Task<SerialCommandResponse> GetAnyResponse(CancellationToken cancelToken);
     void Connect(string portName);
     void Disconnect();
     void StartListening();

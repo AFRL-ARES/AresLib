@@ -15,6 +15,7 @@ namespace AresSerial
     private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = new Subject<SerialCommandResponse>();
     private IAresSerialPort Port { get; }
     private ReaderWriterLockSlim Lock { get; } = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+    private IObservable<SerialCommandResponse> Responses { get; set; }
     private CancellationTokenSource ListenerCancellationTokenSource { get; set; }
 
     public SerialConnection(SerialPortConnectionInfo connectionInfo = null)
@@ -151,7 +152,19 @@ namespace AresSerial
       return new SerialCommandResponse(source, request);
     }
 
-    public IObservable<SerialCommandResponse> Responses { get; private set; }
+    public Task<T> GetResponse<T>(CancellationToken cancellationToken)
+    {
+      var listenerStatus = ListenerStatusUpdates.FirstAsync().Wait();
+      if (listenerStatus != ListenerStatus.Listening)
+        throw new Exception($"{Port.Name} Connection attempted to get a response while the listener is {listenerStatus}");
+      return Responses.OfType<T>().FirstAsync().ToTask(cancellationToken);
+    }
+
+    public Task<SerialCommandResponse> GetAnyResponse(CancellationToken cancellationToken)
+    {
+      return GetResponse<SerialCommandResponse>(cancellationToken);
+    }
+
     public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; private set; }
     public IObservable<ListenerStatus> ListenerStatusUpdates { get; private set; }
   }

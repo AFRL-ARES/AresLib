@@ -2,6 +2,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AresSerial
@@ -64,11 +65,7 @@ namespace AresSerial
 
       var validationRequest = Connection.GenerateValidationRequest();
 
-      var responseWaiter =
-        Connection
-          .Responses
-          .Take(1)
-          .ToTask();
+      var responseWaiter = Connection.GetAnyResponse(CancellationToken.None);
 
       await Task.Run(() => Connection.SendAndWaitForReceipt(validationRequest));
       var response = await responseWaiter;

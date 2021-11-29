@@ -43,7 +43,8 @@ namespace AresSerial
       }
 
       var fakeInput = simIo[1];
-      ExpectedInboundMessages.OnNext(fakeInput);
+      var random = new Random();
+      Task.Delay(TimeSpan.FromMilliseconds(random.Next(100, 500))).ContinueWith(_ => ExpectedInboundMessages.OnNext(fakeInput));
     }
 
     public void Open(string portName)
