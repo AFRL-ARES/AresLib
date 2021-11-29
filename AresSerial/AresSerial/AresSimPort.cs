@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.IO.Ports;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
@@ -10,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AresSerial
 {
-  public class AresSimPort : IAresSerialPort
+  internal class AresSimPort : IAresSerialPort
   {
     private ISubject<string> OutboundMessagePublisher { get; set; } = new Subject<string>();
     private ISubject<string> InboundMessagePublisher { get; set; } // Mayyyybe don't need this if it isn't going to be exposed at the base level
@@ -53,6 +50,13 @@ namespace AresSerial
     {
       Name = portName;
       IsOpen = Name != null;
+
+      OutboundMessagePublisher = new Subject<string>();
+      ExpectedInboundMessages = new Subject<string>();
+      InboundMessagePublisher = ExpectedInboundMessages;
+
+      OutboundMessages = OutboundMessagePublisher.AsObservable();
+      InboundMessages = ExpectedInboundMessages.AsObservable();
     }
 
     public void Close(Exception error = null)
@@ -69,11 +73,6 @@ namespace AresSerial
         InboundMessagePublisher.OnError(error);
         ExpectedInboundMessages.OnError(error);
       }
-
-
-      OutboundMessages = OutboundMessagePublisher.AsObservable();
-      InboundMessagePublisher = ExpectedInboundMessages;
-      InboundMessages = ExpectedInboundMessages.AsObservable();
 
       Name = null;
       IsOpen = false;
@@ -104,7 +103,7 @@ namespace AresSerial
                }
                InboundMessagePublisher.OnNext(reader.Result);
              }
-             catch (Exception e)
+             catch (Exception)
              {
                cancellationToken.ThrowIfCancellationRequested();
              }

@@ -1,9 +1,7 @@
 ﻿using AresDevicePluginBase;
 using System;
-using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace AresSerial
@@ -34,19 +32,17 @@ namespace AresSerial
         throw new Exception($"Cannot activate serial device before providing connection.");
       }
 
-      if (Connection.Port.IsOpen)
+      if (await Connection.ConnectionStatusUpdates.FirstAsync() == ConnectionStatus.Connected
+        && await Connection.ListenerStatusUpdates.FirstAsync() == ListenerStatus.Listening)
       {
-        if (!Connection.ListenerCancellationTokenSource.IsCancellationRequested)
-        {
-          return true;
-        }
+        return true;
       }
-      ConnectionStatus connectionStatus;
-      if (!Connection.Port.IsOpen)
+      if (await Connection.ConnectionStatusUpdates.FirstAsync() != ConnectionStatus.Connected)
       {
-        connectionStatus = await Connection.ConnectionStatusUpdates.Take(1)
-                                           .ToTask();
+        var connectionStatusListener = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
         Connect(TargetPortName);
+        var connectionStatus = connectionStatusListener.Result;
+
         if (connectionStatus != ConnectionStatus.Connected)
         {
           throw new Exception
@@ -56,7 +52,7 @@ namespace AresSerial
         }
       }
 
-      if (Connection.ListenerCancellationTokenSource?.IsCancellationRequested ?? true)
+      if (await Connection.ListenerStatusUpdates.FirstAsync() != ListenerStatus.Listening)
       {
         Connection.StartListening();
       }

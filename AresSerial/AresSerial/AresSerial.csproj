@@ -13,6 +13,7 @@
       Ares serial library which assists with Serial device connection IO stuff.
     </Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
 
@@ -33,7 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.22.145433" />
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.29.125629" />
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>

@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace AresSerial
 {
-  public class AresHardwarePort : IAresSerialPort
+  internal class AresHardwarePort : IAresSerialPort
   {
     private ISubject<string> OutboundMessagesPublisher { get; set; } = new Subject<string>();
     private ISubject<string> InboundMessagesPublisher { get; set; } = new Subject<string>();
     private SerialPort SystemPort { get; set; }
 
-    public AresHardwarePort(int baudRate, Parity parity, int dataBits, StopBits stopBits)
+    public AresHardwarePort(SerialPortConnectionInfo connectionInfo)
     {
-      SystemPort = new SerialPort(null, baudRate, parity, dataBits, stopBits);
+      SystemPort = new SerialPort(null, connectionInfo.BaudRate, connectionInfo.Parity, connectionInfo.DataBits, connectionInfo.StopBits);
       OutboundMessages = OutboundMessagesPublisher.AsObservable();
       InboundMessages = InboundMessagesPublisher.AsObservable();
     }
@@ -83,7 +83,7 @@ namespace AresSerial
                var inboundMessage = SystemPort.ReadLine();
                InboundMessagesPublisher.OnNext(inboundMessage);
              }
-             catch (Exception e)
+             catch (TimeoutException)
              {
                cancellationToken.ThrowIfCancellationRequested();
                await Task.Delay(readTimeout);

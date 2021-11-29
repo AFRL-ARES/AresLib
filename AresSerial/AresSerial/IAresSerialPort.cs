@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace AresSerial
 {
-  public interface IAresSerialPort
+  internal interface IAresSerialPort
   {
     void Open(string portName);
     void Close(Exception error = null);

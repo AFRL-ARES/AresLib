@@ -13,6 +13,7 @@
       Ares core library, responsible for generation, routing, and execution of campaign-heirarchial components.
     </Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	  <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
@@ -34,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.22.95432" />
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.22.145433" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.24.150134" />
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.29.125629" />
     <PackageReference Include="DynamicData" Version="7.4.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.11" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="5.0.11" />

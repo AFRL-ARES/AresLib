@@ -12,6 +12,7 @@
       Ares device plugin base.
     </Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
@@ -24,7 +25,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.22.95432" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.11.24.150134" />
   </ItemGroup>
 
 </Project>
