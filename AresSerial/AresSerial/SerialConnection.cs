@@ -14,7 +14,7 @@ namespace AresSerial
     private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
     private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = new Subject<SerialCommandResponse>();
     private IAresSerialPort Port { get; }
-    private ReaderWriterLockSlim Lock { get; } = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
+    private readonly object Lock = new object();
     private IObservable<SerialCommandResponse> Responses { get; set; }
     private CancellationTokenSource ListenerCancellationTokenSource { get; set; }
 
@@ -111,37 +111,31 @@ namespace AresSerial
         Thread.CurrentThread.Name = $"{Port.Name} Transaction";
       }
 
-      var transactionSyncer = Port.InboundMessages.Take(1)
-                                                   .ToTask();
-      var outboundMessage = request.Serialize();
-
-      using (Lock)
+      lock (Lock)
       {
+        var transactionSyncer = Port.InboundMessages.Take(1)
+          .ToTask();
+        var outboundMessage = request.Serialize();
+
         Port.SendOutboundMessage(outboundMessage);
+
+
+        if (!request.ExpectsResponse)
+        {
+          return;
+        }
+
+        var latestPortResponse = transactionSyncer.Result;
+
+        if (request is SimSerialCommandRequest simRequest)
+        {
+          request = simRequest.ActualRequest;
+        }
+
+        var response = Deserialize(latestPortResponse, request);
+        ResponsePublisher.OnNext(response);
       }
-      if (!request.ExpectsResponse)
-      {
-        return;
-      }
-
-      var latestPortResponse = transactionSyncer.Result;
-
-      Task.Run
-        (
-         () =>
-         {
-           Thread.CurrentThread.Name = $"{Port.Name} Deserializer";
-           if (request is SimSerialCommandRequest simRequest)
-           {
-             request = simRequest.ActualRequest;
-           }
-
-           var response = Deserialize(latestPortResponse, request);
-           ResponsePublisher.OnNext(response);
-         }
-        );
     }
-
 
 
     public abstract SerialCommandRequest GenerateValidationRequest();
