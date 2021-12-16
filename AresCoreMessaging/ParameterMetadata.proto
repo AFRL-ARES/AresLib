@@ -5,8 +5,8 @@ package ares.core.messages;
 import "Limits.proto";
 
 message ParameterMetadata {
-	string Name = 1; // Name descriptor of the argument/parameter
-	string Unit = 2; // Unit descriptor, if applicable, of the argument/parameter
-	repeated Limits Constraints = 3; // Collection of limits for the argument/parameter formatted to be easily converted into planner requests.
-	int64 Index = 4; // Index of the collection in which executed this template
+	string name = 1; // Name descriptor of the argument/parameter
+	string unit = 2; // Unit descriptor, if applicable, of the argument/parameter
+	repeated Limits constraints = 3; // Collection of limits for the argument/parameter formatted to be easily converted into planner requests.
+	int64 index = 4; // Index of the collection in which executed this template
 }

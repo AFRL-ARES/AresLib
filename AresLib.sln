@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
-VisualStudioVersion = 16.0.31624.102
+VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresLib", "AresLib\AresLib.csproj", "{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}"
 EndProject
@@ -12,8 +12,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresSerial", "AresSerial\AresSerial\AresSerial.csproj", "{ED748563-40DE-47D7-860D-C40A4411521A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreMessaging", "AresCoreMessaging\AresCoreMessaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresLibRpcCoreServices", "AresLibGrpcServices\AresLibRpcCoreServices.csproj", "{0A9D2B7C-3F09-486B-A3BA-F899C44191DC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,10 +39,6 @@ Global
 		{067CD71C-FC38-47ED-936D-E67D010CB290}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{067CD71C-FC38-47ED-936D-E67D010CB290}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{067CD71C-FC38-47ED-936D-E67D010CB290}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0A9D2B7C-3F09-486B-A3BA-F899C44191DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0A9D2B7C-3F09-486B-A3BA-F899C44191DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0A9D2B7C-3F09-486B-A3BA-F899C44191DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0A9D2B7C-3F09-486B-A3BA-F899C44191DC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

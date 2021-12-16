@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package ares.core.messages.device;
+
+service AresDevices {
+	rpc ListAresDevices(ListAresDevicesRequest) returns (ListAresDevicesResponse);
+}
+
+message AresDevice {
+	string name = 1; // Name of the device
+}
+
+message ListAresDevicesRequest
+{
+}
+
+message ListAresDevicesResponse
+{
+	repeated AresDevice ares_devices = 1;
+}

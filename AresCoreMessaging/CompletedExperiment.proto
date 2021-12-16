@@ -5,7 +5,7 @@ package ares.core.messages;
 import "ExperimentTemplate.proto";
 
 message CompletedExperiment {
-	ExperimentTemplate Template = 1; // Template used to generate the executable experiment providing the results
-	bytes SerializedData = 2; // Serialized data representation of the experiment output
-	string Format = 3; // Text indicating the format of serialized data, hopefully useful for deserializing.
+	ExperimentTemplate template = 1; // Template used to generate the executable experiment providing the results
+	bytes serialized_data = 2; // Serialized data representation of the experiment output
+	string format = 3; // Text indicating the format of serialized data, hopefully useful for deserializing.
 }

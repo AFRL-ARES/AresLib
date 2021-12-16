@@ -5,7 +5,7 @@ package ares.core.messages;
 import "CompletedExperiment.proto";
 
 message Analysis {
-	CompletedExperiment CompletedExperiment = 1; // Completed experiment in which data was used to provide result
-	float Result = 2; // Result of the process performed on the completed experiment's output
-	string AnalyzerName = 3; // Name of the analyzer providing the process result
+	CompletedExperiment completed_experiment = 1; // Completed experiment in which data was used to provide result
+	float result = 2; // Result of the process performed on the completed experiment's output
+	string analyzer_name = 3; // Name of the analyzer providing the process result
 }

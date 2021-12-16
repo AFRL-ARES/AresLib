@@ -34,7 +34,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.11.29.125629" />
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.12.16.171138" />
     <PackageReference Include="System.IO.Ports" Version="5.0.1" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>

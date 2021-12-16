@@ -5,7 +5,7 @@ package ares.core.messages;
 import "StepTemplate.proto";
 
 message ExperimentTemplate {
-	repeated StepTemplate StepTemplates = 1; // Collection of step templates used to generate executable steps
-	string Name = 2; // Name of the experiment, most likely automatically generated relative to the campaign name
-	int64 Index = 3; // Index of the collection in which executed this template
+	repeated StepTemplate step_templates = 1; // Collection of step templates used to generate executable steps
+	string name = 2; // Name of the experiment, most likely automatically generated relative to the campaign name
+	int64 index = 3; // Index of the collection in which executed this template
 }

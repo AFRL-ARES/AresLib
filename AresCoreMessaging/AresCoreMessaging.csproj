@@ -43,7 +43,6 @@
     <None Remove="AresGrpcTest.proto" />
     <None Remove="AresGrpcTest.xaml" />
     <None Remove="Project.proto" />
-    <None Remove="Services\AresGrpcTest.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,10 +73,11 @@
     <Protobuf Include="Parameter.proto" GrpcServices="None" />
     <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />
     <Protobuf Include="Project.proto" GrpcServices="None" />
-    <Protobuf Include="Services\AresGrpcTest.proto" GrpcServices="Both">
-      <Generator></Generator>
-    </Protobuf>
     <Protobuf Include="StepTemplate.proto" GrpcServices="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Device\" />
   </ItemGroup>
 
   <!-- <Target Name="PreBuild" BeforeTargets="PreBuildEvent"> -->

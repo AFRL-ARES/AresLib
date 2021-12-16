@@ -6,7 +6,7 @@ import "Parameter.proto";
 import "CommandMetadata.proto";
 
 message CommandTemplate {
-	CommandMetadata Metadata = 1; // Non-volatile information about the command to be generated for execution
-	repeated Parameter Arguments = 2; // Collection of command parameters/arguments used for generating an executable (device qualified) command
-	int64 Index = 3; // Index of the collection in which executed this template
+	CommandMetadata metadata = 1; // Non-volatile information about the command to be generated for execution
+	repeated Parameter arguments = 2; // Collection of command parameters/arguments used for generating an executable (device qualified) command
+	int64 index = 3; // Index of the collection in which executed this template
 }
