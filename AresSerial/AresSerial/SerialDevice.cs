@@ -1,5 +1,6 @@
 ﻿using AresDevicePluginBase;
 using System;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
@@ -63,21 +64,8 @@ namespace AresSerial
         return false;
       }
 
-      var validationRequest = Connection.GenerateValidationRequest();
-
-      var responseWaiter = Connection.GetAnyResponse(CancellationToken.None);
-
-      await Task.Run(() => Connection.SendAndWaitForReceipt(validationRequest));
-      var response = await responseWaiter;
-      if (validationRequest is SimSerialCommandRequest simRequest)
-      {
-        validationRequest = simRequest.ActualRequest;
-      }
-
-      if (response.SourceRequest != validationRequest)
-      {
-        throw new Exception($"Received an unexpected response for {validationRequest.Serialize()}\nResponse for: {response.SourceRequest.Serialize()}\nResponse: {response.Message}");
-      }
+      if (!await Validate())
+        return false;
 
       listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
 
@@ -85,5 +73,7 @@ namespace AresSerial
     }
 
     public ISerialConnection Connection { get; private set; }
+
+    protected abstract Task<bool> Validate();
   }
 }

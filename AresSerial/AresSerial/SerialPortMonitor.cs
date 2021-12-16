@@ -4,6 +4,7 @@
   {
     public SerialPortMonitor()
     {
+      // TODO?
     }
   }
 }

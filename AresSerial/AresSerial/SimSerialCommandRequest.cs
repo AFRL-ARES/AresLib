@@ -4,13 +4,16 @@ using System.Text;
 
 namespace AresSerial
 {
-  public class SimSerialCommandRequest: SerialCommandRequest
+  public class SimSerialCommandRequest<T> : SerialCommandRequestWithResponse<T> where T : SerialCommandResponse
   {
-    public SimSerialCommandRequest(SerialCommandRequest actualRequest, string expectedResponse = null) : base(expectedResponse != null)
+    public SimSerialCommandRequest(SerialCommandRequestWithResponse<T> actualRequest, string expectedResponse = null)
     {
       ActualRequest = actualRequest;
       ExpectedResponse = expectedResponse;
     }
+
+    public override T DeserializeResponse(string response)
+      => ActualRequest.DeserializeResponse(response);
 
     public override string Serialize()
     {
@@ -58,7 +61,7 @@ namespace AresSerial
     public static string InputSimIdentifier { get; } = "SIM_IN ";
     public static string OutputSimIdentifier { get; } = "SIM_OUT ";
 
-    public SerialCommandRequest ActualRequest { get; }
+    public SerialCommandRequestWithResponse<T> ActualRequest { get; }
     public string ExpectedResponse { get; }
   }
 }

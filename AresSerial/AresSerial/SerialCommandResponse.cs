@@ -1,6 +1,7 @@
-﻿namespace AresSerial
+﻿using System;
+namespace AresSerial
 {
-  public class SerialCommandResponse
+  public abstract class SerialCommandResponse
   {
     public SerialCommandResponse(string message, SerialCommandRequest sourceRequest)
     {

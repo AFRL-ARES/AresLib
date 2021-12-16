@@ -86,10 +86,10 @@ namespace AresSerial
              catch (TimeoutException)
              {
                cancellationToken.ThrowIfCancellationRequested();
-               await Task.Delay(readTimeout);
+               await Task.Delay(readTimeout, cancellationToken);
              }
            }
-         }
+         }, cancellationToken
         );
     }
 

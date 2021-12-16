@@ -13,7 +13,8 @@
       Ares core library, responsible for generation, routing, and execution of campaign-heirarchial components.
     </Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-	  <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+      <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+      <UserSecretsId>f2b25ac1-2193-4e75-9cce-83aa6915b85a</UserSecretsId>
   </PropertyGroup>
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">

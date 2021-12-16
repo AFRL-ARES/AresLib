@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace AresSerial
@@ -10,14 +10,13 @@ namespace AresSerial
   internal class AresSimPort : IAresSerialPort
   {
     private ISubject<string> OutboundMessagePublisher { get; set; } = new Subject<string>();
-    private ISubject<string> InboundMessagePublisher { get; set; } // Mayyyybe don't need this if it isn't going to be exposed at the base level
-    private ISubject<string> ExpectedInboundMessages { get; set; } = new Subject<string>();
+    private ISubject<string> InboundMessagePublisher { get; set; } = new Subject<string>();
+    private Channel<string> SimulatedInboundMessages { get; set; } = Channel.CreateBounded<string>(1);
 
     public AresSimPort()
     {
       OutboundMessages = OutboundMessagePublisher.AsObservable();
-      InboundMessagePublisher = ExpectedInboundMessages;
-      InboundMessages = ExpectedInboundMessages.AsObservable();
+      InboundMessages = InboundMessagePublisher.AsObservable();
     }
 
     public string Name { get; set; }
@@ -34,7 +33,7 @@ namespace AresSerial
       {
         throw new Exception($"{Name} not open. Cannot send outbound message");
       }
-      var simIo = SimSerialCommandRequest.GetSimulatedIo(input);
+      var simIo = SimSerialCommandRequest<SerialCommandResponse>.GetSimulatedIo(input);
       OutboundMessagePublisher.OnNext(simIo[0]);
       if (simIo[1] == null)
       {
@@ -44,7 +43,7 @@ namespace AresSerial
 
       var fakeInput = simIo[1];
       var random = new Random();
-      Task.Delay(TimeSpan.FromMilliseconds(random.Next(100, 500))).ContinueWith(_ => ExpectedInboundMessages.OnNext(fakeInput));
+      Task.Delay(TimeSpan.FromMilliseconds(random.Next(100, 500))).ContinueWith(_ => SimulatedInboundMessages.Writer.TryWrite(fakeInput));
     }
 
     public void Open(string portName)
@@ -53,11 +52,11 @@ namespace AresSerial
       IsOpen = Name != null;
 
       OutboundMessagePublisher = new Subject<string>();
-      ExpectedInboundMessages = new Subject<string>();
-      InboundMessagePublisher = ExpectedInboundMessages;
+      InboundMessagePublisher = new Subject<string>();
+      SimulatedInboundMessages = Channel.CreateBounded<string>(1);
 
       OutboundMessages = OutboundMessagePublisher.AsObservable();
-      InboundMessages = ExpectedInboundMessages.AsObservable();
+      InboundMessages = InboundMessagePublisher.AsObservable();
     }
 
     public void Close(Exception error = null)
@@ -66,13 +65,13 @@ namespace AresSerial
       {
         OutboundMessagePublisher.OnCompleted();
         InboundMessagePublisher.OnCompleted();
-        ExpectedInboundMessages.OnCompleted();
+        SimulatedInboundMessages.Writer.Complete();
       }
       else
       {
         OutboundMessagePublisher.OnError(error);
         InboundMessagePublisher.OnError(error);
-        ExpectedInboundMessages.OnError(error);
+        SimulatedInboundMessages.Writer.TryWrite(error.Message); // possibly not needed?
       }
 
       Name = null;
@@ -86,8 +85,6 @@ namespace AresSerial
          async () =>
          {
            Thread.CurrentThread.Name ??= $"{Name} Inbound Message";
-           var reader = InboundMessages.Take(1)
-                                               .ToTask(cancellationToken);
            while (!cancellationToken.IsCancellationRequested)
            {
              if (!IsOpen)
@@ -96,13 +93,15 @@ namespace AresSerial
              }
              try
              {
+               var reader = SimulatedInboundMessages.Reader.WaitToReadAsync(cancellationToken).AsTask();
                // To keep it similar to actual hardware logic
-               var completedTask = await Task.WhenAny(reader, Task.Delay(1000));
+               var completedTask = await Task.WhenAny(reader, Task.Delay(1000, cancellationToken));
                if (completedTask != reader)
                {
                  throw new TimeoutException($"SimPort {nameof(ListenForEntryAsync)} timed out");
                }
-               InboundMessagePublisher.OnNext(reader.Result);
+               var result = await SimulatedInboundMessages.Reader.ReadAsync(cancellationToken);
+               InboundMessagePublisher.OnNext(result);
              }
              catch (Exception)
              {
