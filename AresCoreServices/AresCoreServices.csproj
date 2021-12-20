@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Authors>Infoscitex</Authors>
+    <Company>Infoscitex</Company>
+    <Description>Implementation of the service contracts defined in AresCoreMessaging.</Description>
+  </PropertyGroup>
+
+	<Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+		<Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+	</Target>
+  <ItemGroup>
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.12.16.182143" />
+    <PackageReference Include="AresLib.dll" Version="2021.12.16.171206" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.41.0" />
+  </ItemGroup>
+
+</Project>

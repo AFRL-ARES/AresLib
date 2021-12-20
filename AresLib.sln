@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresSerial", "AresSerial\Ar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreMessaging", "AresCoreMessaging\AresCoreMessaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresCoreServices", "AresCoreServices\AresCoreServices.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{067CD71C-FC38-47ED-936D-E67D010CB290}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{067CD71C-FC38-47ED-936D-E67D010CB290}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{067CD71C-FC38-47ED-936D-E67D010CB290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
