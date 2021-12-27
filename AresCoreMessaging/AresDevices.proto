@@ -4,6 +4,7 @@ package ares.core.messages.device;
 
 service AresDevices {
 	rpc ListAresDevices(ListAresDevicesRequest) returns (ListAresDevicesResponse);
+	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
 }
 
 message AresDevice {
@@ -17,4 +18,22 @@ message ListAresDevicesRequest
 message ListAresDevicesResponse
 {
 	repeated AresDevice ares_devices = 1;
+}
+
+message DeviceStatusRequest
+{
+	string device_name = 1;
+}
+
+message DeviceStatus
+{
+	DeviceState device_state = 1;
+	string message = 2;
+}
+
+enum DeviceState
+{
+	INACTIVE = 0;
+	ACTIVE = 1;
+	ERROR = 2;
 }

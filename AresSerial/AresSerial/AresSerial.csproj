@@ -16,7 +16,6 @@
 	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
 
-
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
     <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
   </Target>
@@ -26,29 +25,10 @@
     <DefineConstants>DEBUG;TRACE;SIM</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="CommandSentReceipt.xaml" />
-    <None Remove="SerialPortMonitor.xaml" />
-    <None Remove="SimSerialCommandRequest.xaml" />
-  </ItemGroup>
   
-  <ItemGroup>
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.12.16.171138" />
-    <PackageReference Include="System.IO.Ports" Version="5.0.1" />
+	<ItemGroup>
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.12.27.163030" />
+    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Page Include="CommandSentReceipt.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="SerialPortMonitor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="SimSerialCommandRequest.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-
 </Project>

@@ -41,24 +41,16 @@
 
   <ItemGroup>
     <None Remove="AresDevices.proto" />
-    <None Remove="AresGrpcTest.proto" />
-    <None Remove="AresGrpcTest.xaml" />
     <None Remove="Project.proto" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.Protobuf" Version="3.19.1" />
-    <PackageReference Include="Grpc" Version="2.41.1" />
-    <PackageReference Include="Grpc.Tools" Version="2.41.1">
+    <PackageReference Include="Grpc" Version="2.42.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.42.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Page Include="AresGrpcTest.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
   </ItemGroup>
 
   <ItemGroup>
@@ -81,10 +73,5 @@
   <ItemGroup>
     <Folder Include="Device\" />
   </ItemGroup>
-
-  <!-- <Target Name="PreBuild" BeforeTargets="PreBuildEvent"> -->
-  <!--   <Exec Command="$(SolutionDir)Proto\generate.bat" /> -->
-  <!-- </Target> -->
-
 
 </Project>

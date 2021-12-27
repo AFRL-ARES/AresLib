@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion> 
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -36,16 +36,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.12.16.170901" />
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.12.16.171138" />
-    <PackageReference Include="DynamicData" Version="7.4.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="5.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="5.0.11" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.11" />
-    <PackageReference Include="Npgsql" Version="5.0.10" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.10" />
-    <PackageReference Include="UnitsNet" Version="4.102.0" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2021.12.27.163010" />
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2021.12.27.163030" />
+    <PackageReference Include="DynamicData" Version="7.4.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="6.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Analyzers" Version="6.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.1" />
+    <PackageReference Include="UnitsNet" Version="4.110.0" />
   </ItemGroup>
 
 

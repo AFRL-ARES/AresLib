@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31729.503
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresLib", "AresLib\AresLib.csproj", "{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}"
 EndProject
@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresSerial", "AresSerial\Ar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreMessaging", "AresCoreMessaging\AresCoreMessaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresCoreServices", "AresCoreServices\AresCoreServices.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreServices", "AresCoreServices\AresCoreServices.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AresCoreDatabase", "AresCoreDatabase\AresCoreDatabase.csproj", "{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{371137E9-3D96-402C-AFFD-30FBE4736EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
