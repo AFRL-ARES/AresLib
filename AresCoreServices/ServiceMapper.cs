@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
-namespace AresCoreServices
+namespace AresCoreServices;
+
+public static class ServiceMapper
 {
-  public static class ServiceMapper
+  public static void MapCoreAresServices(this IEndpointRouteBuilder routeBuilder)
   {
-    public static void MapCoreAresServices(this IEndpointRouteBuilder routeBuilder)
-    {
-      routeBuilder.MapGrpcService<DevicesService>();
-    }
+    routeBuilder.MapGrpcService<DevicesService>();
+    routeBuilder.MapGrpcService<ConnectionInfoService>();
   }
 }

@@ -1,0 +1,15 @@
+﻿syntax = "proto3";
+
+package ares.core.messages;
+
+service RpcConnectionInfo {
+	rpc GetConnectionInfo(ConnectionInfoRequest) returns (ConnectionInfoResponse);
+}
+
+message ConnectionInfoResponse {
+	string service_name = 1; // name of the service
+	string version = 2; // version of the service
+}
+
+message ConnectionInfoRequest {
+}

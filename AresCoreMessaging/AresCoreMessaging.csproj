@@ -42,6 +42,7 @@
   <ItemGroup>
     <None Remove="AresDevices.proto" />
     <None Remove="Project.proto" />
+    <None Remove="RpcConnectionInfo.proto" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,6 +68,7 @@
     <Protobuf Include="Parameter.proto" GrpcServices="None" />
     <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />
     <Protobuf Include="Project.proto" GrpcServices="None" />
+    <Protobuf Include="RpcConnectionInfo.proto" />
     <Protobuf Include="StepTemplate.proto" GrpcServices="None" />
   </ItemGroup>
 
