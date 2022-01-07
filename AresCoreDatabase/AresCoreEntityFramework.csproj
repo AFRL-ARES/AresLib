@@ -11,7 +11,8 @@
 	</Target>
 
 	<ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2021.12.27.163010" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2022.1.6.153104" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="6.0.2" />
   </ItemGroup>

@@ -10,8 +10,5 @@ internal class ParameterEntityConfiguration : AresEntityTypeBaseConfiguration<Pa
     base.Configure(builder);
     builder.Navigation(parameter => parameter.Metadata)
       .AutoInclude();
-
-    builder.HasOne<ParameterMetadata>()
-      .WithOne();
   }
 }

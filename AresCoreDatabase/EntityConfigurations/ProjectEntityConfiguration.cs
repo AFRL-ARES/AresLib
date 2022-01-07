@@ -14,7 +14,7 @@ internal class ProjectEntityConfiguration : AresEntityTypeBaseConfiguration<Proj
     builder.HasMany(entity => entity.CompletedExperiments)
       .WithOne();
 
-    // TODO: figure out if deleting a project deleted campaign templates and stuff
+    // TODO: figure out if deleting a project deletes campaign templates and stuff
     builder.Navigation(entity => entity.CampaignTemplates)
       .AutoInclude();
 

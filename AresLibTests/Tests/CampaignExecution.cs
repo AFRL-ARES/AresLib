@@ -5,6 +5,7 @@ using Ares.Core.Messages;
 using AresCoreDatabase;
 using AresLibTests.DummyModels;
 using Google.Protobuf;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AresLibTests.Tests;
@@ -39,7 +40,7 @@ public class CampaignExecution
 
 
     // Database stuff for learning purposes
-    var dbContext = new CoreDatabaseContext();
+    var dbContext = new CoreDatabaseContext<AresTestUser>(new DbContextOptions<CoreDatabaseContext<AresTestUser>>());
     var deleted = dbContext.Database.EnsureDeleted();
     if (deleted)
       Console.WriteLine("Deleted database");
@@ -54,7 +55,7 @@ public class CampaignExecution
     dbContext.Add(project);
     dbContext.SaveChanges();
 
-    var dbContext2 = new CoreDatabaseContext();
+    var dbContext2 = new CoreDatabaseContext<AresTestUser>(new DbContextOptions<CoreDatabaseContext<AresTestUser>>());
 
     var project2 = dbContext2.Projects.ToArray().First();
 
@@ -64,7 +65,7 @@ public class CampaignExecution
     dbContext.SaveChanges();
 
 
-    var freshDbConnection = new CoreDatabaseContext();
+    var freshDbConnection = new CoreDatabaseContext<AresTestUser>(new DbContextOptions<CoreDatabaseContext<AresTestUser>>());
     var dbCampaignTemplate = freshDbConnection
       .CampaignTemplates
       .ToArray()

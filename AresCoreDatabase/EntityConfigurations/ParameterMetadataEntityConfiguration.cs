@@ -16,10 +16,10 @@ internal class ParameterMetadataEntityConfiguration : AresEntityTypeBaseConfigur
     builder.HasOne<Parameter>()
       .WithOne(parameter => parameter.Metadata)
       .HasForeignKey<ParameterMetadata>("ParameterId")
-      .OnDelete(DeleteBehavior.Cascade);
+      .OnDelete(DeleteBehavior.NoAction);
+    // TODO figure out how to cleanup metadata, see CommandMetadataEntityConfiguration for details
 
-    // TODO figure out how to cleanup metadata, see CampaignMetadataEntityConfiguration for details
-    builder.Navigation(parameterMetada => parameterMetada.Constraints)
+    builder.Navigation(parameterMetadata => parameterMetadata.Constraints)
       .AutoInclude();
   }
 }

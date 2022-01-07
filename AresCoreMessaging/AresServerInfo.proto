@@ -1,0 +1,26 @@
+﻿syntax = "proto3";
+
+package ares.core.messages;
+
+import "google/protobuf/empty.proto";
+
+service AresServerInfo {
+	rpc GetServerInfo(google.protobuf.Empty) returns (ServerInfoResponse);
+	rpc GetServerStatusStream(google.protobuf.Empty) returns (stream ServerStatusResponse);
+}
+
+message ServerInfoResponse {
+	string server_name = 1; // name of the particular ares server
+	string version = 2; // version of the server
+}
+
+message ServerStatusResponse {
+	ServerStatus server_status = 1; // the current status of the ARES server
+	string status_message = 2; // a message may be sent along the status to give reasoning for the status
+}
+
+enum ServerStatus {
+	IDLE = 0;
+	BUSY = 1;
+	ERROR = 2;
+}

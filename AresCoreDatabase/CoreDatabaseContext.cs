@@ -1,31 +1,23 @@
 ﻿using System.Reflection;
 using Ares.Core.Messages;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace AresCoreDatabase;
 
-public class CoreDatabaseContext : DbContext
+public class CoreDatabaseContext<TUser> : IdentityDbContext<TUser> where TUser : IdentityUser
 {
-
-  public DbSet<CampaignTemplate> CampaignTemplates { get; set; }
-  public DbSet<Project> Projects { get; set; }
-
-  protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+  public CoreDatabaseContext(DbContextOptions options) : base(options)
   {
-    var npgSqlConnectionStringBuilder = new NpgsqlConnectionStringBuilder
-    {
-      Username = "postgres",
-      Password = "a",
-      Host = "localhost",
-      Database = "TestingDerpDeleteMePlzAndQuitClunkingUpPostgres"
-    };
-
-    optionsBuilder.UseNpgsql(npgSqlConnectionStringBuilder.ConnectionString);
   }
+
+  public DbSet<CampaignTemplate>? CampaignTemplates { get; set; }
+  public DbSet<Project>? Projects { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
-    modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetAssembly(typeof(CoreDatabaseContext)));
+    modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetAssembly(typeof(CoreDatabaseContext<TUser>)));
+    base.OnModelCreating(modelBuilder);
   }
 }
