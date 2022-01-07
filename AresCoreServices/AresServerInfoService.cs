@@ -11,6 +11,7 @@ namespace AresCoreServices;
 
 public class AresServerInfoService : AresServerInfo.AresServerInfoBase
 {
+  [AllowAnonymous]
   public override Task<ServerInfoResponse> GetServerInfo(Empty request, ServerCallContext context)
   {
     var serverInfo = new ServerInfoResponse
@@ -22,7 +23,7 @@ public class AresServerInfoService : AresServerInfo.AresServerInfoBase
     return Task.FromResult(serverInfo);
   }
 
-  [Authorize]
+  [AuthorizeRoles(AresUserType.AresUser)]
   public override Task GetServerStatusStream(Empty request, IServerStreamWriter<ServerStatusResponse> responseStream, ServerCallContext context)
   {
     var observable = ServerStatusHelper.ServerStatusSubject.AsObservable();

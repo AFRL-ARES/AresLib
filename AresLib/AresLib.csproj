@@ -36,8 +36,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AresCoreMessages.dll" Version="2022.1.6.153104" />
-    <PackageReference Include="AresDevicePluginBase.dll" Version="2022.1.6.153120" />
+    <PackageReference Include="AresCoreMessages.dll" Version="2022.1.7.171145" />
+    <PackageReference Include="AresDevicePluginBase.dll" Version="2022.1.7.171206" />
     <PackageReference Include="DynamicData" Version="7.4.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="6.0.1" />
