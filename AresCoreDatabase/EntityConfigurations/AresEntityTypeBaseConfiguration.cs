@@ -15,12 +15,12 @@ internal abstract class AresEntityTypeBaseConfiguration<TAresCoreEntity> : IEnti
     builder
       .Property<DateTime>("CreationTime")
       .ValueGeneratedOnAdd()
-      .HasDefaultValue(DateTime.Now);
+      .HasDefaultValue(DateTime.UtcNow);
 
     builder
       .Property<DateTime>("LastModified")
       .ValueGeneratedOnUpdate()
-      .HasDefaultValue(DateTime.Now);
+      .HasDefaultValue(DateTime.UtcNow);
 
     builder.HasKey("UniqueId");
   }
