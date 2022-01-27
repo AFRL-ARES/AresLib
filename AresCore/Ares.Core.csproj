@@ -14,8 +14,8 @@
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="Ares.Device.dll" Version="2022.1.27.131918" />
-	  <PackageReference Include="Ares.Messaging.dll" Version="2022.1.27.131853" />
+	  <PackageReference Include="Ares.Device.dll" Version="2022.1.27.155603" />
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.1.27.155501" />
 	  <PackageReference Include="DynamicData" Version="7.4.9" />
 	</ItemGroup>
 

@@ -4,11 +4,14 @@ package ares.messaging.device;
 
 import "google/protobuf/empty.proto";
 import "CommandMetadata.proto";
+import "CommandTemplate.proto";
+import "CommandResult.proto";
 
 service AresDevices {
 	rpc ListAresDevices(google.protobuf.Empty) returns (ListAresDevicesResponse);
 	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
 	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
+	rpc ExecuteCommand(CommandTemplate) returns (CommandResult);
 }
 
 message AresDeviceInfo {

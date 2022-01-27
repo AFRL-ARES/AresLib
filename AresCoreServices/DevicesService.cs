@@ -4,6 +4,7 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Ares.Device;
+using Ares.Messaging;
 using Ares.Messaging.Device;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -52,6 +53,19 @@ public class DevicesService : AresDevices.AresDevicesBase
     response.Metadatas.AddRange(commands);
 
     return Task.FromResult(response);
+  }
+
+  public override async Task<CommandResult> ExecuteCommand(CommandTemplate request, ServerCallContext context)
+  {
+    var test = Any.Pack(new Int32Value { Value = 12 });
+    var interpreter = _laboratoryManager.Lab.DeviceInterpreters
+      .First(commandInterpreter => commandInterpreter.Device.Name == request.Metadata.DeviceName);
+
+    var aaaa = interpreter.TemplateToDeviceCommand(request);
+    aaaa.Start();
+    await aaaa;
+
+    return new CommandResult { Success = true, Result = test };
   }
 
   private IAresDevice GetAresDevice(string name)

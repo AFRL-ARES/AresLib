@@ -44,6 +44,7 @@
     <None Remove="AresDevices.proto" />
     <None Remove="AresServerInfo.proto" />
     <None Remove="AresUserType.proto" />
+    <None Remove="CommandResult.proto" />
     <None Remove="Project.proto" />
   </ItemGroup>
 
@@ -57,6 +58,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Protobuf Include="CommandResult.proto" GrpcServices="None">
+      <Generator></Generator>
+    </Protobuf>
     <Protobuf Include="AresCampaigns.proto" />
     <Protobuf Include="AresUserType.proto" GrpcServices="None">
       <Generator></Generator>
