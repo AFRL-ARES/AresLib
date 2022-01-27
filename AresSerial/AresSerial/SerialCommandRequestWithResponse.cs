@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace Ares.Device.Serial;
 
-namespace AresSerial
+public abstract class SerialCommandRequestWithResponse<T> : SerialCommandRequest where T : SerialCommandResponse
 {
-  public abstract class SerialCommandRequestWithResponse<T> : SerialCommandRequest where T : SerialCommandResponse
-  {
-    public abstract T DeserializeResponse(string response);
-  }
+  public abstract T DeserializeResponse(string response);
 }

@@ -1,23 +1,31 @@
 syntax = "proto3";
 
-package ares.core.messages.device;
+package ares.messaging.device;
+
+import "google/protobuf/empty.proto";
+import "CommandMetadata.proto";
 
 service AresDevices {
-	rpc ListAresDevices(ListAresDevicesRequest) returns (ListAresDevicesResponse);
+	rpc ListAresDevices(google.protobuf.Empty) returns (ListAresDevicesResponse);
 	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
+	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
 }
 
-message AresDevice {
+message AresDeviceInfo {
 	string name = 1; // Name of the device
-}
-
-message ListAresDevicesRequest
-{
 }
 
 message ListAresDevicesResponse
 {
-	repeated AresDevice ares_devices = 1;
+	repeated AresDeviceInfo ares_devices = 1;
+}
+
+message CommandMetadatasRequest {
+	string device_name = 1;
+}
+
+message CommandMetadatasResponse {
+	repeated CommandMetadata metadatas = 1; 
 }
 
 message DeviceStatusRequest

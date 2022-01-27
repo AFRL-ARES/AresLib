@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
-namespace AresCoreServices;
+namespace Ares.Core.Grpc;
 
 public static class ServiceMapper
 {

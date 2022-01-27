@@ -1,10 +1,10 @@
 ﻿using System.Reflection;
-using Ares.Core.Messages;
+using Ares.Messaging;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace AresCoreDatabase;
+namespace Ares.EFCore;
 
 public class CoreDatabaseContext<TUser> : IdentityDbContext<TUser> where TUser : IdentityUser
 {
@@ -17,7 +17,11 @@ public class CoreDatabaseContext<TUser> : IdentityDbContext<TUser> where TUser :
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
-    modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetAssembly(typeof(CoreDatabaseContext<TUser>)));
+    var assembly = Assembly.GetAssembly(typeof(CoreDatabaseContext<TUser>));
+    if (assembly is null)
+      return;
+
+    modelBuilder.ApplyConfigurationsFromAssembly(assembly);
     base.OnModelCreating(modelBuilder);
   }
 }

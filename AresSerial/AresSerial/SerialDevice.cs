@@ -2,15 +2,17 @@
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
-using Ares.Core.Messages.Device;
-namespace AresSerial;
+using Ares.Messaging.Device;
 
-public abstract class SerialDevice : AresDevicePluginBase.AresDevice
+namespace Ares.Device.Serial;
+
+public abstract class SerialDevice : AresDevice
 {
   protected SerialDevice(string name, ISerialConnection connection) : base(name)
   {
     Connection = connection;
   }
+
   private string TargetPortName { get; set; }
 
   public ISerialConnection Connection { get; }
@@ -27,6 +29,7 @@ public abstract class SerialDevice : AresDevicePluginBase.AresDevice
       StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message });
       throw;
     }
+
     StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Active });
   }
 
@@ -43,6 +46,7 @@ public abstract class SerialDevice : AresDevicePluginBase.AresDevice
     if (await Connection.ConnectionStatusUpdates.FirstAsync() == ConnectionStatus.Connected
         && await Connection.ListenerStatusUpdates.FirstAsync() == ListenerStatus.Listening)
       return true;
+
     if (await Connection.ConnectionStatusUpdates.FirstAsync() != ConnectionStatus.Connected)
     {
       var connectionStatusListener = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
@@ -56,6 +60,7 @@ public abstract class SerialDevice : AresDevicePluginBase.AresDevice
           DeviceState = DeviceState.Error,
           Message = $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}"
         });
+
         throw new Exception
         (
           $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}"
@@ -65,6 +70,7 @@ public abstract class SerialDevice : AresDevicePluginBase.AresDevice
 
     if (await Connection.ListenerStatusUpdates.FirstAsync() != ListenerStatus.Listening)
       Connection.StartListening();
+
     var listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
     if (listenerStatus != ListenerStatus.Listening)
       return false;

@@ -1,10 +1,9 @@
-﻿namespace AresSerial
+﻿namespace Ares.Device.Serial;
+
+public enum ListenerStatus
 {
-  public enum ListenerStatus
-  {
-    Idle,
-    Listening,
-    Paused,
-    Busy,
-  }
+  Idle,
+  Listening,
+  Paused,
+  Busy
 }

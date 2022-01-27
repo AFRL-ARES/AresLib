@@ -1,36 +1,37 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AresDevicePluginBase;
+using AresDeviceBase;
 
-namespace AresLibTests.DummyModels
+namespace AresLibTests.DummyModels;
+
+public class TestCoreDevice : AresDevice, ITestCoreDevice
 {
-  public class TestCoreDevice : AresDevice, ITestCoreDevice
+  public TestCoreDevice(int adress) : base($"TestCoreDevice_{adress}")
   {
-    public TestCoreDevice(int adress) : base($"TestCoreDevice_{adress}")
-    {
-      Address = adress;
-    }
-    public async Task Wait(TimeSpan duration)
-    {
-      await Task.Delay(duration);
-      Console.WriteLine($"Executed Wait");
-    }
+    Address = adress;
+  }
 
-    public void Derp()
-    {
-      Console.WriteLine("Executed Derp");
-    }
+  public async Task Wait(TimeSpan duration)
+  {
+    await Task.Delay(duration);
+    Console.WriteLine("Executed Wait");
+  }
 
-    public int Test()
-    {
-      Console.WriteLine("Executed Test (command)");
-      return 7;
-    }
+  public void Derp()
+  {
+    Console.WriteLine("Executed Derp");
+  }
 
-    public int Address { get; }
-    public override Task<bool> Activate()
-    {
-      return Task.FromResult(true);
-    }
+  public int Test()
+  {
+    Console.WriteLine("Executed Test (command)");
+    return 7;
+  }
+
+  public int Address { get; }
+
+  public override Task<bool> Activate()
+  {
+    return Task.FromResult(true);
   }
 }

@@ -1,6 +1,6 @@
 ﻿syntax = "proto3";
 
-package ares.core.messages;
+package ares.messaging;
 
 import "google/protobuf/empty.proto";
 

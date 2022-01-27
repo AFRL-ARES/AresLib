@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AresDevicePluginBase;
+using AresDeviceBase;
 
-namespace AresLibTests.DummyModels
+namespace AresLibTests.DummyModels;
+
+public interface ITestCoreDevice : IAresDevice
 {
-  public interface ITestCoreDevice : IAresDevice
-  {
-    Task Wait(TimeSpan duration);
-    void Derp();
-    int Test();
 
-    int Address { get; }
-  }
+  int Address { get; }
+  Task Wait(TimeSpan duration);
+  void Derp();
+  int Test();
 }

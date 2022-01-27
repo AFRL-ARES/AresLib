@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion> 
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Infoscitex</Authors>
+    <Company>Infoscitex</Company>
+    <Product>Ares.AutomationBuilding</Product>
+    <PackageId>Ares.AutomationBuilding.dll</PackageId>
+    <Description>
+      Ares core library, responsible for generation of campaign-heirarchial components.
+    </Description>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+      <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+      <UserSecretsId>f2b25ac1-2193-4e75-9cce-83aa6915b85a</UserSecretsId>
+  </PropertyGroup>
+
+  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+    <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+  </Target>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Automation\**" />
+    <Compile Remove="Proto\**" />
+    <EmbeddedResource Remove="Automation\**" />
+    <EmbeddedResource Remove="Proto\**" />
+    <None Remove="Automation\**" />
+    <None Remove="Proto\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.1.27.131853" />
+	  <PackageReference Include="DynamicData" Version="7.4.9" />
+	  <PackageReference Include="UnitsNet" Version="4.115.0" />
+  </ItemGroup>
+
+
+
+
+
+</Project>

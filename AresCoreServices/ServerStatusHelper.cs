@@ -1,7 +1,7 @@
 ﻿using System.Reactive.Subjects;
-using Ares.Core.Messages;
+using Ares.Messaging;
 
-namespace AresCoreServices;
+namespace Ares.Core.Grpc;
 
 /// <summary>
 /// Helper class that a server can use to publish a status update to any client that is currently subscribed.

@@ -1,13 +1,13 @@
 ﻿using System.Threading.Tasks;
-using Ares.Core.Messages;
+using Ares.Messaging;
 
-namespace AresDevicePluginBase
+namespace Ares.Device
 {
   public interface IDeviceCommandInterpreter<out TQualifiedDevice>
     where TQualifiedDevice : IAresDevice
   {
+    TQualifiedDevice Device { get; }
     Task TemplateToDeviceCommand(CommandTemplate commandTemplate);
     CommandMetadata[] CommandsToIndexedMetadatas();
-    TQualifiedDevice Device { get; }
   }
 }

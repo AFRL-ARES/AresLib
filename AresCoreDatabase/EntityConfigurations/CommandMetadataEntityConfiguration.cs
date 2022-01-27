@@ -1,8 +1,8 @@
-﻿using Ares.Core.Messages;
+﻿using Ares.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AresCoreDatabase.EntityConfigurations;
+namespace Ares.EFCore.EntityConfigurations;
 
 internal class CommandMetadataEntityConfiguration : AresEntityTypeBaseConfiguration<CommandMetadata>
 {

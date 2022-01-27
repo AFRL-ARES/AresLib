@@ -2,8 +2,7 @@
 using System.Linq;
 using System.Text;
 using Ares.Core.Messages;
-using AresCoreDatabase;
-using AresLibTests.DummyModels;
+using AresCoreEntityFramework;
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,8 +17,8 @@ public class CampaignExecution
   public void NoExceptions()
   {
     Console.WriteLine("Yay, a test");
-    var testLabManager = new TestLaboratoryManager();
-    var testCampaignTemplate = DemoCampaignProvider.GetTemplate(testLabManager);
+    // var testLabManager = new TestLaboratoryManager();
+    // var testCampaignTemplate = DemoCampaignProvider.GetTemplate(testLabManager);
 
     var project = new Project
     {
@@ -27,16 +26,16 @@ public class CampaignExecution
       Description = "Very important, no shenanigans"
     };
 
-    project.CampaignTemplates.Add(testCampaignTemplate);
+    // project.CampaignTemplates.Add(testCampaignTemplate);
     var result = ByteString.CopyFrom("Somerandomresult", Encoding.ASCII);
-    var completed = new CompletedExperiment
-    {
-      Format = "someformat",
-      SerializedData = result,
-      Template = testCampaignTemplate.ExperimentTemplates.First()
-    };
-
-    project.CompletedExperiments.Add(completed);
+    // var completed = new CompletedExperiment
+    // {
+    //   Format = "someformat",
+    //   SerializedData = result,
+    //   Template = testCampaignTemplate.ExperimentTemplates.First()
+    // };
+    //
+    // project.CompletedExperiments.Add(completed);
 
 
     // Database stuff for learning purposes
@@ -49,7 +48,7 @@ public class CampaignExecution
     if (exists)
       Console.WriteLine("Database created");
 
-    dbContext.Add(testCampaignTemplate);
+    // dbContext.Add(testCampaignTemplate);
     dbContext.SaveChanges();
 
     dbContext.Add(project);
@@ -97,7 +96,7 @@ public class CampaignExecution
     //      Console.WriteLine(src);
     //      Console.WriteLine(cmpr);
     //      Assert.AreEqual(testCampaignTemplate, dbCampaignTemplate);
-    testLabManager.RunCampaign(dbCampaignTemplate);
+    // testLabManager.RunCampaign(dbCampaignTemplate);
     Console.WriteLine("Did test things");
   }
 }

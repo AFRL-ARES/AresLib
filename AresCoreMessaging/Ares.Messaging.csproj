@@ -1,0 +1,85 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <Authors>Infoscitex</Authors>
+    <Company>Infoscitex</Company>
+    <Product>Ares.Messaging</Product>
+    <PackageId>Ares.Messaging.dll</PackageId>
+    <Description>Proto messages and gRPC services compiled into CS.
+    </Description>
+  </PropertyGroup>
+	
+	<Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+    <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+  </Target>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SolutionDir)Proto\Cs\Generated\Source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\Analysis.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\CampaignTemplate.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\CommandMetadata.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\CommandTemplate.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\CompletedExperiment.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\ExperimentTemplate.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\Greet.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\Limits.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\Parameter.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\ParameterMetadata.cs" />
+    <Compile Remove="D:\ARES\AresLib\Proto\Cs\Generated\Source\StepTemplate.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="AresCampaigns.proto" />
+    <None Remove="AresDevices.proto" />
+    <None Remove="AresServerInfo.proto" />
+    <None Remove="AresUserType.proto" />
+    <None Remove="Project.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.19.3" />
+    <PackageReference Include="Grpc" Version="2.43.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.43.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="AresCampaigns.proto" />
+    <Protobuf Include="AresUserType.proto" GrpcServices="None">
+      <Generator></Generator>
+    </Protobuf>
+    <Protobuf Include="Analysis.proto" GrpcServices="None">
+      <Generator></Generator>
+    </Protobuf>
+    <Protobuf Include="AresDevices.proto" />
+    <Protobuf Include="CampaignTemplate.proto" GrpcServices="None" />
+    <Protobuf Include="CommandMetadata.proto" GrpcServices="None" />
+    <Protobuf Include="CommandTemplate.proto" GrpcServices="None" />
+    <Protobuf Include="CompletedExperiment.proto" GrpcServices="None" />
+    <Protobuf Include="ExperimentTemplate.proto" GrpcServices="None" />
+    <Protobuf Include="Limits.proto" GrpcServices="None" />
+    <Protobuf Include="Parameter.proto" GrpcServices="None" />
+    <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />
+    <Protobuf Include="Project.proto" GrpcServices="None" />
+    <Protobuf Include="AresServerInfo.proto" />
+    <Protobuf Include="StepTemplate.proto" GrpcServices="None" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Device\" />
+  </ItemGroup>
+
+</Project>

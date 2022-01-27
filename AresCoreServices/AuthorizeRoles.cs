@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using Ares.Core.Messages;
+using Ares.Messaging;
 using Microsoft.AspNetCore.Authorization;
 
-namespace AresCoreServices;
+namespace Ares.Core.Grpc;
 
 public class AuthorizeRoles : AuthorizeAttribute
 {

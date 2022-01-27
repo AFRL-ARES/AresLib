@@ -1,11 +1,8 @@
-﻿using AresDevicePluginBase;
+﻿namespace Ares.Device.Serial;
 
-namespace AresSerial
+public interface ISerialDevice : IAresDevice
 {
-  public interface ISerialDevice : IAresDevice
-  {
-    ISerialConnection Connection { get; }
-    void Connect(string portName);
-    void Disconnect();
-  }
+  ISerialConnection Connection { get; }
+  void Connect(string portName);
+  void Disconnect();
 }

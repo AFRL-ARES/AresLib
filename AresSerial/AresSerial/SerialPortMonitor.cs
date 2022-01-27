@@ -1,10 +1,5 @@
-﻿namespace AresSerial
+﻿namespace Ares.Device.Serial;
+
+public class SerialPortMonitor
 {
-  public class SerialPortMonitor
-  {
-    public SerialPortMonitor()
-    {
-      // TODO?
-    }
-  }
 }

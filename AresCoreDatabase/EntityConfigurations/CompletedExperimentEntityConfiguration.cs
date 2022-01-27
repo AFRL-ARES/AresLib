@@ -1,8 +1,8 @@
-﻿using Ares.Core.Messages;
+﻿using Ares.Messaging;
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace AresCoreDatabase.EntityConfigurations;
+namespace Ares.EFCore.EntityConfigurations;
 
 internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfiguration<CompletedExperiment>
 {

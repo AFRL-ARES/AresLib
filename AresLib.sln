@@ -3,19 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresLib", "AresLib\AresLib.csproj", "{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.AutomationBuilding", "AresLib\Ares.AutomationBuilding.csproj", "{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresLibTests", "AresLibTests\AresLibTests.csproj", "{5A62A7D6-97B3-4791-8392-166D14541395}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device", "AresDevicePluginBase\AresDevicePluginBase\Ares.Device.csproj", "{EEA53524-EF87-43CE-A509-52CE8990DA43}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresDevicePluginBase", "AresDevicePluginBase\AresDevicePluginBase\AresDevicePluginBase.csproj", "{EEA53524-EF87-43CE-A509-52CE8990DA43}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device.Serial", "AresSerial\AresSerial\Ares.Device.Serial.csproj", "{ED748563-40DE-47D7-860D-C40A4411521A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresSerial", "AresSerial\AresSerial\AresSerial.csproj", "{ED748563-40DE-47D7-860D-C40A4411521A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Messaging", "AresCoreMessaging\Ares.Messaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreMessaging", "AresCoreMessaging\AresCoreMessaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core.Grpc", "AresCoreServices\Ares.Core.Grpc.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreServices", "AresCoreServices\AresCoreServices.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.EFCore", "AresCoreDatabase\Ares.EFCore.csproj", "{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresCoreEntityFramework", "AresCoreDatabase\AresCoreEntityFramework.csproj", "{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core", "AresCore\Ares.Core.csproj", "{72B2F0BC-7A26-4BFA-9C21-81486504C04E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,10 +27,6 @@ Global
 		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A62A7D6-97B3-4791-8392-166D14541395}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A62A7D6-97B3-4791-8392-166D14541395}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A62A7D6-97B3-4791-8392-166D14541395}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A62A7D6-97B3-4791-8392-166D14541395}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EEA53524-EF87-43CE-A509-52CE8990DA43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EEA53524-EF87-43CE-A509-52CE8990DA43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEA53524-EF87-43CE-A509-52CE8990DA43}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -51,6 +47,10 @@ Global
 		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72B2F0BC-7A26-4BFA-9C21-81486504C04E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72B2F0BC-7A26-4BFA-9C21-81486504C04E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72B2F0BC-7A26-4BFA-9C21-81486504C04E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72B2F0BC-7A26-4BFA-9C21-81486504C04E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

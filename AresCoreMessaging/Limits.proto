@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package ares.core.messages;
+package ares.messaging;
 
 message Limits {
 	float minimum = 1; // Lower bound

@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AresCoreDatabase\AresCoreEntityFramework.csproj" />
-    <ProjectReference Include="..\AresLib\AresLib.csproj" />
+    <ProjectReference Include="..\AresLib\AresAutomationBuilding.csproj" />
   </ItemGroup>
 
 </Project>

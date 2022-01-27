@@ -3,26 +3,28 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
-using Ares.Core.Messages.Device;
-using AresDevicePluginBase;
-using AresLib;
+using Ares.Device;
+using Ares.Messaging.Device;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-namespace AresCoreServices;
+
+namespace Ares.Core.Grpc;
 
 public class DevicesService : AresDevices.AresDevicesBase
 {
   private readonly ILaboratoryManager _laboratoryManager;
+
   public DevicesService(ILaboratoryManager laboratoryManager)
   {
     _laboratoryManager = laboratoryManager;
   }
 
-  public override Task<ListAresDevicesResponse> ListAresDevices(ListAresDevicesRequest _, ServerCallContext context)
+  public override Task<ListAresDevicesResponse> ListAresDevices(Empty _, ServerCallContext context)
   {
     var aresDeviceMessages = _laboratoryManager.Lab.DeviceInterpreters
       .Select(interpreter => interpreter.Device)
       .Select(device => device.Name)
-      .Select(s => new Ares.Core.Messages.Device.AresDevice { Name = s });
+      .Select(s => new AresDeviceInfo { Name = s });
 
     var response = new ListAresDevicesResponse
     {
@@ -37,6 +39,19 @@ public class DevicesService : AresDevices.AresDevicesBase
     var aresDevice = GetAresDevice(request.DeviceName);
 
     return aresDevice.Status.FirstAsync().ToTask();
+  }
+
+  public override Task<CommandMetadatasResponse> GetCommandMetadatas(CommandMetadatasRequest request, ServerCallContext context)
+  {
+    var interpreter = _laboratoryManager.Lab.DeviceInterpreters
+      .First(commandInterpreter => commandInterpreter.Device.Name == request.DeviceName);
+
+    var commands = interpreter.CommandsToIndexedMetadatas();
+
+    var response = new CommandMetadatasResponse();
+    response.Metadatas.AddRange(commands);
+
+    return Task.FromResult(response);
   }
 
   private IAresDevice GetAresDevice(string name)

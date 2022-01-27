@@ -2,8 +2,9 @@
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
-using Ares.Core.Messages.Device;
-namespace AresDevicePluginBase
+using Ares.Messaging.Device;
+
+namespace Ares.Device
 {
   public abstract class AresDevice : IAresDevice
   {
@@ -15,6 +16,7 @@ namespace AresDevicePluginBase
       Name = name;
       Status = StatusPublisher.AsObservable();
     }
+
     public string Name { get; }
     public IObservable<DeviceStatus> Status { get; }
     public abstract Task<bool> Activate();

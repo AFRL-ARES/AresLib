@@ -1,6 +1,6 @@
-﻿using Ares.Core.Messages;
+﻿using Ares.Messaging;
 
-namespace AresCoreDatabase.EntityConfigurations;
+namespace Ares.EFCore.EntityConfigurations;
 
 internal class LimitsEntityConfiguration : AresEntityTypeBaseConfiguration<Limits>
 {

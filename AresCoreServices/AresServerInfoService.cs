@@ -2,12 +2,12 @@
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Ares.Core.Messages;
+using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 
-namespace AresCoreServices;
+namespace Ares.Core.Grpc;
 
 public class AresServerInfoService : AresServerInfo.AresServerInfoBase
 {
