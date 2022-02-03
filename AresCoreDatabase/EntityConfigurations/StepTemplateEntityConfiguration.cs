@@ -8,6 +8,7 @@ internal class StepTemplateEntityConfiguration : AresEntityTypeBaseConfiguration
   public override void Configure(EntityTypeBuilder<StepTemplate> builder)
   {
     base.Configure(builder);
+
     builder.HasMany(stepTemplate => stepTemplate.CommandTemplates)
       .WithOne()
       .IsRequired();

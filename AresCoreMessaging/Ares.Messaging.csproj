@@ -45,6 +45,7 @@
     <None Remove="AresServerInfo.proto" />
     <None Remove="AresUserType.proto" />
     <None Remove="CommandResult.proto" />
+    <None Remove="PlanTransaction.proto" />
     <None Remove="Project.proto" />
   </ItemGroup>
 
@@ -79,6 +80,7 @@
     <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />
     <Protobuf Include="Project.proto" GrpcServices="None" />
     <Protobuf Include="AresServerInfo.proto" />
+    <Protobuf Include="PlanTransaction.proto" GrpcServices="None" />
     <Protobuf Include="StepTemplate.proto" GrpcServices="None" />
   </ItemGroup>
 

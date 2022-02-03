@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "CommandTemplate.proto";
+
+message PlannerTransaction {
+	PlannerRequest request = 1; // Request sent to the planner
+	PlannerResponse response = 2; // Response received for a given request
+}
+
+message PlannerRequest {
+	repeated string parameter_names = 1; // Name of the parameter to be planned
+}
+
+message PlannerResponse {
+	map<string, float> planned_parameters = 1; // Names of the parameters with their planned values
+}

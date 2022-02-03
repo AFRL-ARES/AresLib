@@ -7,5 +7,6 @@ import "ParameterMetadata.proto";
 message Parameter {
 	ParameterMetadata metadata = 1; // Non-volatile information about the command argument/parameter
 	float value = 2; // Value of the argument/parameter used for execution, represented as a floating point number for planner compatibility
-	int64 index = 3; // Index of the collection in which executed this template
+	bool planned = 3; // Indicated whether or not the parameter needs to be planned for
+	int64 index = 4; // Index of the collection in which executed this template
 }
