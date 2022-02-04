@@ -6,9 +6,8 @@ using DynamicData;
 
 namespace Ares.AutomationBuilding;
 
-internal class StepTemplateBuilder : TemplateBuilder<StepTemplate>, IStepTemplateBuilder
+public class StepTemplateBuilder : TemplateBuilder<StepTemplate>, IStepTemplateBuilder
 {
-
   public StepTemplateBuilder(string name, bool isParallel) : base(name)
   {
     IsParallel = isParallel;
@@ -28,12 +27,15 @@ internal class StepTemplateBuilder : TemplateBuilder<StepTemplate>, IStepTemplat
 
   public override StepTemplate Build()
   {
-    var commandTemplates = CommandTemplateBuilders.Select((commandTemplateBuilder, index) => {
-        var commandTemplate = commandTemplateBuilder.Build();
-        commandTemplate.Index = index;
-        return commandTemplate;
-      }
-    );
+    var commandTemplates = CommandTemplateBuilders.Select
+      (
+       (commandTemplateBuilder, index) =>
+       {
+         var commandTemplate = commandTemplateBuilder.Build();
+         commandTemplate.Index = index;
+         return commandTemplate;
+       }
+      );
 
     var stepTemplate = new StepTemplate();
     stepTemplate.CommandTemplates.AddRange(commandTemplates);

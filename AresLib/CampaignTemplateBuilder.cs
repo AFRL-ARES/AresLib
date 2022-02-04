@@ -6,7 +6,7 @@ using DynamicData;
 
 namespace Ares.AutomationBuilding;
 
-internal class CampaignTemplateBuilder : TemplateBuilder<CampaignTemplate>, ICampaignTemplateBuilder
+public class CampaignTemplateBuilder : TemplateBuilder<CampaignTemplate>, ICampaignTemplateBuilder
 {
   public CampaignTemplateBuilder(string name) : base(name)
   {
@@ -24,12 +24,15 @@ internal class CampaignTemplateBuilder : TemplateBuilder<CampaignTemplate>, ICam
   public override CampaignTemplate Build()
   {
     var experimentTemplates =
-      ExperimentTemplateBuilders.Select((experimentTemplateBuilder, index) => {
-          var experimentTemplate = experimentTemplateBuilder.Build();
-          experimentTemplate.Index = index;
-          return experimentTemplate;
-        }
-      );
+      ExperimentTemplateBuilders.Select
+        (
+         (experimentTemplateBuilder, index) =>
+         {
+           var experimentTemplate = experimentTemplateBuilder.Build();
+           experimentTemplate.Index = index;
+           return experimentTemplate;
+         }
+        );
 
     var campaignTemplate = new CampaignTemplate();
     campaignTemplate.ExperimentTemplates.AddRange(experimentTemplates);

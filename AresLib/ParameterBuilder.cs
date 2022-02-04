@@ -2,7 +2,7 @@
 
 namespace Ares.AutomationBuilding;
 
-internal class ParameterBuilder : IParameterBuilder
+public class ParameterBuilder : IParameterBuilder
 {
   public ParameterBuilder(ParameterMetadata parameterMetadata)
   {

@@ -6,7 +6,7 @@ using DynamicData;
 
 namespace Ares.AutomationBuilding;
 
-internal class ExperimentTemplateBuilder : TemplateBuilder<ExperimentTemplate>, IExperimentTemplateBuilder
+public class ExperimentTemplateBuilder : TemplateBuilder<ExperimentTemplate>, IExperimentTemplateBuilder
 {
   public ExperimentTemplateBuilder(string name) : base(name)
   {
@@ -24,11 +24,15 @@ internal class ExperimentTemplateBuilder : TemplateBuilder<ExperimentTemplate>, 
 
   public override ExperimentTemplate Build()
   {
-    var stepTemplates = StepTemplateBuilders.Select((stepTemplateBuilder, index) => {
-      var stepTemplate = stepTemplateBuilder.Build();
-      stepTemplate.Index = index;
-      return stepTemplate;
-    });
+    var stepTemplates = StepTemplateBuilders.Select
+      (
+       (stepTemplateBuilder, index) =>
+       {
+         var stepTemplate = stepTemplateBuilder.Build();
+         stepTemplate.Index = index;
+         return stepTemplate;
+       }
+      );
 
     var experimentTemplate = new ExperimentTemplate();
     experimentTemplate.StepTemplates.AddRange(stepTemplates);

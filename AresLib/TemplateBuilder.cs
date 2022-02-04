@@ -2,7 +2,7 @@
 
 namespace Ares.AutomationBuilding;
 
-internal abstract class TemplateBuilder<TTemplateMessage> : ITemplateBuilder<TTemplateMessage>
+public abstract class TemplateBuilder<TTemplateMessage> : ITemplateBuilder<TTemplateMessage>
   where TTemplateMessage : IMessage
 {
   protected TemplateBuilder(string name)
