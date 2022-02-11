@@ -8,6 +8,8 @@ internal abstract class AresEntityTypeBaseConfiguration<TAresCoreEntity> : IEnti
 {
   public virtual void Configure(EntityTypeBuilder<TAresCoreEntity> builder)
   {
+    const string dateGetterFunctionSql = "getdate()";
+
     builder
       .Property<Guid>("UniqueId")
       .ValueGeneratedOnAdd();
@@ -15,12 +17,12 @@ internal abstract class AresEntityTypeBaseConfiguration<TAresCoreEntity> : IEnti
     builder
       .Property<DateTime>("CreationTime")
       .ValueGeneratedOnAdd()
-      .HasDefaultValue(DateTime.UtcNow);
+      .HasDefaultValueSql(dateGetterFunctionSql);
 
     builder
       .Property<DateTime>("LastModified")
       .ValueGeneratedOnUpdate()
-      .HasDefaultValue(DateTime.UtcNow);
+      .HasDefaultValueSql(dateGetterFunctionSql);
 
     builder.HasKey("UniqueId");
   }
