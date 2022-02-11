@@ -61,9 +61,16 @@ public class DevicesService : AresDevices.AresDevicesBase
     var interpreter = _laboratoryManager.Lab.DeviceInterpreters
       .First(commandInterpreter => commandInterpreter.Device.Name == request.Metadata.DeviceName);
 
-    var aaaa = interpreter.TemplateToDeviceCommand(request);
-    aaaa.Start();
-    await aaaa;
+    try
+    {
+      var deviceCommandTask = interpreter.TemplateToDeviceCommand(request);
+      deviceCommandTask.Start();
+      await deviceCommandTask;
+    }
+    catch (Exception e)
+    {
+      return new CommandResult { Success = false, Error = e.ToString() };
+    }
 
     return new CommandResult { Success = true, Result = test };
   }

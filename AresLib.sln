@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Messaging", "AresCoreM
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core.Grpc", "AresCoreServices\Ares.Core.Grpc.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.EFCore", "AresCoreDatabase\Ares.EFCore.csproj", "{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core.EFCore", "AresCoreDatabase\Ares.Core.EFCore.csproj", "{81215B06-20F8-404E-BEC4-B1DD5CC84F4F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core", "AresCore\Ares.Core.csproj", "{72B2F0BC-7A26-4BFA-9C21-81486504C04E}"
 EndProject

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Ares.EFCore;
+namespace Ares.Core.EFCore;
 
 public class CoreDatabaseContext<TUser> : IdentityDbContext<TUser> where TUser : IdentityUser
 {

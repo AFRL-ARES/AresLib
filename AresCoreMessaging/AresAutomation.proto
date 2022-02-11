@@ -1,0 +1,36 @@
+﻿syntax = "proto3";
+
+package ares.messaging;
+
+import "google/protobuf/empty.proto";
+import "CampaignTemplate.proto";
+import "CommandResult.proto";
+import "Project.proto";
+
+service AresAutomation {
+	rpc GetAllCampaigns(google.protobuf.Empty) returns (CampaignsResponse);
+	rpc GetSingleCampaign(CampaignRequest) returns (CampaignTemplate);
+	rpc RemoveCampaign(CampaignRequest) returns (CommandResult);
+	rpc AddCampaign(CampaignTemplate) returns (CommandResult);
+
+	rpc GetAllProjects(google.protobuf.Empty) returns (ProjectsResponse); 
+	rpc GetProject(ProjectRequest) returns (Project);
+	rpc RemoveProject(ProjectRequest) returns (CommandResult);
+	rpc AddProject(Project) returns (CommandResult);
+}
+
+message CampaignRequest {
+	string campaign_name = 1; // name of the requested campaign template
+}
+
+message CampaignsResponse {
+	repeated CampaignTemplate campaign_templates = 1;
+}
+
+message ProjectRequest {
+	string project_name = 1; // name of the requested project
+}
+
+message ProjectsResponse {
+	repeated Project projects = 1; // list of available projects
+}

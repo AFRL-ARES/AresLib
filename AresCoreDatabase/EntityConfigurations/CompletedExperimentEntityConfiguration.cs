@@ -2,7 +2,7 @@
 using Google.Protobuf;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Ares.EFCore.EntityConfigurations;
+namespace Ares.Core.EFCore.EntityConfigurations;
 
 internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfiguration<CompletedExperiment>
 {

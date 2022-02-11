@@ -9,5 +9,6 @@ public static class ServiceMapper
   {
     routeBuilder.MapGrpcService<DevicesService>();
     routeBuilder.MapGrpcService<AresServerInfoService>();
+    routeBuilder.MapGrpcService<AutomationService>();
   }
 }

@@ -1,7 +1,7 @@
 ﻿using Ares.Messaging;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Ares.EFCore.EntityConfigurations;
+namespace Ares.Core.EFCore.EntityConfigurations;
 
 internal class ParameterEntityConfiguration : AresEntityTypeBaseConfiguration<Parameter>
 {

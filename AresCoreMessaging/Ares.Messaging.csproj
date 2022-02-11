@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="AresCampaigns.proto" />
+    <None Remove="AresAutomation.proto" />
     <None Remove="AresDevices.proto" />
     <None Remove="AresServerInfo.proto" />
     <None Remove="AresUserType.proto" />
@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.19.3" />
+    <PackageReference Include="Google.Protobuf" Version="3.19.4" />
     <PackageReference Include="Grpc" Version="2.43.0" />
     <PackageReference Include="Grpc.Tools" Version="2.43.0">
       <PrivateAssets>all</PrivateAssets>
@@ -62,7 +62,7 @@
     <Protobuf Include="CommandResult.proto" GrpcServices="None">
       <Generator></Generator>
     </Protobuf>
-    <Protobuf Include="AresCampaigns.proto" />
+    <Protobuf Include="AresAutomation.proto" />
     <Protobuf Include="AresUserType.proto" GrpcServices="None">
       <Generator></Generator>
     </Protobuf>
@@ -82,10 +82,6 @@
     <Protobuf Include="AresServerInfo.proto" />
     <Protobuf Include="PlanTransaction.proto" GrpcServices="None" />
     <Protobuf Include="StepTemplate.proto" GrpcServices="None" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Device\" />
   </ItemGroup>
 
 </Project>
