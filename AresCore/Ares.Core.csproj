@@ -14,7 +14,7 @@
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="Ardalis.Specification.EntityFrameworkCore" Version="6.0.1" />
+	  <PackageReference Include="Ardalis.Specification" Version="6.0.1" />
 	  <PackageReference Include="Ares.Device.dll" Version="2022.2.11.104117" />
 	  <PackageReference Include="Ares.Messaging.dll" Version="2022.2.11.104058" />
 	  <PackageReference Include="DynamicData" Version="7.4.11" />
