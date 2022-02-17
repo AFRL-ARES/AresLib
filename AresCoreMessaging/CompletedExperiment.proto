@@ -6,6 +6,6 @@ import "ExperimentTemplate.proto";
 
 message CompletedExperiment {
 	ExperimentTemplate template = 1; // Template used to generate the executable experiment providing the results
-	bytes serialized_data = 2; // Serialized data representation of the experiment output
-	string format = 3; // Text indicating the format of serialized data, hopefully useful for deserializing.
+	bytes serialized_data = 3; // Serialized data representation of the experiment output
+	string format = 4; // Text indicating the format of serialized data, hopefully useful for deserializing.
 }

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "CampaignTemplate.proto";
+import "CompletedExperiment.proto";
+import "PlanTransaction.proto";
+
+message CompletedCampaign {
+  repeated CompletedExperiment experiments = 1; // Experiments completed within this CampaignTemplate
+  CampaignTemplate template = 2; // Template used to execute the campaign
+  repeated PlannerTransaction planner_transactions = 3; // Transactions associated with the planner(s) during campaign execution
+}

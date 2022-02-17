@@ -8,4 +8,5 @@ message ExperimentTemplate {
 	repeated StepTemplate step_templates = 1; // Collection of step templates used to generate executable steps
 	string name = 2; // Name of the experiment, most likely automatically generated relative to the campaign name
 	int64 index = 3; // Index of the collection in which executed this template
+	bool resolved = 4; // Inidcates whether or not this template has been processed and thus should not have any metadata, only executable stuff. 
 }
