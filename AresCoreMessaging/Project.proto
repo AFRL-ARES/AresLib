@@ -4,10 +4,12 @@ package ares.messaging;
 
 import "CampaignTemplate.proto";
 import "CompletedExperiment.proto";
+import "ParameterMetadata.proto";
 
 message Project {
 	string name = 1; // The name of the project
 	string description = 2; // The description for the project
 	repeated CampaignTemplate campaign_templates = 3; // The campaign templates relevant to this project
 	repeated CompletedExperiment completed_experiments = 4; // Results for the experiments run within this project
+	repeated ParameterMetadata experimentParameters = 5; // The plannable parameters or variables associated with this project
 }
