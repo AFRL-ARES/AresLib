@@ -3,9 +3,13 @@ syntax = "proto3";
 package ares.messaging;
 
 import "ExperimentTemplate.proto";
+import "ParameterMetadata.proto";
 
 message CampaignTemplate {
 	repeated ExperimentTemplate experiment_templates = 1; // Collection of experiment templates to be used for generating executable experiments
 	string name = 2; // Name of the campaign. Doesn't have to be descriptive, and is used for lookup
 	int64 index = 3; // Index of the collection in which executed this template 
+	repeated ParameterMetadata plannable_parameters = 5; // The plannable parameters or variables available to commands within experiments
+	repeated string planner_names = 6; // Collection of planners providing suggestions for plannable parameters bound in the experiment template
+	// Analyzer
 }

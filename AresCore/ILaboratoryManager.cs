@@ -9,4 +9,5 @@ public interface ILaboratoryManager
   Laboratory Lab { get; }
   void RunCampaign(CampaignTemplate campaignTemplate);
   Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter);
+  Project ActiveProject { get; }
 }

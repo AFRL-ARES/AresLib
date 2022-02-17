@@ -15,8 +15,8 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Ardalis.Specification" Version="6.0.1" />
-	  <PackageReference Include="Ares.Device.dll" Version="2022.2.17.113205" />
-	  <PackageReference Include="Ares.Messaging.dll" Version="2022.2.17.113137" />
+	  <PackageReference Include="Ares.Device.dll" Version="2022.2.17.142749" />
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.2.17.142724" />
 	  <PackageReference Include="DynamicData" Version="7.5.4" />
 	</ItemGroup>
 

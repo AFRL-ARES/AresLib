@@ -3,16 +3,19 @@ syntax = "proto3";
 package ares.messaging;
 
 import "CommandTemplate.proto";
+import "ParameterMetadata.proto";
+import "Parameter.proto";
 
 message PlannerTransaction {
 	PlannerRequest request = 1; // Request sent to the planner
 	PlannerResponse response = 2; // Response received for a given request
+	string planner_name = 3; // Name identifier of the planner to transact with
 }
 
 message PlannerRequest {
-	repeated string parameter_names = 1; // Name of the parameter to be planned
+	repeated ParameterMetadata parameter_metas = 1; // Collection of metadata constraining suggested values
 }
 
 message PlannerResponse {
-	map<string, float> planned_parameters = 1; // Names of the parameters with their planned values
+	repeated Parameter planned_parameters = 1; // Resolved parameters with values constrained according to metadata from request
 }

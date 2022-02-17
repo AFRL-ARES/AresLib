@@ -18,6 +18,7 @@ public abstract class LaboratoryManager : ILaboratoryManager
 
     AvailableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
     Lab = new Laboratory(Name, AvailableDeviceCommandInterpreters);
+    // TODO: TryLoad user's most recent active project
   }
 
   protected ISourceCache<IDeviceCommandInterpreter<IAresDevice>, string> DeviceCommandInterpretersSource { get; }
@@ -33,7 +34,8 @@ public abstract class LaboratoryManager : ILaboratoryManager
   {
     var campaignComposer = new CampaignComposer(campaignTemplate, AvailableDeviceCommandInterpreters);
     var campaignExecutor = campaignComposer.Compose();
-    Task.Run(() => campaignExecutor.Execute()).Wait();
+    Task.Run(() => campaignExecutor.Execute())
+        .Wait();
   }
 
   public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter)
@@ -45,6 +47,8 @@ public abstract class LaboratoryManager : ILaboratoryManager
     DeviceCommandInterpretersSource.AddOrUpdate(deviceInterpreter);
     return true;
   }
+
+  public Project ActiveProject { get; }
 
   protected abstract IDeviceCommandInterpreter<IAresDevice>[] GenerateDeviceCommandInterpreters();
 }
