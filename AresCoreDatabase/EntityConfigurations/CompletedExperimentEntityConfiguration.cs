@@ -16,5 +16,8 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
       .HasConversion(
         s => s.ToByteArray(),
         bytes => ByteString.CopyFrom(bytes));
+
+    builder.HasOne<CompletedCampaign>()
+      .WithMany(campaign => campaign.Experiments);
   }
 }

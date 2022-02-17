@@ -11,5 +11,7 @@ internal class PlannerTransactionEntityConfiguration : AresEntityTypeBaseConfigu
 
     builder.Navigation(transaction => transaction.Request).AutoInclude();
     builder.Navigation(transaction => transaction.Response).AutoInclude();
+
+    builder.HasOne<CompletedCampaign>().WithMany(campaign => campaign.PlannerTransactions);
   }
 }
