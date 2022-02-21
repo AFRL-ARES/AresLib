@@ -16,7 +16,6 @@ public class CoreDatabaseContext<TUser> : IdentityDbContext<TUser> where TUser :
   public DbSet<Project>? Projects { get; set; }
   public DbSet<StepTemplate>? StepTemplates { get; set; }
   public DbSet<ExperimentTemplate>? ExperimentTemplates { get; set; }
-  public DbSet<CompletedExperiment>? CompletedExperiments { get; set; }
   public DbSet<PlannerTransaction>? PlannerTransactions { get; set; }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

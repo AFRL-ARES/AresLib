@@ -1,5 +1,4 @@
 ﻿using Ares.Messaging;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EFCore.EntityConfigurations;
@@ -12,12 +11,6 @@ internal class ParameterMetadataEntityConfiguration : AresEntityTypeBaseConfigur
     builder.HasMany(parameterMetadata => parameterMetadata.Constraints)
       .WithOne()
       .IsRequired();
-
-    builder.HasOne<Parameter>()
-      .WithOne(parameter => parameter.Metadata)
-      .HasForeignKey<ParameterMetadata>("ParameterId")
-      .OnDelete(DeleteBehavior.NoAction);
-    // TODO figure out how to cleanup metadata, see CommandMetadataEntityConfiguration for details
 
     builder.Navigation(parameterMetadata => parameterMetadata.Constraints)
       .AutoInclude();

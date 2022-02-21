@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EFCore.EntityConfigurations;
@@ -8,6 +9,7 @@ public class CompletedCampaignEntityConfiguration : AresEntityTypeBaseConfigurat
   public override void Configure(EntityTypeBuilder<CompletedCampaign> builder)
   {
     base.Configure(builder);
+    builder.ToTable("CompletedCampaigns");
     builder.Navigation(campaign => campaign.Experiments)
       .AutoInclude();
 
@@ -16,5 +18,13 @@ public class CompletedCampaignEntityConfiguration : AresEntityTypeBaseConfigurat
 
     builder.Navigation(campaign => campaign.Template)
       .AutoInclude();
+
+    builder.HasOne(campaign => campaign.Template)
+      .WithOne()
+      .HasForeignKey<CampaignTemplate>("CompletedCampaignId");
+
+    builder.HasMany(fd => fd.Experiments)
+      .WithOne()
+      .IsRequired();
   }
 }

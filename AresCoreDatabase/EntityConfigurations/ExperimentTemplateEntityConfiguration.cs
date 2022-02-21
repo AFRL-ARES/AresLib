@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EFCore.EntityConfigurations;
@@ -8,13 +9,10 @@ internal class ExperimentTemplateEntityConfiguration : AresEntityTypeBaseConfigu
   public override void Configure(EntityTypeBuilder<ExperimentTemplate> builder)
   {
     base.Configure(builder);
+    builder.ToTable("ExperimentTemplates");
     builder.HasMany(experimentTemplate => experimentTemplate.StepTemplates)
       .WithOne()
-      .IsRequired();
-
-    builder.HasMany<CompletedExperiment>()
-      .WithOne(experiment => experiment.Template)
-      .IsRequired();// TODO decide whether deleting a completed experiment requires there to be an experiment template
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.Navigation(experimentTemplate => experimentTemplate.StepTemplates)
       .AutoInclude();

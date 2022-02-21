@@ -46,6 +46,7 @@
     <None Remove="AresUserType.proto" />
     <None Remove="CommandResult.proto" />
     <None Remove="CompletedCampaign.proto" />
+    <None Remove="PlannerInfo.proto" />
     <None Remove="PlanTransaction.proto" />
     <None Remove="Project.proto" />
   </ItemGroup>
@@ -78,6 +79,7 @@
     <Protobuf Include="CompletedExperiment.proto" GrpcServices="None" />
     <Protobuf Include="ExperimentTemplate.proto" GrpcServices="None" />
     <Protobuf Include="Limits.proto" GrpcServices="None" />
+    <Protobuf Include="PlannerInfo.proto" GrpcServices="None" />
     <Protobuf Include="Parameter.proto" GrpcServices="None" />
     <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />
     <Protobuf Include="Project.proto" GrpcServices="None" />

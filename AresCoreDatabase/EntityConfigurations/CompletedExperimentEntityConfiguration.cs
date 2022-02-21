@@ -1,5 +1,6 @@
 ﻿using Ares.Messaging;
 using Google.Protobuf;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EFCore.EntityConfigurations;
@@ -9,6 +10,7 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
   public override void Configure(EntityTypeBuilder<CompletedExperiment> builder)
   {
     base.Configure(builder);
+    builder.ToTable("CompletedExperiments");
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
