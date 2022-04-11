@@ -2,9 +2,7 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "CampaignTemplate.proto";
 import "CompletedCampaign.proto";
-import "ParameterMetadata.proto";
 
 message Project {
 	string name = 1; // The name of the project

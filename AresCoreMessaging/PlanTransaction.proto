@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "CommandTemplate.proto";
 import "ParameterMetadata.proto";
 import "Parameter.proto";
 

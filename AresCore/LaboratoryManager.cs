@@ -35,7 +35,7 @@ public abstract class LaboratoryManager : ILaboratoryManager
     var campaignComposer = new CampaignComposer(campaignTemplate, AvailableDeviceCommandInterpreters);
     var campaignExecutor = campaignComposer.Compose();
     Task.Run(() => campaignExecutor.Execute())
-        .Wait();
+      .Wait();
   }
 
   public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter)
@@ -48,7 +48,7 @@ public abstract class LaboratoryManager : ILaboratoryManager
     return true;
   }
 
-  public Project ActiveProject { get; }
+  public Project ActiveProject { get; set; }
 
   protected abstract IDeviceCommandInterpreter<IAresDevice>[] GenerateDeviceCommandInterpreters();
 }
