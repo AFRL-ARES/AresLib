@@ -24,10 +24,10 @@ public class AresServerInfoService : AresServerInfo.AresServerInfoBase
   }
 
   [AuthorizeRoles(AresUserType.AresUser)]
-  public override Task GetServerStatusStream(Empty request, IServerStreamWriter<ServerStatusResponse> responseStream, ServerCallContext context)
+  public override async Task GetServerStatusStream(Empty request, IServerStreamWriter<ServerStatusResponse> responseStream, ServerCallContext context)
   {
     var observable = ServerStatusHelper.ServerStatusSubject.AsObservable();
     observable.Subscribe(response => responseStream.WriteAsync(response), () => {}, context.CancellationToken);
-    return Task.CompletedTask;
+    await observable;
   }
 }
