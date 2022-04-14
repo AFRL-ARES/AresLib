@@ -1,9 +1,9 @@
 ﻿using Ardalis.Specification;
 using Ares.Messaging;
 
-namespace Ares.Core.EFCore.Specifications;
+namespace Ares.Core.Repositories.Specifications;
 
-public class CompletedCampaignByNameSpecification : Specification<CompletedCampaign>, ISingleResultSpecification<CompletedCampaign>
+public sealed class CompletedCampaignByNameSpecification : Specification<CompletedCampaign>, ISingleResultSpecification<CompletedCampaign>
 {
   public CompletedCampaignByNameSpecification(string name)
   {

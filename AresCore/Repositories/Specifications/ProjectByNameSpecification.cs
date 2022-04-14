@@ -1,9 +1,9 @@
 ﻿using Ardalis.Specification;
 using Ares.Messaging;
 
-namespace Ares.Core.EFCore.Specifications;
+namespace Ares.Core.Repositories.Specifications;
 
-public class ProjectByNameSpecification : Specification<Project>, ISingleResultSpecification<Project>
+public sealed class ProjectByNameSpecification : Specification<Project>, ISingleResultSpecification<Project>
 {
   public ProjectByNameSpecification(string name)
   {

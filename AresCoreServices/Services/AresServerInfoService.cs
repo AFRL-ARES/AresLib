@@ -7,7 +7,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 
-namespace Ares.Core.Grpc;
+namespace Ares.Core.Grpc.Services;
 
 public class AresServerInfoService : AresServerInfo.AresServerInfoBase
 {

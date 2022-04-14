@@ -1,7 +1,7 @@
 ﻿using Ardalis.Specification;
 using Ares.Messaging;
 
-namespace Ares.Core.EFCore;
+namespace Ares.Core.Repositories.Specifications;
 
 public sealed class CampaignTemplateByNameSpecification : Specification<CampaignTemplate>, ISingleResultSpecification<CampaignTemplate>
 {

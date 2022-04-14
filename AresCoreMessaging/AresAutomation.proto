@@ -4,19 +4,18 @@ package ares.messaging;
 
 import "google/protobuf/empty.proto";
 import "CampaignTemplate.proto";
-import "CommandResult.proto";
 import "Project.proto";
 
 service AresAutomation {
 	rpc GetAllCampaigns(google.protobuf.Empty) returns (CampaignsResponse);
 	rpc GetSingleCampaign(CampaignRequest) returns (CampaignTemplate);
-	rpc RemoveCampaign(CampaignRequest) returns (CommandResult);
-	rpc AddCampaign(CampaignTemplate) returns (CommandResult);
+	rpc RemoveCampaign(CampaignRequest) returns (google.protobuf.Empty);
+	rpc AddCampaign(CampaignTemplate) returns (google.protobuf.Empty);
 
 	rpc GetAllProjects(google.protobuf.Empty) returns (ProjectsResponse); 
 	rpc GetProject(ProjectRequest) returns (Project);
-	rpc RemoveProject(ProjectRequest) returns (CommandResult);
-	rpc AddProject(Project) returns (CommandResult);
+	rpc RemoveProject(ProjectRequest) returns (google.protobuf.Empty);
+	rpc AddProject(Project) returns (google.protobuf.Empty);
 }
 
 message CampaignRequest {

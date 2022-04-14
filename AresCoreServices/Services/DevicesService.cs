@@ -9,7 +9,7 @@ using Ares.Messaging.Device;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
-namespace Ares.Core.Grpc;
+namespace Ares.Core.Grpc.Services;
 
 public class DevicesService : AresDevices.AresDevicesBase
 {
