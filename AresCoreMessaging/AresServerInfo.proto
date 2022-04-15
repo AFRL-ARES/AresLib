@@ -20,7 +20,9 @@ message ServerStatusResponse {
 }
 
 enum ServerStatus {
-	IDLE = 0;
-	BUSY = 1;
-	ERROR = 2;
+	IDLE = 0; // server is currently not doing any busy work
+	BUSY = 1; // server might be busy when it's currently running an experiment or some yet to be identified workload
+	ERROR = 2; // server is in some kind of error state. Maybe an experiment has failed or server somehow broke
+	STOPPING = 3; // server is in the process os shutting down
+	STOPPED = 4; // server finished shutting down
 }

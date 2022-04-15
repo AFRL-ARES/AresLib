@@ -20,31 +20,31 @@ message AresDeviceInfo {
 
 message ListAresDevicesResponse
 {
-	repeated AresDeviceInfo ares_devices = 1;
+	repeated AresDeviceInfo ares_devices = 1; // collection of ares_device objects, used when all the ares devices are needed
 }
 
 message CommandMetadatasRequest {
-	string device_name = 1;
+	string device_name = 1; // device name of the device for which the commands need to be known
 }
 
 message CommandMetadatasResponse {
-	repeated CommandMetadata metadatas = 1; 
+	repeated CommandMetadata metadatas = 1;  // list of command information supported by the requested device
 }
 
 message DeviceStatusRequest
 {
-	string device_name = 1;
+	string device_name = 1; // device name of the device for which the status needs to be known
 }
 
 message DeviceStatus
 {
-	DeviceState device_state = 1;
-	string message = 2;
+	DeviceState device_state = 1; // the current state of the device
+	string message = 2; // if the used needs to be clarified for why the state is the way it is, this message field can be used
 }
 
 enum DeviceState
 {
-	INACTIVE = 0;
-	ACTIVE = 1;
-	ERROR = 2;
+	INACTIVE = 0; // device cannot be used as it's not connected/turned on/etc.
+	ACTIVE = 1; // device is ready for action
+	ERROR = 2; // device is in some error state, currently more of a placeholder until functionality is created to handle the errored devices
 }

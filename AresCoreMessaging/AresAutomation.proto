@@ -23,7 +23,7 @@ message CampaignRequest {
 }
 
 message CampaignsResponse {
-	repeated CampaignTemplate campaign_templates = 1;
+	repeated CampaignTemplate campaign_templates = 1; // list of campaign templates for a requested campaign name
 }
 
 message ProjectRequest {
