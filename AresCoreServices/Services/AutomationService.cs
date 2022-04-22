@@ -1,27 +1,25 @@
 ﻿using System.Threading.Tasks;
-using Ares.Core.Repositories;
-using Ares.Core.Repositories.Specifications;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Grpc.Services;
 
 public class AutomationService : AresAutomation.AresAutomationBase
 {
-  private readonly ICampaignTemplateRepository _campaignTemplateRepository;
-  private readonly IProjectRepository _projectRepository;
+  private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
 
-  public AutomationService(ICampaignTemplateRepository campaignTemplateRepository, IProjectRepository projectRepository)
+  public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory)
   {
-    _campaignTemplateRepository = campaignTemplateRepository;
-    _projectRepository = projectRepository;
+    _coreContextFactory = coreContextFactory;
   }
 
 
   public override async Task<ProjectsResponse> GetAllProjects(Empty request, ServerCallContext context)
   {
-    var projects = await _projectRepository.ListAsync();
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var projects = await dbContext.Projects.ToArrayAsync(context.CancellationToken);
     var response = new ProjectsResponse();
     response.Projects.AddRange(projects);
     return response;
@@ -29,49 +27,75 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override async Task<CampaignsResponse> GetAllCampaigns(Empty request, ServerCallContext context)
   {
+    await using var dbContext = _coreContextFactory.CreateDbContext();
     var campaignsResponse = new CampaignsResponse();
-    var campaigns = await _campaignTemplateRepository.ListAsync(context.CancellationToken);
+    var campaigns = await dbContext.CampaignTemplates.ToArrayAsync(context.CancellationToken);
     campaignsResponse.CampaignTemplates.Add(campaigns);
     return campaignsResponse;
   }
 
-  public override Task<Project> GetProject(ProjectRequest request, ServerCallContext context)
+  public override async Task<BoolValue> CampaignExists(CampaignRequest request, ServerCallContext context)
   {
-    return _projectRepository.GetBySpecAsync(new ProjectByNameSpecification(request.ProjectName), context.CancellationToken);
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    await dbContext.Database.OpenConnectionAsync();
+    var exists = await dbContext.CampaignTemplates.AnyAsync(template => template.Name == request.CampaignName, context.CancellationToken);
+    return new BoolValue { Value = exists };
   }
 
-  public override Task<CampaignTemplate> GetSingleCampaign(CampaignRequest request, ServerCallContext context)
+  public override async Task<Project> GetProject(ProjectRequest request, ServerCallContext context)
   {
-    return _campaignTemplateRepository.GetBySpecAsync(new CampaignTemplateByNameSpecification(request.CampaignName), context.CancellationToken);
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    return await dbContext.Projects.FirstAsync(project => project.Name == request.ProjectName, context.CancellationToken);
+  }
+
+  public override async Task<CampaignTemplate> GetSingleCampaign(CampaignRequest request, ServerCallContext context)
+  {
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    return await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName);
   }
 
   public override async Task<Empty> RemoveCampaign(CampaignRequest request, ServerCallContext context)
   {
-    var campaignTemplate = await _campaignTemplateRepository.GetBySpecAsync(new CampaignTemplateByNameSpecification(request.CampaignName), context.CancellationToken);
-    if (campaignTemplate is not null)
-      await _campaignTemplateRepository.DeleteAsync(campaignTemplate, context.CancellationToken);
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    var campaignTemplate = dbContext.CampaignTemplates.Remove(await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName));
+    await dbContext.SaveChangesAsync(context.CancellationToken);
 
     return new Empty();
   }
 
   public override async Task<Empty> RemoveProject(ProjectRequest request, ServerCallContext context)
   {
-    var project = await _projectRepository.GetBySpecAsync(new ProjectByNameSpecification(request.ProjectName), context.CancellationToken);
-    if (project is not null)
-      await _projectRepository.DeleteAsync(project, context.CancellationToken);
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    var project = await dbContext.Projects.FirstAsync(p => p.Name == request.ProjectName, context.CancellationToken);
+    dbContext.Projects.Remove(project);
+    await dbContext.SaveChangesAsync(context.CancellationToken);
 
     return new Empty();
   }
 
   public override async Task<Empty> AddProject(Project request, ServerCallContext context)
   {
-    await _projectRepository.AddAsync(request, context.CancellationToken);
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    dbContext.Projects.Add(request);
+    await dbContext.SaveChangesAsync(context.CancellationToken);
     return new Empty();
   }
 
   public override async Task<Empty> AddCampaign(CampaignTemplate request, ServerCallContext context)
   {
-    await _campaignTemplateRepository.AddAsync(request, context.CancellationToken);
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    dbContext.CampaignTemplates.Add(request);
+    await dbContext.SaveChangesAsync(context.CancellationToken);
+    return new Empty();
+  }
+
+  public override async Task<Empty> UpdateCampaign(CampaignUpdateRequest request, ServerCallContext context)
+  {
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    var currentTemplate = await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName, context.CancellationToken);
+    dbContext.UpdateProperties(currentTemplate, request.CampaignTemplate);
+    dbContext.UpdateNavigations(currentTemplate, request.CampaignTemplate);
+    await dbContext.SaveChangesAsync();
     return new Empty();
   }
 }

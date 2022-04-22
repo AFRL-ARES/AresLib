@@ -14,10 +14,11 @@
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="Ardalis.Specification" Version="6.0.1" />
-	  <PackageReference Include="Ares.Device.dll" Version="2022.4.15.144057" />
-	  <PackageReference Include="Ares.Messaging.dll" Version="2022.4.15.144031" />
+	  <PackageReference Include="Ares.Device.dll" Version="2022.4.22.171931" />
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.4.22.171912" />
 	  <PackageReference Include="DynamicData" Version="7.6.7" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.4" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.4" />
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
 	</ItemGroup>
 

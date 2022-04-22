@@ -3,15 +3,20 @@
 package ares.messaging;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
 import "CampaignTemplate.proto";
 import "Project.proto";
 
 service AresAutomation {
+	// Campaigns
 	rpc GetAllCampaigns(google.protobuf.Empty) returns (CampaignsResponse);
 	rpc GetSingleCampaign(CampaignRequest) returns (CampaignTemplate);
 	rpc RemoveCampaign(CampaignRequest) returns (google.protobuf.Empty);
+	rpc CampaignExists(CampaignRequest) returns (google.protobuf.BoolValue);
 	rpc AddCampaign(CampaignTemplate) returns (google.protobuf.Empty);
+	rpc UpdateCampaign(CampaignUpdateRequest) returns (google.protobuf.Empty);
 
+	// Projects
 	rpc GetAllProjects(google.protobuf.Empty) returns (ProjectsResponse); 
 	rpc GetProject(ProjectRequest) returns (Project);
 	rpc RemoveProject(ProjectRequest) returns (google.protobuf.Empty);
@@ -20,6 +25,11 @@ service AresAutomation {
 
 message CampaignRequest {
 	string campaign_name = 1; // name of the requested campaign template
+}
+
+message CampaignUpdateRequest {
+	string campaign_name = 1; // name of the campaign as it exists in the database
+	CampaignTemplate campaign_template = 2; // the new cmpaign template
 }
 
 message CampaignsResponse {
