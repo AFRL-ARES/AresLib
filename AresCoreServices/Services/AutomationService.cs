@@ -93,8 +93,11 @@ public class AutomationService : AresAutomation.AresAutomationBase
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
     var currentTemplate = await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName, context.CancellationToken);
-    dbContext.UpdateProperties(currentTemplate, request.CampaignTemplate);
-    dbContext.UpdateNavigations(currentTemplate, request.CampaignTemplate);
+    currentTemplate.Name = request.CampaignTemplate.Name;
+    currentTemplate.PlannableParameters.Clear();
+    currentTemplate.PlannableParameters.Add(request.CampaignTemplate.PlannableParameters);
+    currentTemplate.ExperimentTemplates.Clear();
+    currentTemplate.ExperimentTemplates.Add(request.CampaignTemplate.ExperimentTemplates);
     await dbContext.SaveChangesAsync();
     return new Empty();
   }

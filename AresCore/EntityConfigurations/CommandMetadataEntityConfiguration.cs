@@ -16,10 +16,10 @@ internal class CommandMetadataEntityConfiguration : AresEntityTypeBaseConfigurat
     // TODO figure out how to deal with/remove metadata upon removal of a command template
     // the commented code below works only if there is a new instance of a CommandMetadata every time
     // it is used, otherwise the foreign key gets overwritten with every update
-    // builder.HasOne<CommandTemplate>()
-    //   .WithOne(commandTemplate => commandTemplate.Metadata)
-    //   .HasForeignKey<CommandMetadata>("CommandTemplateId")
-    //   .IsRequired();
+    builder.HasOne<CommandTemplate>()
+      .WithOne(commandTemplate => commandTemplate.Metadata)
+      .HasForeignKey<CommandMetadata>("CommandTemplateId")
+      .IsRequired();
 
     builder.Navigation(commandMetadata => commandMetadata.ParameterMetadatas)
       .AutoInclude();
