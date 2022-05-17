@@ -2,7 +2,10 @@ syntax = "proto3";
 
 package ares.messaging;
 
+import "google/protobuf/wrappers.proto";
+
 message PlannerInfo {
-	string name = 1; // name of the planner
-	string version = 2; // version of the planner
+	google.protobuf.StringValue unique_id = 1; // A unique id for this planner
+	string name = 2; // name of the planner
+	string version = 3; // version of the planner
 }

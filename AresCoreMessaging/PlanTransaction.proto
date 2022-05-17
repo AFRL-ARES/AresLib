@@ -4,17 +4,21 @@ package ares.messaging;
 
 import "ParameterMetadata.proto";
 import "Parameter.proto";
+import "google/protobuf/wrappers.proto";
 
 message PlannerTransaction {
-	PlannerRequest request = 1; // Request sent to the planner
-	PlannerResponse response = 2; // Response received for a given request
-	string planner_name = 3; // Name identifier of the planner to transact with
+	google.protobuf.StringValue unique_id = 1; // A unique id for this transaction
+	PlannerRequest request = 2; // Request sent to the planner
+	PlannerResponse response = 3; // Response received for a given request
+	string planner_name = 4; // Name identifier of the planner to transact with
 }
 
 message PlannerRequest {
-	repeated ParameterMetadata parameter_metas = 1; // Collection of metadata constraining suggested values
+	google.protobuf.StringValue unique_id = 1; // A unique id for this request
+	repeated ParameterMetadata parameter_metas = 2; // Collection of metadata constraining suggested values
 }
 
 message PlannerResponse {
-	repeated Parameter planned_parameters = 1; // Resolved parameters with values constrained according to metadata from request
+	google.protobuf.StringValue unique_id = 1; // A unique id for this response
+	repeated Parameter planned_parameters = 2; // Resolved parameters with values constrained according to metadata from request
 }

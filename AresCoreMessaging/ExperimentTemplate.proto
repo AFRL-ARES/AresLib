@@ -3,10 +3,12 @@ syntax = "proto3";
 package ares.messaging;
 
 import "StepTemplate.proto";
+import "google/protobuf/wrappers.proto";
 
 message ExperimentTemplate {
-	repeated StepTemplate step_templates = 1; // Collection of step templates used to generate executable steps
-	string name = 2; // Name of the experiment, most likely automatically generated relative to the campaign name
-	int64 index = 3; // Index of the collection in which executed this template
-	bool resolved = 4; // Inidcates whether or not this template has been processed and thus should not have any metadata, only executable stuff. 
+  google.protobuf.StringValue unique_id = 1; // A unique id for this template
+	repeated StepTemplate step_templates = 2; // Collection of step templates used to generate executable steps
+	string name = 3; // Name of the experiment, most likely automatically generated relative to the campaign name
+	int64 index = 4; // Index of the collection in which executed this template
+	bool resolved = 5; // Inidcates whether or not this template has been processed and thus should not have any metadata, only executable stuff. 
 }

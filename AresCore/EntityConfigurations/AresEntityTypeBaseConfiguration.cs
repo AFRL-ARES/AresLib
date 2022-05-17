@@ -10,9 +10,14 @@ public abstract class AresEntityTypeBaseConfiguration<TAresCoreEntity> : IEntity
   {
     const string dateGetterFunctionSql = "getdate()";
 
+    // builder
+    //   .Property<string?>("UniqueId")
+    //   .HasConversion(s => string.IsNullOrEmpty(s) ? default : Guid.Parse(s), guid => guid.ToString())
+    //   .ValueGeneratedOnAdd();
+
     builder
-      .Property<Guid>("UniqueId")
-      .ValueGeneratedOnAdd();
+      .Property<string?>("UniqueId")
+      .HasDefaultValueSql("NEWID()");
 
     builder
       .Property<DateTime>("CreationTime")
