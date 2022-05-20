@@ -9,10 +9,17 @@ namespace Ares.Device.Serial;
 
 internal class AresHardwarePort : IAresSerialPort
 {
-
   public AresHardwarePort(SerialPortConnectionInfo connectionInfo)
   {
-    SystemPort = new SerialPort(null, connectionInfo.BaudRate, connectionInfo.Parity, connectionInfo.DataBits, connectionInfo.StopBits);
+    CommandEnding = connectionInfo.EntryEnding;
+    SystemPort = new SerialPort
+      (
+       null,
+       connectionInfo.BaudRate,
+       connectionInfo.Parity,
+       connectionInfo.DataBits,
+       connectionInfo.StopBits
+      );
     OutboundMessages = OutboundMessagesPublisher.AsObservable();
     InboundMessages = InboundMessagesPublisher.AsObservable();
   }
@@ -49,7 +56,14 @@ internal class AresHardwarePort : IAresSerialPort
       InboundMessagesPublisher.OnError(error);
     }
 
-    var unopenedCopy = new SerialPort(null, SystemPort.BaudRate, SystemPort.Parity, SystemPort.DataBits, SystemPort.StopBits);
+    var unopenedCopy = new SerialPort
+      (
+       null,
+       SystemPort.BaudRate,
+       SystemPort.Parity,
+       SystemPort.DataBits,
+       SystemPort.StopBits
+      );
     SystemPort.Close();
     OutboundMessagesPublisher = new Subject<string>();
     InboundMessagesPublisher = new Subject<string>();
@@ -64,28 +78,32 @@ internal class AresHardwarePort : IAresSerialPort
     if (readTimeout == SerialPort.InfiniteTimeout)
       readTimeout = 1000;
 
-    await Task.Run(
-      async () => {
-        Thread.CurrentThread.Name ??= $"{Name} Inbound Message";
-        while (!cancellationToken.IsCancellationRequested)
-          try
-          {
-            var inboundMessage = SystemPort.ReadLine();
-            InboundMessagesPublisher.OnNext(inboundMessage);
-          }
-          catch (TimeoutException)
-          {
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(readTimeout, cancellationToken);
-          }
-      },
-      cancellationToken
-    );
+    await Task.Run
+      (
+       async () =>
+       {
+         Thread.CurrentThread.Name ??= $"{Name} Inbound Message";
+         while (!cancellationToken.IsCancellationRequested)
+           try
+           {
+             var inboundMessage = SystemPort.ReadLine();
+             InboundMessagesPublisher.OnNext(inboundMessage);
+           }
+           catch (TimeoutException)
+           {
+             cancellationToken.ThrowIfCancellationRequested();
+             await Task.Delay(readTimeout, cancellationToken);
+           }
+       },
+       cancellationToken
+      );
   }
 
   public void SendOutboundMessage(string input)
   {
-    SystemPort.WriteLine(input);
+    SystemPort.WriteLine($"{input}{CommandEnding}");
     OutboundMessagesPublisher.OnNext(input);
   }
+
+  public string CommandEnding { get; }
 }
