@@ -21,35 +21,35 @@ service AresAutomation {
 	rpc AddCampaign(CampaignTemplate) returns (google.protobuf.Empty);
 	rpc UpdateCampaign(CampaignTemplate) returns (CampaignTemplate);
 
-	// Experiments
-	rpc GetExperiments(RequestById) returns (ExperimentsResponse);
-	rpc AddExperiment(AddExperimentRequest) returns (ExperimentTemplate); // adds the experiment and returns it along with any modifications by the adding process
-	rpc UpdateExperiment(ExperimentTemplate) returns (ExperimentTemplate);
-	rpc RemoveExperiment(ExperimentTemplate) returns (google.protobuf.Empty);
-
-	// Steps
-	rpc GetSteps(RequestById) returns (StepsResponse);
-	rpc AddStep(AddStepRequest) returns (StepTemplate); // adds the step and returns it along with any modifications by the adding process
-	rpc UpdateStep(StepTemplate) returns (StepTemplate);
-	rpc RemoveStep(StepTemplate) returns (google.protobuf.Empty);
-
-	// Commands
-	rpc GetCommands(RequestById) returns (CommandsResponse);
-	rpc AddCommand(AddCommandRequest) returns (CommandTemplate); // adds the command and returns it along with any modifications by the adding process
-	rpc UpdateCommand(CommandTemplate) returns (CommandTemplate);
-	rpc RemoveCommand(CommandTemplate) returns (google.protobuf.Empty);
-
-	// Arguments
-	rpc GetArguments(RequestById) returns (ArgumentsResponse);
-	rpc AddArgument(AddArgumentRequest) returns (Parameter); // adds the command and returns it along with any modifications by the adding process
-	rpc UpdateArgument(Parameter) returns (Parameter);
-	rpc RemoveArgument(Parameter) returns (google.protobuf.Empty);
-
-	// CampaignParameters
-	rpc GetCampaignParameters(RequestById) returns (CampaignParametersResponse);
-	rpc AddCampaignParameter(AddCampaignParametersRequest) returns (ParameterMetadata); // adds the command and returns it along with any modifications by the adding process
-	rpc UpdateCampaignParameter(ParameterMetadata) returns (ParameterMetadata);
-	rpc RemoveCampaignParameter(ParameterMetadata) returns (google.protobuf.Empty);
+	// // Experiments
+	// rpc GetExperiments(RequestById) returns (ExperimentsResponse);
+	// rpc AddExperiment(AddExperimentRequest) returns (ExperimentTemplate); // adds the experiment and returns it along with any modifications by the adding process
+	// rpc UpdateExperiment(ExperimentTemplate) returns (ExperimentTemplate);
+	// rpc RemoveExperiment(ExperimentTemplate) returns (google.protobuf.Empty);
+	//
+	// // Steps
+	// rpc GetSteps(RequestById) returns (StepsResponse);
+	// rpc AddStep(AddStepRequest) returns (StepTemplate); // adds the step and returns it along with any modifications by the adding process
+	// rpc UpdateStep(StepTemplate) returns (StepTemplate);
+	// rpc RemoveStep(StepTemplate) returns (google.protobuf.Empty);
+	//
+	// // Commands
+	// rpc GetCommands(RequestById) returns (CommandsResponse);
+	// rpc AddCommand(AddCommandRequest) returns (CommandTemplate); // adds the command and returns it along with any modifications by the adding process
+	// rpc UpdateCommand(CommandTemplate) returns (CommandTemplate);
+	// rpc RemoveCommand(CommandTemplate) returns (google.protobuf.Empty);
+	//
+	// // Arguments
+	// rpc GetArguments(RequestById) returns (ArgumentsResponse);
+	// rpc AddArgument(AddArgumentRequest) returns (Parameter); // adds the command and returns it along with any modifications by the adding process
+	// rpc UpdateArgument(Parameter) returns (Parameter);
+	// rpc RemoveArgument(Parameter) returns (google.protobuf.Empty);
+	//
+	// // CampaignParameters
+	// rpc GetCampaignParameters(RequestById) returns (CampaignParametersResponse);
+	// rpc AddCampaignParameter(AddCampaignParametersRequest) returns (ParameterMetadata); // adds the command and returns it along with any modifications by the adding process
+	// rpc UpdateCampaignParameter(ParameterMetadata) returns (ParameterMetadata);
+	// rpc RemoveCampaignParameter(ParameterMetadata) returns (google.protobuf.Empty);
 
 	// Projects
 	rpc GetAllProjects(google.protobuf.Empty) returns (ProjectsResponse); 
@@ -58,57 +58,59 @@ service AresAutomation {
 	rpc AddProject(Project) returns (google.protobuf.Empty);
 }
 
-message ExperimentsResponse {
-	repeated ExperimentTemplate experiments = 1; // list of experiments for a given campaign
-}
+// message ExperimentsResponse {
+// 	repeated ExperimentTemplate experiments = 1; // list of experiments for a given campaign
+// }
 
 message RequestById {
 	string unique_id = 1; // the unique id of a requested entity
 }
 
-message AddExperimentRequest {
-  string campaign_id = 1; // the id of the campaign to which the given experiment is to be added
-  ExperimentTemplate experiment_template = 2; // the experiment template to be added
-}
-
-message StepsResponse {
-  repeated StepTemplate steps = 1; // list of steps for a given experiment
-}
-
-message AddStepRequest {
-  string experiment_id = 1; // the id of the experiment to which the given step is to be added
-  StepTemplate step_template = 2; // the step template to be added
-}
-
-message CommandsResponse {
-  repeated CommandTemplate commands = 1; // list of commands for a given step
-}
-
-message AddCommandRequest {
-  string step_id = 1; // the id of the step to which the given command is to be added
-  CommandTemplate command_template = 2; // the command template to be added
-}
-
-message ArgumentsResponse {
-  repeated Parameter arguments = 1; // list of arguments for a given step
-}
-
-message AddArgumentRequest {
-  string command_id = 1; // the id of the command to which the given argument is to be added
-  Parameter argument = 2; // the argument to be added
-}
-
-message CampaignParametersResponse {
-  repeated ParameterMetadata parameters = 1; // list of plannable parameters for a given campaign
-}
-
-message AddCampaignParametersRequest {
-  string campaign_id = 1; // the id of the campaign to which the given parameer is to be added
-  ParameterMetadata parameter = 2; // the parameter to be added
-}
+// message AddExperimentRequest {
+//   string campaign_id = 1; // the id of the campaign to which the given experiment is to be added
+//   ExperimentTemplate experiment_template = 2; // the experiment template to be added
+// }
+//
+// message StepsResponse {
+//   repeated StepTemplate steps = 1; // list of steps for a given experiment
+// }
+//
+// message AddStepRequest {
+//   string experiment_id = 1; // the id of the experiment to which the given step is to be added
+//   StepTemplate step_template = 2; // the step template to be added
+// }
+//
+// message CommandsResponse {
+//   repeated CommandTemplate commands = 1; // list of commands for a given step
+// }
+//
+// message AddCommandRequest {
+//   string step_id = 1; // the id of the step to which the given command is to be added
+//   CommandTemplate command_template = 2; // the command template to be added
+// }
+//
+// message ArgumentsResponse {
+//   repeated Parameter arguments = 1; // list of arguments for a given step
+// }
+//
+// message AddArgumentRequest {
+//   string command_id = 1; // the id of the command to which the given argument is to be added
+//   Parameter argument = 2; // the argument to be added
+// }
+//
+// message CampaignParametersResponse {
+//   repeated ParameterMetadata parameters = 1; // list of plannable parameters for a given campaign
+// }
+//
+// message AddCampaignParametersRequest {
+//   string campaign_id = 1; // the id of the campaign to which the given parameer is to be added
+//   ParameterMetadata parameter = 2; // the parameter to be added
+// }
 
 message CampaignRequest {
+	// provide either a name of unique id for the campaign
 	string campaign_name = 1; // name of the requested campaign template
+	string unique_id = 2; // id of the requested template
 }
 
 message CampaignsResponse {
