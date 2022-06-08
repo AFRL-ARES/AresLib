@@ -11,7 +11,7 @@
 		<Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
 	</Target>
   <ItemGroup>
-    <PackageReference Include="Ares.Core" Version="2022.6.1.183132" />
+    <PackageReference Include="Ares.Core" Version="2022.6.7.215855" />
     <PackageReference Include="DynamicData" Version="7.8.6" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.46.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.46.3" />

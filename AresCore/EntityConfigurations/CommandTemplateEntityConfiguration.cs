@@ -12,7 +12,7 @@ internal class CommandTemplateEntityConfiguration : AresEntityTypeBaseConfigurat
     builder.ToTable("CommandTemplates");
     builder.HasMany(commandTemplate => commandTemplate.Arguments)
       .WithOne()
-      .IsRequired(false);
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasOne(template => template.Metadata)
       .WithOne()

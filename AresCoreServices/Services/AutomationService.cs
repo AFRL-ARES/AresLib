@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Ares.Core.Grpc.Helpers;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -115,10 +114,12 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await using var dbContext = _coreContextFactory.CreateDbContext();
 
     var existingCampaign = await dbContext.CampaignTemplates.FirstAsync(template => template.UniqueId == request.UniqueId);
-    existingCampaign.UpdateCampaignTemplate(request, dbContext);
-    await dbContext.SaveChangesAsync();
-    dbContext.ChangeTracker.Clear();
-    dbContext.CampaignTemplates.Update(request);
+    dbContext.CampaignTemplates.Remove(existingCampaign);
+    dbContext.CampaignTemplates.Add(request);
+    // existingCampaign.UpdateCampaignTemplate(request, dbContext);
+    // await dbContext.SaveChangesAsync();
+    // dbContext.ChangeTracker.Clear();
+    // dbContext.CampaignTemplates.Update(request);
     await dbContext.SaveChangesAsync();
     // var currentTemplate = await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName, context.CancellationToken);
     // currentTemplate.Name = request.CampaignTemplate.Name;
