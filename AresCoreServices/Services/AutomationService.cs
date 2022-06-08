@@ -62,6 +62,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   {
     var campaignTemplate = await GetCampaignTemplate(request, context);
     await using var dbContext = _coreContextFactory.CreateDbContext();
+    dbContext.CampaignTemplates.Remove(campaignTemplate);
     await dbContext.SaveChangesAsync(context.CancellationToken);
 
     return new Empty();
