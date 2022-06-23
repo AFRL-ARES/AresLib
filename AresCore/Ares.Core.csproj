@@ -14,8 +14,8 @@
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="Ares.Device.dll" Version="2022.6.1.183116" />
-	  <PackageReference Include="Ares.Messaging.dll" Version="2022.6.1.182831" />
+	  <PackageReference Include="Ares.Device.dll" Version="2022.6.21.202833" />
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.6.23.133516" />
 	  <PackageReference Include="DynamicData" Version="7.8.6" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.5" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.5" />

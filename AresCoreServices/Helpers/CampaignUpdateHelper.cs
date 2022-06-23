@@ -9,6 +9,7 @@ internal static class CampaignUpdateHelper
 {
   public static void UpdateCampaignTemplate(this CampaignTemplate existingTemplate, CampaignTemplate incomingTemplate, DbContext context)
   {
+    context.RemoveRange(existingTemplate.ExperimentTemplates.Where(template => incomingTemplate.ExperimentTemplates.All(experimentTemplate => experimentTemplate.UniqueId != template.UniqueId)));
     var existingSteps = existingTemplate.ExperimentTemplates.SelectMany(template => template.StepTemplates).ToList();
     var incomingSteps = incomingTemplate.ExperimentTemplates.SelectMany(template => template.StepTemplates).ToArray();
 
@@ -19,6 +20,18 @@ internal static class CampaignUpdateHelper
     var incomingCommands = incomingSteps.SelectMany(template => template.CommandTemplates);
 
     existingCommands.RemoveCommands(incomingCommands, context);
+  }
+
+  public static void ConsolidatePlannedParameterMetadata(this CampaignTemplate template)
+  {
+    var commandParams = template.ExperimentTemplates
+      .SelectMany(experimentTemplate => experimentTemplate.StepTemplates)
+      .SelectMany(stepTemplate => stepTemplate.CommandTemplates)
+      .SelectMany(commandTemplate => commandTemplate.Arguments)
+      .Where(param => param.PlanningMetadata is not null);
+
+    foreach (var commandParam in commandParams)
+      commandParam.PlanningMetadata = template.PlannableParameters.First(metadata => metadata.UniqueId == commandParam.PlanningMetadata.UniqueId);
   }
 
   private static void RemovePlannedParameters(this IList<ParameterMetadata> existingData, IEnumerable<ParameterMetadata> incomingData, DbContext context)

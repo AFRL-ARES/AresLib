@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Ares.Core.Grpc.Helpers;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -19,7 +20,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<ProjectsResponse> GetAllProjects(Empty request, ServerCallContext context)
   {
     await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    var projects = await dbContext.Projects.ToArrayAsync(context.CancellationToken);
+    var projects = await dbContext.Projects.AsNoTracking().ToArrayAsync(context.CancellationToken);
     var response = new ProjectsResponse();
     response.Projects.AddRange(projects);
     return response;
@@ -29,7 +30,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
     var campaignsResponse = new CampaignsResponse();
-    var campaigns = await dbContext.CampaignTemplates.ToArrayAsync(context.CancellationToken);
+    var campaigns = await dbContext.CampaignTemplates.AsNoTracking().ToArrayAsync(context.CancellationToken);
     campaignsResponse.CampaignTemplates.Add(campaigns);
     return campaignsResponse;
   }
@@ -40,9 +41,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await dbContext.Database.OpenConnectionAsync();
     bool exists;
     if (!string.IsNullOrEmpty(request.UniqueId))
-      exists = await dbContext.CampaignTemplates.AnyAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
+      exists = await dbContext.CampaignTemplates.AsNoTracking().AnyAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
     else
-      exists = await dbContext.CampaignTemplates.AnyAsync(template => template.Name == request.CampaignName, context.CancellationToken);
+      exists = await dbContext.CampaignTemplates.AsNoTracking().AnyAsync(template => template.Name == request.CampaignName, context.CancellationToken);
 
     return new BoolValue { Value = exists };
   }
@@ -50,13 +51,11 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<Project> GetProject(ProjectRequest request, ServerCallContext context)
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
-    return await dbContext.Projects.FirstAsync(project => project.Name == request.ProjectName, context.CancellationToken);
+    return await dbContext.Projects.AsNoTracking().FirstAsync(project => project.Name == request.ProjectName, context.CancellationToken);
   }
 
   public override Task<CampaignTemplate> GetSingleCampaign(CampaignRequest request, ServerCallContext context)
-  {
-    return GetCampaignTemplate(request, context);
-  }
+    => GetCampaignTemplate(request, context);
 
   public override async Task<Empty> RemoveCampaign(CampaignRequest request, ServerCallContext context)
   {
@@ -66,15 +65,6 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await dbContext.SaveChangesAsync(context.CancellationToken);
 
     return new Empty();
-  }
-
-  private async Task<CampaignTemplate> GetCampaignTemplate(CampaignRequest request, ServerCallContext context)
-  {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
-    if (!string.IsNullOrEmpty(request.UniqueId))
-      return await dbContext.CampaignTemplates.FirstAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
-
-    return await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName);
   }
 
   public override async Task<Empty> RemoveProject(ProjectRequest request, ServerCallContext context)
@@ -116,6 +106,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
     var existingCampaign = await dbContext.CampaignTemplates.FirstAsync(template => template.UniqueId == request.UniqueId);
     dbContext.CampaignTemplates.Remove(existingCampaign);
+    await dbContext.SaveChangesAsync();
+    dbContext.ChangeTracker.Clear();
+    request.ConsolidatePlannedParameterMetadata();
     dbContext.CampaignTemplates.Add(request);
     // existingCampaign.UpdateCampaignTemplate(request, dbContext);
     // await dbContext.SaveChangesAsync();
@@ -129,5 +122,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
     // currentTemplate.ExperimentTemplates.Clear();
     // currentTemplate.ExperimentTemplates.Add(request.CampaignTemplate.ExperimentTemplates);
     return request;
+  }
+
+  private async Task<CampaignTemplate> GetCampaignTemplate(CampaignRequest request, ServerCallContext context)
+  {
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    if (!string.IsNullOrEmpty(request.UniqueId))
+      return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
+
+    return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.Name == request.CampaignName);
   }
 }

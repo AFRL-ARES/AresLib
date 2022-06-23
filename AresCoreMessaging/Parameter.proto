@@ -10,5 +10,6 @@ message Parameter {
 	ParameterMetadata metadata = 2; // Non-volatile information about the command argument/parameter
 	float value = 3; // Value of the argument/parameter used for execution, represented as a floating point number for planner compatibility
 	bool planned = 4; // Indicated whether or not the parameter needs to be planned for
-	int64 index = 5; // Index of the collection in which executed this template
+	ParameterMetadata planning_metadata = 5; // metadata containing the info needed for planning
+	int64 index = 6; // Index of the collection in which executed this template
 }
