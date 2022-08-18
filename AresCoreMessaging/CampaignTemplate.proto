@@ -5,13 +5,14 @@ package ares.messaging;
 import "ExperimentTemplate.proto";
 import "ParameterMetadata.proto";
 import "PlannerInfo.proto";
+import "PlanSuggestion.proto";
 import "google/protobuf/wrappers.proto";
 
 message CampaignTemplate {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this template
 	repeated ExperimentTemplate experiment_templates = 2; // Collection of experiment templates to be used for generating executable experiments
 	string name = 3; // Name of the campaign. Doesn't have to be descriptive, and is used for lookup
-	int64 index = 4; // Index of the collection in which executed this template 
+	int64 index = 4; // Index of the collection in which executed this template
 	repeated ParameterMetadata plannable_parameters = 5; // The plannable parameters or variables available to commands within experiments
 	repeated PlannerInfo planners = 6; // Collection of planners providing suggestions for plannable parameters bound in the experiment template
 	// Analyzer

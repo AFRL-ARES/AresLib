@@ -2,12 +2,11 @@
 using System.Threading.Tasks;
 using Ares.Messaging.Device;
 
-namespace Ares.Device
+namespace Ares.Device;
+
+public interface IAresDevice
 {
-  public interface IAresDevice
-  {
-    string Name { get; }
-    IObservable<DeviceStatus> Status { get; }
-    Task<bool> Activate();
-  }
+  string Name { get; }
+  IObservable<DeviceStatus> Status { get; }
+  Task<bool> Activate();
 }

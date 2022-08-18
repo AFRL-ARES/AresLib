@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Ares.Core.Executors;
+﻿using Ares.Core.Execution.Executors;
 using Ares.Device;
 using Ares.Messaging;
 
@@ -7,7 +6,7 @@ namespace Ares.Core.Composers;
 
 internal class StepComposer : CommandComposer<StepTemplate, StepExecutor>
 {
-  public StepComposer(StepTemplate template, ReadOnlyObservableCollection<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters)
+  public StepComposer(StepTemplate template, IEnumerable<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters)
   {
   }
 
@@ -36,7 +35,7 @@ internal class StepComposer : CommandComposer<StepTemplate, StepExecutor>
 
 
     return Template.IsParallel
-      ? new ParallelStepExecutor(Template.Name, executables)
-      : new SequentialStepExecutor(Template.Name, executables);
+      ? new ParallelStepExecutor(Template, executables)
+      : new SequentialStepExecutor(Template, executables);
   }
 }

@@ -52,17 +52,22 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.21.1" />
+    <PackageReference Include="Google.Protobuf" Version="3.21.2" />
     <PackageReference Include="Grpc" Version="2.46.3" />
-    <PackageReference Include="Grpc.Tools" Version="2.46.3">
+    <PackageReference Include="Grpc.Tools" Version="2.47.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="CommandResult.proto" GrpcServices="None">
-      <Generator></Generator>
+    <Protobuf Include="AnalyzerInfo.proto">
+      <GrpcServices>None</GrpcServices>
+      <Access>Public</Access>
+      <ProtoCompile>True</ProtoCompile>
+      <CompileOutputs>True</CompileOutputs>
+      <OutputDir>obj\Debug\netstandard2.1\</OutputDir>
+      <Generator>MSBuild:Compile</Generator>
     </Protobuf>
     <Protobuf Include="AresAutomation.proto" />
     <Protobuf Include="AresUserType.proto" GrpcServices="None">
@@ -82,10 +87,24 @@
     <Protobuf Include="PlannerInfo.proto" GrpcServices="None" />
     <Protobuf Include="Parameter.proto" GrpcServices="None" />
     <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />
+    <Protobuf Include="PlanSuggestion.proto">
+      <GrpcServices>None</GrpcServices>
+      <Access>Public</Access>
+      <ProtoCompile>True</ProtoCompile>
+      <CompileOutputs>True</CompileOutputs>
+      <OutputDir>obj\Debug\netstandard2.1\</OutputDir>
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
     <Protobuf Include="Project.proto" GrpcServices="None" />
     <Protobuf Include="AresServerInfo.proto" />
     <Protobuf Include="PlanTransaction.proto" GrpcServices="None" />
     <Protobuf Include="StepTemplate.proto" GrpcServices="None" />
+    <None Remove="ExecutionStatusMessages.proto" />
+    <Protobuf Include="ExecutionStatusMessages.proto" />
+    <None Remove="ExecutionResultMessages.proto" />
+    <Protobuf Include="ExecutionResultMessages.proto" />
+    <None Remove="DeviceCommandResult.proto" />
+    <Protobuf Include="DeviceCommandResult.proto" />
   </ItemGroup>
 
 </Project>

@@ -4,13 +4,14 @@ package ares.messaging;
 
 import "ParameterMetadata.proto";
 import "Parameter.proto";
+import "PlannerInfo.proto";
 import "google/protobuf/wrappers.proto";
 
 message PlannerTransaction {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this transaction
 	PlannerRequest request = 2; // Request sent to the planner
 	PlannerResponse response = 3; // Response received for a given request
-	string planner_name = 4; // Name identifier of the planner to transact with
+	PlannerInfo planner_info = 4; // Information about the planner with which the transaction took place
 }
 
 message PlannerRequest {

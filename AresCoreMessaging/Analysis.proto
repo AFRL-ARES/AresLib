@@ -3,9 +3,10 @@ syntax = "proto3";
 package ares.messaging;
 
 import "CompletedExperiment.proto";
+import "AnalyzerInfo.proto";
 
 message Analysis {
 	CompletedExperiment completed_experiment = 1; // Completed experiment in which data was used to provide result
 	float result = 2; // Result of the process performed on the completed experiment's output
-	string analyzer_name = 3; // Name of the analyzer providing the process result
+	AnalyzerInfo analyzer = 3; // Name of the analyzer providing the process result
 }

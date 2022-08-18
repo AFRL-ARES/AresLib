@@ -36,9 +36,9 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Ares.Messaging.dll" Version="2022.6.23.133516" />
-	  <PackageReference Include="DynamicData" Version="7.8.6" />
-	  <PackageReference Include="UnitsNet" Version="4.132.0" />
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.7.5.125927" />
+	  <PackageReference Include="DynamicData" Version="7.9.4" />
+	  <PackageReference Include="UnitsNet" Version="4.136.0" />
   </ItemGroup>
 
 

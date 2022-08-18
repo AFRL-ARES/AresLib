@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "DeviceCommandResult.proto";
+
+message CampaignExecutionStatus {
+  string campaign_id = 1;
+  repeated ExperimentExecutionStatus experiment_execution_statuses = 2;
+}
+
+message ExperimentExecutionStatus {
+  string experiment_id = 1;
+  repeated StepExecutionStatus step_execution_statuses = 2;
+}
+
+message StepExecutionStatus {
+  string step_id = 1;
+  repeated CommandExecutionStatus command_execution_statuses = 2;
+}
+
+message CommandExecutionStatus {
+  string command_id = 1;
+  DeviceCommandResult result = 2;
+}

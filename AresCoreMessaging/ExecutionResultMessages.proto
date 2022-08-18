@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "google/protobuf/timestamp.proto";
+import "CompletedCampaign.proto";
+import "CompletedExperiment.proto";
+
+message ExecutionInfo {
+  google.protobuf.Timestamp time_started = 1;
+  google.protobuf.Timestamp time_finished = 2;
+}
+
+message CampaignResult {
+  string campaign_id = 1;
+  repeated ExperimentResult experiment_results = 2;
+  ExecutionInfo execution_info = 3;
+  CompletedCampaign completed_campaign = 4;
+}
+
+message ExperimentResult {
+  string experiment_id = 1;
+  repeated StepResult step_results = 2;
+  ExecutionInfo execution_info = 3;
+  CompletedExperiment completed_experiment = 4;
+}
+
+message StepResult {
+  string step_id = 1;
+  repeated CommandResult command_results = 2;
+  ExecutionInfo execution_info = 3;
+}
+
+message CommandResult {
+  string command_id = 1;
+  ExecutionInfo execution_info = 2;
+}

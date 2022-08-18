@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Authors>Infoscitex</Authors>
@@ -13,6 +12,9 @@
     </Description>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+	<LangVersion>10</LangVersion>
+	<Nullable>enable</Nullable>
+	<TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
@@ -25,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ares.Messaging.dll" Version="2022.6.23.133516" />
+    <PackageReference Include="Ares.Messaging.dll" Version="2022.7.5.125927" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 

@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using Ares.Core.Composers;
+using Ares.Core.Execution.Executors;
 using Ares.Device;
 using Ares.Messaging;
 using DynamicData;
@@ -8,9 +8,8 @@ namespace Ares.Core;
 
 public abstract class LaboratoryManager : ILaboratoryManager
 {
-  protected LaboratoryManager(string name)
+  protected LaboratoryManager(CampaignExecutor campaignExecutor)
   {
-    Name = name;
     DeviceCommandInterpretersSource
       .Connect()
       .Bind(out var availableDeviceCommandInterpreters)
@@ -32,10 +31,10 @@ public abstract class LaboratoryManager : ILaboratoryManager
 
   public void RunCampaign(CampaignTemplate campaignTemplate)
   {
-    var campaignComposer = new CampaignComposer(campaignTemplate, AvailableDeviceCommandInterpreters);
-    var campaignExecutor = campaignComposer.Compose();
-    Task.Run(() => campaignExecutor.Execute())
-      .Wait();
+    // var campaignComposer = new CampaignComposer(campaignTemplate, AvailableDeviceCommandInterpreters);
+    // var campaignExecutor = campaignComposer.Compose();
+    // Task.Run(() => campaignExecutor.Execute())
+    //   .Wait();
   }
 
   public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter)
