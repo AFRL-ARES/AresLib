@@ -6,7 +6,8 @@ public interface IPlanningHelper
 {
   /// <summary>
   /// </summary>
-  /// <param name="planSuggestions">A collection of suggestions indicating which planner to pick</param>
+  /// <param name="plannerAllocations">A collection of planner-to-parameter allocations indicating which planner to pick</param>
+  /// <param name="parameters">Collection of parameters whose values to plan for</param>
   /// <returns>True if planning succeeded, false otherwise</returns>
-  Task<bool> TryResolveParameters(IEnumerable<PlanSuggestion> planSuggestions, IEnumerable<Parameter> parameters);
+  Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters);
 }

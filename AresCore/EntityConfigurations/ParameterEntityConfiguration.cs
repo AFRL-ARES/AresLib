@@ -19,6 +19,11 @@ internal class ParameterEntityConfiguration : AresEntityTypeBaseConfiguration<Pa
     builder.HasOne(parameter => parameter.PlanningMetadata)
       .WithMany();
 
+    builder.HasOne(parameter => parameter.Value)
+      .WithOne()
+      .HasForeignKey<ParameterValue>("ParameterId")
+      .OnDelete(DeleteBehavior.Cascade);
+
     builder.Navigation(parameter => parameter.Metadata)
       .AutoInclude();
 

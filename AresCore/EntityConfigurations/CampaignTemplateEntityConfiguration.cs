@@ -17,7 +17,7 @@ internal class CampaignTemplateEntityConfiguration : AresEntityTypeBaseConfigura
       .WithOne()
       .IsRequired();
 
-    builder.HasMany(campaignTemplate => campaignTemplate.Planners)
+    builder.HasMany(campaignTemplate => campaignTemplate.PlannerAllocations)
       .WithOne()
       .IsRequired();// remove requirement if planners should exist separately from campaign templates
 
@@ -32,7 +32,7 @@ internal class CampaignTemplateEntityConfiguration : AresEntityTypeBaseConfigura
     builder.Navigation(template => template.PlannableParameters)
       .AutoInclude();
 
-    builder.Navigation(template => template.Planners)
+    builder.Navigation(template => template.PlannerAllocations)
       .AutoInclude();
   }
 }

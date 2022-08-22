@@ -11,11 +11,11 @@ internal class PlanningHelper : IPlanningHelper
     _plannerManager = plannerManager;
   }
 
-  public async Task<bool> TryResolveParameters(IEnumerable<PlanSuggestion> planSuggestions, IEnumerable<Parameter> parameters)
+  public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters)
   {
     var parameterArray = parameters.ToArray();
     var plannerSet = new Dictionary<IPlanner, ParameterMetadata>();
-    foreach (var planSuggestion in planSuggestions)
+    foreach (var planSuggestion in plannerAllocations)
     {
       var hasVersion = Version.TryParse(planSuggestion.Planner.Version, out var version);
       var planner = hasVersion

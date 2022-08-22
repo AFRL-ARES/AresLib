@@ -79,7 +79,7 @@ internal class ExecutionManager : IExecutionManager
     var experimentTemplate = template.ExperimentTemplates.First();
     if (!experimentTemplate.IsResolved())
     {
-      var resolveSuccess = await _planningHelper.TryResolveParameters(template.Planners, experimentTemplate.GetAllPlannedParameters());
+      var resolveSuccess = await _planningHelper.TryResolveParameters(template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters());
       if (!resolveSuccess)
         return null;
     }

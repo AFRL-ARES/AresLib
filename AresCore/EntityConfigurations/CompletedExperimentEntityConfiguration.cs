@@ -14,6 +14,10 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
+    builder.HasMany<PlannerTransaction>()
+      .WithOne()
+      .OnDelete(DeleteBehavior.Cascade);
+
     builder.Navigation(experiment => experiment.PlannerTransactions)
       .AutoInclude();
 

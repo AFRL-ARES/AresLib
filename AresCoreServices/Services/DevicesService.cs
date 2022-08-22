@@ -55,7 +55,7 @@ public class DevicesService : AresDevices.AresDevicesBase
     return Task.FromResult(response);
   }
 
-  public override async Task<CommandResult> ExecuteCommand(CommandTemplate request, ServerCallContext context)
+  public override async Task<DeviceCommandResult> ExecuteCommand(CommandTemplate request, ServerCallContext context)
   {
     var test = Any.Pack(new Int32Value { Value = 12 });
     var interpreter = _laboratoryManager.Lab.DeviceInterpreters
@@ -64,15 +64,14 @@ public class DevicesService : AresDevices.AresDevicesBase
     try
     {
       var deviceCommandTask = interpreter.TemplateToDeviceCommand(request);
-      deviceCommandTask.Start();
-      await deviceCommandTask;
+      await deviceCommandTask(context.CancellationToken);
     }
     catch (Exception e)
     {
-      return new CommandResult { Success = false, Error = e.ToString() };
+      return new DeviceCommandResult { Success = false, Error = e.ToString() };
     }
 
-    return new CommandResult { Success = true, Result = test };
+    return new DeviceCommandResult { Success = true, Result = test };
   }
 
   private IAresDevice GetAresDevice(string name)
