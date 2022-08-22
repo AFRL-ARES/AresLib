@@ -4,23 +4,26 @@ using Ares.Messaging;
 
 namespace Ares.Core.Composers;
 
-internal class StepComposer : CommandComposer<StepTemplate, StepExecutor>
+internal class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
 {
-  public StepComposer(StepTemplate template, IEnumerable<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters) : base(template, availableDeviceCommandInterpreters)
+  private readonly IEnumerable<IDeviceCommandInterpreter<IAresDevice>> _availableDeviceCommandInterpreters;
+
+  public StepComposer(IEnumerable<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters)
   {
+    _availableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
   }
 
-  public override StepExecutor Compose()
+  public StepExecutor Compose(StepTemplate template)
   {
     var executables =
-      Template
+      template
         .CommandTemplates
-        .OrderBy(template => template.Index)
+        .OrderBy(t => t.Index)
         .Select
         (
           commandTemplate => {
             var commandInterpreter =
-              AvailableDeviceCommandInterpreters
+              _availableDeviceCommandInterpreters
                 .First(interpreter =>
                   interpreter
                     .Device
@@ -34,8 +37,8 @@ internal class StepComposer : CommandComposer<StepTemplate, StepExecutor>
         .ToArray();
 
 
-    return Template.IsParallel
-      ? new ParallelStepExecutor(Template, executables)
-      : new SequentialStepExecutor(Template, executables);
+    return template.IsParallel
+      ? new ParallelStepExecutor(template, executables)
+      : new SequentialStepExecutor(template, executables);
   }
 }

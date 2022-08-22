@@ -42,6 +42,7 @@
   <ItemGroup>
     <None Remove="AresAutomation.proto" />
     <None Remove="AresDevices.proto" />
+    <None Remove="AresPlanning.proto" />
     <None Remove="AresServerInfo.proto" />
     <None Remove="AresUserType.proto" />
     <None Remove="CommandResult.proto" />
@@ -69,6 +70,7 @@
       <OutputDir>obj\Debug\netstandard2.1\</OutputDir>
       <Generator>MSBuild:Compile</Generator>
     </Protobuf>
+    <Protobuf Include="AresPlanning.proto" />
     <Protobuf Include="AresAutomation.proto" />
     <Protobuf Include="AresUserType.proto" GrpcServices="None">
       <Generator></Generator>
@@ -84,6 +86,14 @@
     <Protobuf Include="CompletedExperiment.proto" GrpcServices="None" />
     <Protobuf Include="ExperimentTemplate.proto" GrpcServices="None" />
     <Protobuf Include="Limits.proto" GrpcServices="None" />
+    <Protobuf Include="ParameterValue.proto">
+      <GrpcServices>None</GrpcServices>
+      <Access>Public</Access>
+      <ProtoCompile>True</ProtoCompile>
+      <CompileOutputs>True</CompileOutputs>
+      <OutputDir>obj\Debug\netstandard2.1\</OutputDir>
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
     <Protobuf Include="PlannerInfo.proto" GrpcServices="None" />
     <Protobuf Include="Parameter.proto" GrpcServices="None" />
     <Protobuf Include="ParameterMetadata.proto" GrpcServices="None" />

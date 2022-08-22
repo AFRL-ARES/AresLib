@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Ares.Core.Execution;
 using Ares.Core.Execution.Executors;
 using Ares.Device;
 using Ares.Messaging;
@@ -8,7 +9,7 @@ namespace Ares.Core;
 
 public abstract class LaboratoryManager : ILaboratoryManager
 {
-  protected LaboratoryManager(CampaignExecutor campaignExecutor)
+  protected LaboratoryManager()
   {
     DeviceCommandInterpretersSource
       .Connect()

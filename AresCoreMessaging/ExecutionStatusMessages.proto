@@ -22,4 +22,13 @@ message StepExecutionStatus {
 message CommandExecutionStatus {
   string command_id = 1;
   DeviceCommandResult result = 2;
+  ExecutionState state = 3;
+}
+
+enum ExecutionState {
+  UNDEFINED = 0;
+  SUCCEEDED = 1;
+  RUNNING = 2;
+  STOPPED = 3;
+  FAILED = 4;
 }

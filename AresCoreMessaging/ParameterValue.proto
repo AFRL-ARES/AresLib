@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "ParameterMetadata.proto";
+import "google/protobuf/wrappers.proto";
+
+message ParameterValue {
+	google.protobuf.StringValue unique_id = 1; // A unique id for this value
+	float value = 2; // the value of this optional parameter
+}

@@ -4,12 +4,10 @@ package ares.messaging;
 
 import "CampaignTemplate.proto";
 import "CompletedExperiment.proto";
-import "PlanTransaction.proto";
 import "google/protobuf/wrappers.proto";
 
 message CompletedCampaign {
   google.protobuf.StringValue unique_id = 1; // A unique id for this campaign
   repeated CompletedExperiment experiments = 2; // Experiments completed within this CampaignTemplate
   CampaignTemplate template = 3; // Template used to execute the campaign
-  repeated PlannerTransaction planner_transactions = 4; // Transactions associated with the planner(s) during campaign execution
 }

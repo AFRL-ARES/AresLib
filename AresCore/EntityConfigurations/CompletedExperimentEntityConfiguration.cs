@@ -14,6 +14,9 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
+    builder.Navigation(experiment => experiment.PlannerTransactions)
+      .AutoInclude();
+
     builder.Property(experiment => experiment.SerializedData)
       .HasConversion(
         s => s.ToByteArray(),

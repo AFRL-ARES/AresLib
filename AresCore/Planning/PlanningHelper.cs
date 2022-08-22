@@ -37,7 +37,13 @@ internal class PlanningHelper : IPlanningHelper
       foreach (var result in results)
       {
         var parameterPlanTarget = parameterArray.First(parameter => parameter.Metadata.UniqueId == result.Metadata.UniqueId);
-        parameterPlanTarget.Value = Convert.ToSingle(result.Value);
+        var val = new ParameterValue
+        {
+          UniqueId = Guid.NewGuid().ToString(),
+          Value = Convert.ToSingle(result.Value)
+        };
+
+        parameterPlanTarget.Value = val;
       }
     }
 

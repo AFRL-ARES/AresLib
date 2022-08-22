@@ -13,15 +13,11 @@ public class CompletedCampaignEntityConfiguration : AresEntityTypeBaseConfigurat
     builder.Navigation(campaign => campaign.Experiments)
       .AutoInclude();
 
-    builder.Navigation(campaign => campaign.PlannerTransactions)
-      .AutoInclude();
-
     builder.Navigation(campaign => campaign.Template)
       .AutoInclude();
 
     builder.HasOne(campaign => campaign.Template)
-      .WithOne()
-      .HasForeignKey<CampaignTemplate>("CompletedCampaignId");
+      .WithMany();
 
     builder.HasMany(fd => fd.Experiments)
       .WithOne()
