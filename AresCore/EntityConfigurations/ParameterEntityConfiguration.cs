@@ -29,5 +29,8 @@ internal class ParameterEntityConfiguration : AresEntityTypeBaseConfiguration<Pa
 
     builder.Navigation(parameter => parameter.PlanningMetadata)
       .AutoInclude();
+
+    builder.Navigation(parameter => parameter.Value)
+      .AutoInclude();
   }
 }

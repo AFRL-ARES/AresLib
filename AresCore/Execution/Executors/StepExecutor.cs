@@ -9,14 +9,14 @@ public abstract class StepExecutor : IBaseExecutor<StepResult, StepTemplate>
 {
   protected readonly ISubject<ExecutorState> _stateSubject = new BehaviorSubject<ExecutorState>(ExecutorState.Idle);
 
-  public StepExecutor(StepTemplate template, Func<CancellationToken, Task<CommandResult>>[] commands)
+  public StepExecutor(StepTemplate template, Func<CancellationToken, Task>[] commands)
   {
     Template = template;
     Commands = commands;
     State = _stateSubject.AsObservable();
   }
 
-  public Func<CancellationToken, Task<CommandResult>>[] Commands { get; }
+  public Func<CancellationToken, Task>[] Commands { get; }
   public IObservable<ExecutorState> State { get; }
   public StepTemplate Template { get; set; }
 

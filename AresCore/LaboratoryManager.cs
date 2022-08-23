@@ -1,6 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Ares.Core.Execution;
-using Ares.Core.Execution.Executors;
 using Ares.Device;
 using Ares.Messaging;
 using DynamicData;
@@ -9,13 +7,14 @@ namespace Ares.Core;
 
 public abstract class LaboratoryManager : ILaboratoryManager
 {
-  protected LaboratoryManager()
+  protected LaboratoryManager(string name)
   {
     DeviceCommandInterpretersSource
       .Connect()
       .Bind(out var availableDeviceCommandInterpreters)
       .Subscribe();
 
+    Name = name;
     AvailableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
     Lab = new Laboratory(Name, AvailableDeviceCommandInterpreters);
     // TODO: TryLoad user's most recent active project

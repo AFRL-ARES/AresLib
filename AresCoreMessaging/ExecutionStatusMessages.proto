@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "DeviceCommandResult.proto";
-
 message CampaignExecutionStatus {
   string campaign_id = 1;
   repeated ExperimentExecutionStatus experiment_execution_statuses = 2;
@@ -21,8 +19,7 @@ message StepExecutionStatus {
 
 message CommandExecutionStatus {
   string command_id = 1;
-  DeviceCommandResult result = 2;
-  ExecutionState state = 3;
+  ExecutionState state = 2;
 }
 
 enum ExecutionState {

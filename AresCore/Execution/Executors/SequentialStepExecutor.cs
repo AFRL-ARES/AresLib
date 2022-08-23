@@ -1,10 +1,11 @@
 ﻿using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Executors;
 
 internal class SequentialStepExecutor : StepExecutor
 {
-  public SequentialStepExecutor(StepTemplate template, Func<CancellationToken, Task<CommandResult>>[] commands) : base(template, commands)
+  public SequentialStepExecutor(StepTemplate template, Func<CancellationToken, Task>[] commands) : base(template, commands)
   {
   }
 
@@ -14,7 +15,15 @@ internal class SequentialStepExecutor : StepExecutor
     var commandResults = new List<CommandResult>();
     foreach (var command in Commands)
     {
-      var commandResult = await command(cancellationToken);
+      var executionInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
+      await command(cancellationToken);
+      executionInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
+      var commandResult = new CommandResult
+      {
+        CommandId = Guid.NewGuid().ToString(),
+        ExecutionInfo = executionInfo
+      };
+
       commandResults.Add(commandResult);
     }
 

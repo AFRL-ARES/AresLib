@@ -11,7 +11,7 @@ internal class CampaignExecutionStatusEntityConfiguration : AresEntityTypeBaseCo
     base.Configure(builder);
     builder.ToTable("CampaignExecutionStatuses");
 
-    builder.HasMany<ExperimentExecutionStatus>()
+    builder.HasMany(status => status.ExperimentExecutionStatuses)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
   }

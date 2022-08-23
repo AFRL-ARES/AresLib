@@ -10,17 +10,17 @@ internal class CampaignResultEntityConfiguration : AresEntityTypeBaseConfigurati
   {
     base.Configure(builder);
     builder.ToTable("CampaignResults");
-    builder.HasMany<ExperimentResult>()
+    builder.HasMany(result => result.ExperimentResults)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
-    builder.HasOne<CompletedCampaign>()
+    builder.HasOne(result => result.CompletedCampaign)
       .WithOne()
-      .HasForeignKey<CompletedCampaign>("ExperimentResultId");
+      .HasForeignKey<CompletedCampaign>("CampaignResultId");
 
-    builder.HasOne<ExecutionInfo>()
+    builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
-      .HasForeignKey<ExecutionInfo>("ExperimentResultId")
-      .OnDelete(DeleteBehavior.Cascade);
+      .HasForeignKey<ExecutionInfo>("CampaignResultId")
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

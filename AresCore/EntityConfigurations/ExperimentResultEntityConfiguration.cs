@@ -10,17 +10,17 @@ internal class ExperimentResultEntityConfiguration : AresEntityTypeBaseConfigura
   {
     base.Configure(builder);
     builder.ToTable("ExperimentResults");
-    builder.HasMany<StepResult>()
+    builder.HasMany(result => result.StepResults)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
-    builder.HasOne<CompletedExperiment>()
+    builder.HasOne(result => result.CompletedExperiment)
       .WithOne()
       .HasForeignKey<CompletedExperiment>("ExperimentResultId");
-    
-    builder.HasOne<ExecutionInfo>()
+
+    builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
       .HasForeignKey<ExecutionInfo>("ExperimentResultId")
-      .OnDelete(DeleteBehavior.Cascade);
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

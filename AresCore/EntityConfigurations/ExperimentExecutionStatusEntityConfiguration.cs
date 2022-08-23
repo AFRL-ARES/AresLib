@@ -11,7 +11,7 @@ internal class ExperimentExecutionStatusEntityConfiguration : AresEntityTypeBase
     base.Configure(builder);
     builder.ToTable("ExperimentExecutionStatuses");
 
-    builder.HasMany<StepExecutionStatus>()
+    builder.HasMany(status => status.StepExecutionStatuses)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
   }

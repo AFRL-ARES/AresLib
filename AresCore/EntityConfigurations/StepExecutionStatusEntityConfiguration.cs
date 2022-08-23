@@ -11,7 +11,7 @@ internal class StepExecutionStatusEntityConfiguration : AresEntityTypeBaseConfig
     base.Configure(builder);
     builder.ToTable("StepExecutionStatuses");
 
-    builder.HasMany<CommandExecutionStatus>()
+    builder.HasMany(status => status.CommandExecutionStatuses)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
   }

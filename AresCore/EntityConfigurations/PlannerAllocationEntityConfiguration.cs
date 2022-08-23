@@ -11,7 +11,7 @@ internal class PlannerAllocationEntityConfiguration : AresEntityTypeBaseConfigur
     base.Configure(builder);
     builder.ToTable("PlannerAllocations");
 
-    builder.HasOne<PlannerInfo>()
+    builder.HasOne(planner => planner.Planner)
       .WithMany();
   }
 }

@@ -10,9 +10,9 @@ internal class CommandResultEntityConfiguration : AresEntityTypeBaseConfiguratio
   {
     base.Configure(builder);
     builder.ToTable("CommandResults");
-    builder.HasOne<ExecutionInfo>()
+    builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
       .HasForeignKey<ExecutionInfo>("CommandResultId")
-      .OnDelete(DeleteBehavior.Cascade);
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

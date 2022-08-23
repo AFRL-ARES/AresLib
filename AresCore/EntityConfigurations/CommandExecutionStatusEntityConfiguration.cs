@@ -11,11 +11,6 @@ internal class CommandExecutionStatusEntityConfiguration : AresEntityTypeBaseCon
     base.Configure(builder);
     builder.ToTable("CommandExecutionStatuses");
 
-    builder.HasOne<DeviceCommandResult>()
-      .WithOne()
-      .HasForeignKey<DeviceCommandResult>("CommandExecutionStatusId")
-      .IsRequired();
-
     builder.Property(status => status.State)
       .HasConversion<string>();
   }

@@ -14,7 +14,7 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
-    builder.HasMany<PlannerTransaction>()
+    builder.HasMany(experiment => experiment.PlannerTransactions)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
@@ -25,8 +25,5 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
       .HasConversion(
         s => s.ToByteArray(),
         bytes => ByteString.CopyFrom(bytes));
-
-    builder.HasOne<CompletedCampaign>()
-      .WithMany(campaign => campaign.Experiments);
   }
 }

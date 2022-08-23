@@ -10,12 +10,13 @@ internal class StepResultEntityConfiguration : AresEntityTypeBaseConfiguration<S
   {
     base.Configure(builder);
     builder.ToTable("StepResults");
-    builder.HasMany<CommandResult>()
+    builder.HasMany(result => result.CommandResults)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
-    builder.HasOne<ExecutionInfo>()
+
+    builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
       .HasForeignKey<ExecutionInfo>("StepResultId")
-      .OnDelete(DeleteBehavior.Cascade);
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }
