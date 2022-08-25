@@ -5,7 +5,7 @@ namespace Ares.Core.Execution.Executors;
 
 internal class SequentialStepExecutor : StepExecutor
 {
-  public SequentialStepExecutor(StepTemplate template, Func<CancellationToken, Task>[] commands) : base(template, commands)
+  public SequentialStepExecutor(StepTemplate template, CommandExecutor[] commandExecutors) : base(template, commandExecutors)
   {
   }
 
@@ -13,10 +13,13 @@ internal class SequentialStepExecutor : StepExecutor
   {
     var startTime = DateTime.UtcNow;
     var commandResults = new List<CommandResult>();
-    foreach (var command in Commands)
+    foreach (var command in CommandExecutors)
     {
+      if (cancellationToken.IsCancellationRequested)
+        break;
+
       var executionInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
-      await command(cancellationToken);
+      await command.Execute(cancellationToken);
       executionInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
       var commandResult = new CommandResult
       {

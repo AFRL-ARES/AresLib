@@ -1,24 +1,37 @@
 ﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Core.Executors;
 using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
 
-public abstract class StepExecutor : IBaseExecutor<StepResult, StepTemplate>
+public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
 {
-  protected readonly ISubject<ExecutorState> _stateSubject = new BehaviorSubject<ExecutorState>(ExecutorState.Idle);
-
-  public StepExecutor(StepTemplate template, Func<CancellationToken, Task>[] commands)
+  public StepExecutor(StepTemplate template, IExecutor<CommandResult, CommandExecutionStatus>[] commandExecutors)
   {
     Template = template;
-    Commands = commands;
-    State = _stateSubject.AsObservable();
+    CommandExecutors = commandExecutors;
+    Status = new StepExecutionStatus
+    {
+      StepId = template.UniqueId
+    };
+
+    Status.CommandExecutionStatuses.AddRange(commandExecutors.Select(executor => executor.Status));
+
+    var commandExecutionObservation = commandExecutors.Select(executor => {
+      return executor.StatusObservable.Select(_ => {
+        var cmdResults = commandExecutors.Select(cmdExecutor => cmdExecutor.Status);
+        Status.CommandExecutionStatuses.Clear();
+        Status.CommandExecutionStatuses.AddRange(cmdResults);
+        return Status;
+      });
+    }).Concat();
+
+    StatusObservable = commandExecutionObservation;
   }
 
-  public Func<CancellationToken, Task>[] Commands { get; }
-  public IObservable<ExecutorState> State { get; }
-  public StepTemplate Template { get; set; }
+  public IExecutor<CommandResult, CommandExecutionStatus>[] CommandExecutors { get; }
+  protected StepTemplate Template { get; }
 
+  public IObservable<StepExecutionStatus> StatusObservable { get; }
+  public StepExecutionStatus Status { get; }
   public abstract Task<StepResult> Execute(CancellationToken cancellationToken);
 }

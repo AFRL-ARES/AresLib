@@ -2,7 +2,7 @@
 
 namespace Ares.Core.Composers;
 
-internal interface ICommandComposer<in TDbTemplate, out TExecutor>
+public interface ICommandComposer<in TDbTemplate, out TExecutor>
   where TDbTemplate : IMessage
 {
   TExecutor Compose(TDbTemplate template);

@@ -2,11 +2,11 @@ using DynamicData;
 
 namespace Ares.Core.Planning;
 
-internal class PlannerManager : IPlannerManager
+public class PlannerManager : IPlannerManager
 {
   private readonly IDictionary<string, ISourceCache<IPlanner, Version>> _plannerStore
     = new Dictionary<string, ISourceCache<IPlanner, Version>>();
-  
+
   public IPlanner GetPlanner(string name, Version version)
   {
     var plannerRegistered = _plannerStore.TryGetValue(name, out var plannerVersions);

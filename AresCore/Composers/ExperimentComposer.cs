@@ -1,10 +1,9 @@
 ﻿using Ares.Core.Execution.Executors;
-using Ares.Device;
 using Ares.Messaging;
 
 namespace Ares.Core.Composers;
 
-internal class ExperimentComposer : ICommandComposer<ExperimentTemplate, ExperimentExecutor>
+public class ExperimentComposer : ICommandComposer<ExperimentTemplate, ExperimentExecutor>
 {
   private readonly ICommandComposer<StepTemplate, StepExecutor> _stepComposer;
 
@@ -12,7 +11,7 @@ internal class ExperimentComposer : ICommandComposer<ExperimentTemplate, Experim
   {
     _stepComposer = stepComposer;
   }
-  
+
   public ExperimentExecutor Compose(ExperimentTemplate template)
   {
     var stepExecutors =

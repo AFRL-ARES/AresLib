@@ -47,6 +47,7 @@
     <None Remove="AresUserType.proto" />
     <None Remove="CommandResult.proto" />
     <None Remove="CompletedCampaign.proto" />
+    <None Remove="CorePlanning.proto" />
     <None Remove="PlannerInfo.proto" />
     <None Remove="PlanTransaction.proto" />
     <None Remove="Project.proto" />
@@ -70,6 +71,7 @@
       <OutputDir>obj\Debug\netstandard2.1\</OutputDir>
       <Generator>MSBuild:Compile</Generator>
     </Protobuf>
+    <Protobuf Include="AresDevices.proto" />
     <Protobuf Include="AresPlanning.proto" />
     <Protobuf Include="AresAutomation.proto" />
     <Protobuf Include="AresUserType.proto" GrpcServices="None">
@@ -78,7 +80,7 @@
     <Protobuf Include="Analysis.proto" GrpcServices="None">
       <Generator></Generator>
     </Protobuf>
-    <Protobuf Include="AresDevices.proto" />
+    <Protobuf Include="CorePlanning.proto" />
     <Protobuf Include="CampaignTemplate.proto" GrpcServices="None" />
     <Protobuf Include="CommandMetadata.proto" GrpcServices="None" />
     <Protobuf Include="CommandTemplate.proto" GrpcServices="None" />

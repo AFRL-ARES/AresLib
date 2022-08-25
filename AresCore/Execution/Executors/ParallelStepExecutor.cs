@@ -5,14 +5,14 @@ namespace Ares.Core.Execution.Executors;
 
 internal class ParallelStepExecutor : StepExecutor
 {
-  public ParallelStepExecutor(StepTemplate template, Func<CancellationToken, Task>[] commands) : base(template, commands)
+  public ParallelStepExecutor(StepTemplate template, CommandExecutor[] commandExecutors) : base(template, commandExecutors)
   {
   }
 
   public override async Task<StepResult> Execute(CancellationToken cancellationToken)
   {
     var startTime = DateTime.UtcNow;
-    var commandTasks = Commands.Select(cmd => Task.Run(() => ExecuteDeviceCommand(cmd, cancellationToken), cancellationToken));
+    var commandTasks = CommandExecutors.Select(command => command.Execute(cancellationToken));
     var commandResults = await Task.WhenAll(commandTasks);
 
     return ExecutorResultHelpers.CreateStepResult(Template.UniqueId, startTime, DateTime.UtcNow, commandResults);

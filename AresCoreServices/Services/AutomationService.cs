@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
+using Ares.Core.Execution;
+using Ares.Core.Execution.StartConditions;
 using Ares.Core.Grpc.Helpers;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
@@ -10,10 +14,19 @@ namespace Ares.Core.Grpc.Services;
 public class AutomationService : AresAutomation.AresAutomationBase
 {
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
+  private readonly IExecutionManager _executionManager;
+  private readonly IExecutionReporter _executionReporter;
+  private readonly IStartConditionCollector _startConditionCollector;
 
-  public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory)
+  public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
+    IExecutionManager executionManager,
+    IExecutionReporter executionReporter,
+    IStartConditionCollector startConditionCollector)
   {
     _coreContextFactory = coreContextFactory;
+    _executionManager = executionManager;
+    _executionReporter = executionReporter;
+    _startConditionCollector = startConditionCollector;
   }
 
 
@@ -131,5 +144,39 @@ public class AutomationService : AresAutomation.AresAutomationBase
       return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
 
     return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.Name == request.CampaignName);
+  }
+
+  public override Task<Empty> StartExecution(Empty request, ServerCallContext context)
+  {
+    _executionManager.Start();
+    return Task.FromResult(new Empty());
+  }
+
+  public override async Task<CampaignTemplate> SetCampaignForExecution(CampaignRequest request, ServerCallContext context)
+  {
+    var template = await GetCampaignTemplate(request, context);
+    _executionManager.LoadTemplate(template);
+    return template;
+  }
+
+  public override Task GetExecutionStatusStream(Empty request, IServerStreamWriter<ExperimentExecutionStatus> responseStream, ServerCallContext context)
+  {
+    var observable = _executionReporter.ExperimentStatusObservable;
+    return observable.Do(status => responseStream.WriteAsync(status)).ToTask(context.CancellationToken);
+  }
+
+  public override Task<CampaignExecutionStatusResponse> GetCampaignExecutionStatus(Empty request, ServerCallContext context)
+  {
+    var status = _executionReporter.CampaignExecutionStatus;
+    return Task.FromResult(new CampaignExecutionStatusResponse
+    {
+      Status = status
+    });
+  }
+
+  public override Task<Empty> StopExecution(Empty request, ServerCallContext context)
+  {
+    _executionManager.Stop();
+    return Task.FromResult(new Empty());
   }
 }

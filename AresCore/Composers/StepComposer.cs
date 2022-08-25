@@ -4,13 +4,13 @@ using Ares.Messaging;
 
 namespace Ares.Core.Composers;
 
-internal class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
+public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
 {
   private readonly IEnumerable<IDeviceCommandInterpreter<IAresDevice>> _availableDeviceCommandInterpreters;
 
-  public StepComposer(IEnumerable<IDeviceCommandInterpreter<IAresDevice>> availableDeviceCommandInterpreters)
+  public StepComposer(ILaboratoryManager laboratoryManager)
   {
-    _availableDeviceCommandInterpreters = availableDeviceCommandInterpreters;
+    _availableDeviceCommandInterpreters = laboratoryManager.Lab.DeviceInterpreters;
   }
 
   public StepExecutor Compose(StepTemplate template)
@@ -30,7 +30,8 @@ internal class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
                     .Name
                     .Equals(commandTemplate.Metadata.DeviceName));
 
-            var executable = commandInterpreter.TemplateToDeviceCommand(commandTemplate);
+            var command = commandInterpreter.TemplateToDeviceCommand(commandTemplate);
+            var executable = new CommandExecutor(command, commandTemplate);
             return executable;
           }
         )

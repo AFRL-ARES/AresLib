@@ -1,6 +1,13 @@
-﻿namespace Ares.Core.Execution;
+﻿using Ares.Messaging;
+
+namespace Ares.Core.Execution;
 
 public interface IExecutionReporter
 {
-  public void Report(ExecutionStatus status);
+  IObservable<CampaignExecutionStatus?> CampaignStatusObservable { get; }
+  IObservable<ExperimentExecutionStatus?> ExperimentStatusObservable { get; }
+  CampaignExecutionStatus? CampaignExecutionStatus { get; }
+  ExperimentExecutionStatus? ExperimentExecutionStatus { get; }
+  internal void Report(CampaignExecutionStatus status);
+  internal void Report(ExperimentExecutionStatus status);
 }

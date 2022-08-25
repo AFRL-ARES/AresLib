@@ -1,26 +1,42 @@
 ﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Core.Executors;
 using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
 
-public class ExperimentExecutor : IBaseExecutor<ExperimentResult, ExperimentTemplate>
+public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutionStatus>
 {
-  private readonly ISubject<ExecutorState> _stateSubject = new BehaviorSubject<ExecutorState>(ExecutorState.Idle);
 
   public ExperimentExecutor(ExperimentTemplate template, StepExecutor[] stepExecutors)
   {
     StepExecutors = stepExecutors;
     Template = template;
-    State = _stateSubject.AsObservable();
+
+    Status = new ExperimentExecutionStatus
+    {
+      ExperimentId = template.UniqueId
+    };
+
+    Status.StepExecutionStatuses.AddRange(stepExecutors.Select(executor => executor.Status));
+
+    var stepExecutionObservation = stepExecutors.Select(executor => {
+      return executor.StatusObservable.Select(_ => {
+        var cmdResults = stepExecutors.Select(cmdExecutor => cmdExecutor.Status);
+        Status.StepExecutionStatuses.Clear();
+        Status.StepExecutionStatuses.AddRange(cmdResults);
+        return Status;
+      });
+    }).Concat();
+
+    StatusObservable = stepExecutionObservation;
   }
 
-  public IObservable<ExecutorState> State { get; }
 
   public StepExecutor[] StepExecutors { get; }
 
   public ExperimentTemplate Template { get; set; }
+
+  public IObservable<ExperimentExecutionStatus> StatusObservable { get; }
+  public ExperimentExecutionStatus Status { get; }
 
   public async Task<ExperimentResult> Execute(CancellationToken cancellationToken)
   {
@@ -28,6 +44,9 @@ public class ExperimentExecutor : IBaseExecutor<ExperimentResult, ExperimentTemp
     var stepResults = new List<StepResult>();
     foreach (var executableStep in StepExecutors)
     {
+      if (cancellationToken.IsCancellationRequested)
+        break;
+
       var stepResult = await executableStep.Execute(cancellationToken);
       stepResults.Add(stepResult);
     }

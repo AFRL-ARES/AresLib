@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package ares.messaging.device;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/any.proto";
+import "CommandMetadata.proto";
+import "CommandTemplate.proto";
+import "DeviceCommandResult.proto";
+
+service CorePlanning {
+	rpc SeedPlanner(ManualPlannerSeed) returns (google.protobuf.Empty);
+}
+
+message ManualPlannerSeed {
+	oneof seed {
+		string file_name = 1;
+		ManualPlannerLines data_lines = 2;
+		ManualPlannerExplicitSeed explicit_seed = 3;
+	};
+}
+
+message ManualPlannerLines {
+	// first line should be the headers
+	// ex.: VAL_TEMP,VAL_PRESSURE
+	//			20, 30
+	repeated string data_line = 1;
+}
+
+message ManualPlannerParameterValue {
+	string parameter_name = 1;
+	google.protobuf.Any parameter_value = 2;
+}
+
+message ManualPlannerParameterValues {
+	repeated ManualPlannerParameterValue parameter_values = 1;
+}
+
+message ManualPlannerExplicitSeed {
+	repeated ManualPlannerParameterValues parameter_values_collection = 1;
+}

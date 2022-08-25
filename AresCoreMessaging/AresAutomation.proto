@@ -11,6 +11,7 @@ import "Parameter.proto";
 import "ParameterMetadata.proto";
 import "Project.proto";
 import "StepTemplate.proto";
+import "ExecutionStatusMessages.proto";
 
 service AresAutomation {
 	// Campaigns
@@ -26,6 +27,21 @@ service AresAutomation {
 	rpc GetProject(ProjectRequest) returns (Project);
 	rpc RemoveProject(ProjectRequest) returns (google.protobuf.Empty);
 	rpc AddProject(Project) returns (google.protobuf.Empty);
+
+	// Execution
+
+	// informs the execution system of what campaign needs to be executed
+	// takes in a campaign request instead of a template as the campaigns need to come from an internal
+	// persistance layer as opposed to any template that can be passed in.
+	// Returns a campaign template that was selected
+	rpc SetCampaignForExecution(CampaignRequest) returns (CampaignTemplate);
+	rpc StartExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
+	rpc StopExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
+	// Gets a stream of experiment execution statuses that can be observed in real time as experiment is running
+	// Works best after grabbing all the execution statuses which then lets you know how many experiments have been run
+	rpc GetExecutionStatusStream(google.protobuf.Empty) returns (stream ExperimentExecutionStatus);
+	// Gets the current status of a campaign execution assuming one is running
+	rpc GetCampaignExecutionStatus(google.protobuf.Empty) returns (CampaignExecutionStatusResponse);
 }
 
 message RequestById {
@@ -50,4 +66,9 @@ message ProjectRequest {
 
 message ProjectsResponse {
 	repeated Project projects = 1; // list of available projects
+}
+
+// separate response so that the status can be null
+message CampaignExecutionStatusResponse {
+	CampaignExecutionStatus Status = 1;
 }

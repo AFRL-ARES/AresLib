@@ -2,7 +2,7 @@ using Ares.Messaging;
 
 namespace Ares.Core.Planning;
 
-internal class PlanningHelper : IPlanningHelper
+public class PlanningHelper : IPlanningHelper
 {
   private readonly IPlannerManager _plannerManager;
 
