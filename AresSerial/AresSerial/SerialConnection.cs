@@ -4,20 +4,25 @@ using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using Ares.Device.Serial.Simulation;
 
 namespace Ares.Device.Serial;
 
 public abstract class SerialConnection : ISerialConnection
 {
-  private readonly object Lock = new();
+  private readonly object _lock = new();
 
-  protected SerialConnection(SerialPortConnectionInfo connectionInfo = null)
+  protected SerialConnection(SerialPortConnectionInfo connectionInfo) : this(new AresHardwarePort(connectionInfo))
   {
-    if (connectionInfo is null)
-      Port = new AresSimPort();
-    else
-      Port = new AresHardwarePort(connectionInfo);
+  }
 
+  protected SerialConnection(SimAresDevice simDevice) : this(new AresSimPort(simDevice.OutputChannel, simDevice.InputChannel))
+  {
+  }
+
+  private SerialConnection(IAresSerialPort port)
+  {
+    Port = port;
     ConnectionStatusUpdates = ConnectionStatusUpdatesSource.AsObservable();
     Responses = ResponsePublisher.AsObservable();
 
@@ -30,7 +35,7 @@ public abstract class SerialConnection : ISerialConnection
   private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = new Subject<SerialCommandResponse>();
   private IAresSerialPort Port { get; }
   private IObservable<SerialCommandResponse> Responses { get; set; }
-  private CancellationTokenSource ListenerCancellationTokenSource { get; set; }
+  private CancellationTokenSource? ListenerCancellationTokenSource { get; set; }
 
   public void Connect(string portName)
   {
@@ -86,7 +91,7 @@ public abstract class SerialConnection : ISerialConnection
 
   public virtual void Send(SerialCommandRequest request)
   {
-    lock ( Lock )
+    lock ( _lock )
     {
       Port.SendOutboundMessage(request.Serialize());
     }
@@ -107,7 +112,7 @@ public abstract class SerialConnection : ISerialConnection
     if (Thread.CurrentThread.Name == null)
       Thread.CurrentThread.Name = $"{Port.Name} Transaction";
 
-    lock ( Lock )
+    lock ( _lock )
     {
       var transactionSyncer = Port.InboundMessages.Take(1)
         .ToTask(cancellationToken);
@@ -127,7 +132,7 @@ public abstract class SerialConnection : ISerialConnection
       timeoutCancel.Cancel();
       var latestPortResponse = transactionSyncer.Result;
 
-      if (request is SimSerialCommandRequest<T> simRequest)
+      if (request is SimRequestWithResponse<T> simRequest)
         request = simRequest.ActualRequest;
 
       var response = request.DeserializeResponse(latestPortResponse);
@@ -137,9 +142,7 @@ public abstract class SerialConnection : ISerialConnection
   }
 
   public T SendAndGetResponse<T>(SerialCommandRequestWithResponse<T> request, CancellationToken cancellationToken) where T : SerialCommandResponse
-  {
-    return SendAndGetResponse(request, cancellationToken, Timeout.InfiniteTimeSpan);
-  }
+    => SendAndGetResponse(request, cancellationToken, Timeout.InfiniteTimeSpan);
 
   public Task<T> GetResponse<T>(CancellationToken cancellationToken, TimeSpan timeout) where T : SerialCommandResponse
   {
@@ -151,9 +154,7 @@ public abstract class SerialConnection : ISerialConnection
   }
 
   public Task<SerialCommandResponse> GetAnyResponse(CancellationToken cancellationToken, TimeSpan timeout)
-  {
-    return GetResponse<SerialCommandResponse>(cancellationToken, timeout);
-  }
+    => GetResponse<SerialCommandResponse>(cancellationToken, timeout);
 
   public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
   public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
