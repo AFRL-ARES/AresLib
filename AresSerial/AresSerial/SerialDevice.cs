@@ -13,16 +13,24 @@ public abstract class SerialDevice : AresDevice
     Connection = connection;
   }
 
-  private string TargetPortName { get; set; }
+  private string? TargetPortName { get; set; }
 
   public ISerialConnection Connection { get; }
 
   public void Connect(string portName)
   {
     TargetPortName = portName;
+    Connect();
+  }
+
+  private void Connect()
+  {
+    if (TargetPortName is null)
+      return;
+
     try
     {
-      Connection.Connect(portName);
+      Connection.Connect(TargetPortName);
     }
     catch (Exception e)
     {
@@ -40,7 +48,7 @@ public abstract class SerialDevice : AresDevice
 
   public override async Task<bool> Activate()
   {
-    if (Connection == null)
+    if (Connection is null)
       throw new Exception("Cannot activate serial device before providing connection.");
 
     if (await Connection.ConnectionStatusUpdates.FirstAsync() == ConnectionStatus.Connected
@@ -50,7 +58,7 @@ public abstract class SerialDevice : AresDevice
     if (await Connection.ConnectionStatusUpdates.FirstAsync() != ConnectionStatus.Connected)
     {
       var connectionStatusListener = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
-      Connect(TargetPortName);
+      Connect();
       var connectionStatus = connectionStatusListener.Result;
 
       if (connectionStatus != ConnectionStatus.Connected)

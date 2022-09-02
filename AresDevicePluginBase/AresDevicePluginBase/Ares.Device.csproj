@@ -27,7 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ares.Messaging.dll" Version="2022.8.26.114841" />
+    <PackageReference Include="Ares.Messaging.dll" Version="2022.8.26.125957" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
