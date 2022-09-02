@@ -93,7 +93,6 @@ internal class AresHardwarePort : IAresSerialPort
 
     await Task.Run(
       async () => {
-        Thread.CurrentThread.Name ??= $"{Name} Inbound Message";
         while (!cancellationToken.IsCancellationRequested)
           try
           {

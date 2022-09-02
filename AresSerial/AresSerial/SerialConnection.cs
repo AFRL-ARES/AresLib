@@ -80,7 +80,8 @@ public abstract class SerialConnection : ISerialConnection
       throw new InvalidOperationException($"{Port.Name} Listener loop already started");
     }
 
-    Task.Run(() => ListenAsync(ListenerCancellationTokenSource.Token), ListenerCancellationTokenSource.Token);
+    var listenThread = new Thread(() => ListenAsync(ListenerCancellationTokenSource.Token));
+    listenThread.Start();
   }
 
   public void StopListening()
@@ -109,9 +110,6 @@ public abstract class SerialConnection : ISerialConnection
 
   public virtual T SendAndGetResponse<T>(SerialCommandRequestWithResponse<T> request, CancellationToken cancellationToken, TimeSpan timeout) where T : SerialCommandResponse
   {
-    if (Thread.CurrentThread.Name == null)
-      Thread.CurrentThread.Name = $"{Port.Name} Transaction";
-
     lock ( _lock )
     {
       var transactionSyncer = Port.InboundMessages.Take(1)
@@ -159,9 +157,10 @@ public abstract class SerialConnection : ISerialConnection
   public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
   public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
 
-  private async Task ListenAsync(CancellationToken cancellationToken)
+  private async void ListenAsync(CancellationToken cancellationToken)
   {
-    Thread.CurrentThread.Name = $"{Port.Name} Listener Loop";
+    Thread.CurrentThread.Name ??= $"{Port.Name} Listener Loop";
+    Thread.CurrentThread.IsBackground = true;
     ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
     while (!cancellationToken.IsCancellationRequested)
       try
