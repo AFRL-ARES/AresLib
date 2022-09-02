@@ -97,7 +97,6 @@ internal class AresSimPort : IAresSerialPort
   {
     return Task.Run(
       async () => {
-        Thread.CurrentThread.Name ??= $"{Name} Inbound Message";
         while (!cancellationToken.IsCancellationRequested)
         {
           if (!IsOpen)
@@ -109,7 +108,7 @@ internal class AresSimPort : IAresSerialPort
             // To keep it similar to actual hardware logic
             var completedTask = await Task.WhenAny(reader, Task.Delay(1000, cancellationToken));
             if (completedTask != reader)
-              throw new TimeoutException($"SimPort {nameof(ListenForEntryAsync)} timed out");
+              continue;
 
             var result = await InputChannel.Reader.ReadAsync(cancellationToken);
             InboundMessagePublisher.OnNext(result);
