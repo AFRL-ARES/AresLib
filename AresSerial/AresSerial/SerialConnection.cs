@@ -120,6 +120,7 @@ public abstract class SerialConnection : ISerialConnection
       var timeoutSyncer = Task.Delay(timeout, aggregateCancelSource.Token);
       var outboundMessage = request.Serialize();
 
+
       Port.SendOutboundMessage(outboundMessage);
 
       var finishedTask = Task.WhenAny(transactionSyncer, timeoutSyncer).Result;
@@ -173,5 +174,7 @@ public abstract class SerialConnection : ISerialConnection
         Console.WriteLine($"Canceled {GetType().Name} listener loop");
         ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
       }
+
+    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Idle);
   }
 }

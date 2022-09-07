@@ -79,7 +79,16 @@ public abstract class SerialDevice : AresDevice
     if (await Connection.ListenerStatusUpdates.FirstAsync() != ListenerStatus.Listening)
       Connection.StartListening();
 
+    var listeningRetries = 5;
     var listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
+    while (listenerStatus != ListenerStatus.Listening)
+    {
+      await Task.Delay(TimeSpan.FromMilliseconds(200));
+      listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
+      if (listeningRetries-- == 0)
+        break;
+    }
+
     if (listenerStatus != ListenerStatus.Listening)
       return false;
 
