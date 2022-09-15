@@ -1,42 +1,110 @@
-using DynamicData;
+using System.Collections.ObjectModel;
 
 namespace Ares.Core.Planning;
 
 public class PlannerManager : IPlannerManager
 {
-  private readonly IDictionary<string, ISourceCache<IPlanner, Version>> _plannerStore
-    = new Dictionary<string, ISourceCache<IPlanner, Version>>();
+  private readonly IList<IPlanner> _plannerStore = new List<IPlanner>();
 
-  public IPlanner GetPlanner(string name, Version version)
+  public T GetPlanner<T>(Version version) where T : IPlanner
   {
-    var plannerRegistered = _plannerStore.TryGetValue(name, out var plannerVersions);
-    if (!plannerRegistered)
-      throw new KeyNotFoundException($"Unable to find planner {name} in the registry.");
+    var typedPlanners = _plannerStore.OfType<T>().ToArray();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {typeof(T).Name} in the registry.");
 
-    var planner = plannerVersions!.Lookup(version);
-    if (!planner.HasValue)
-      throw new KeyNotFoundException($"Unable to find planner {name} with version {version} in the registry.");
+    var planner = typedPlanners.FirstOrDefault(p => p.Version == version);
+    if (planner is null)
+      throw new KeyNotFoundException($"Unable to find planner {typeof(T).Name} with version {version} in the registry.");
 
-    return planner.Value;
+    return planner;
   }
 
-  public IPlanner GetPlanner(string name)
+  public T GetPlanner<T>(string name, Version version) where T : IPlanner
   {
-    var plannerRegistered = _plannerStore.TryGetValue(name, out var plannerVersions);
-    if (!plannerRegistered)
-      throw new KeyNotFoundException($"Unable to find planner {name} in the registry.");
+    var typedPlanners = _plannerStore.OfType<T>().ToArray();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {typeof(T).Name} in the registry.");
 
-    return plannerVersions!.Items.OrderByDescending(planner => planner.Version).First();
+    var versionedPlanners = typedPlanners.Where(p => p.Name == name);
+    if (versionedPlanners is null)
+      throw new KeyNotFoundException($"Unable to find planner of type {typeof(T).Name} named {name} in the registry.");
+
+    var planner = versionedPlanners.FirstOrDefault(p => p.Version == version);
+    if (planner is null)
+      throw new KeyNotFoundException($"Unable to find planner of type {typeof(T).Name} named {name} with version {version} in the registry.");
+
+    return planner;
   }
 
-  public async Task RegisterPlanner(IPlanner planner)
+  public IPlanner GetPlanner(string type)
   {
-    await planner.Init();
-    var plannerNameRegistered = _plannerStore.ContainsKey(planner.Name);
-    if (!plannerNameRegistered)
-      _plannerStore[planner.Name] = new SourceCache<IPlanner, Version>(p => p.Version);
+    var typedPlanners = _plannerStore.Where(p => p.GetType().Name == type).ToList();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {type} in the registry.");
 
-    var plannerVersionStore = _plannerStore[planner.Name];
-    plannerVersionStore.AddOrUpdate(planner);
+    return typedPlanners.OrderByDescending(planner => planner.Version).First();
   }
+
+  public IPlanner GetPlanner(string type, Version version)
+  {
+    var typedPlanners = _plannerStore.Where(p => p.GetType().Name == type).ToArray();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {type} in the registry.");
+
+    var planner = typedPlanners.FirstOrDefault(p => p.Version == version);
+    if (planner is null)
+      throw new KeyNotFoundException($"Unable to find planner {type} with version {version} in the registry.");
+
+    return planner;
+  }
+
+  public IPlanner GetPlanner(string type, string name, Version version)
+  {
+    var typedPlanners = _plannerStore.Where(p => p.GetType().Name == type).ToArray();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {type} in the registry.");
+
+    var versionedPlanners = typedPlanners.Where(p => p.Name == name);
+    if (versionedPlanners is null)
+      throw new KeyNotFoundException($"Unable to find planner of type {type} named {name} in the registry.");
+
+    var planner = versionedPlanners.FirstOrDefault(p => p.Version == version);
+    if (planner is null)
+      throw new KeyNotFoundException($"Unable to find planner of type {type} named {name} with version {version} in the registry.");
+
+    return planner;
+  }
+
+  public IPlanner GetPlanner(string type, string name)
+  {
+    var typedPlanners = _plannerStore.Where(p => p.GetType().Name == type).ToArray();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {type} in the registry.");
+
+    var versionedPlanners = typedPlanners.Where(p => p.Name == name).ToList();
+    if (versionedPlanners is null)
+      throw new KeyNotFoundException($"Unable to find planner of type {type} named {name} in the registry.");
+
+    return versionedPlanners.OrderByDescending(planner => planner.Version).First();
+  }
+
+  public T GetPlanner<T>() where T : IPlanner
+  {
+    var typedPlanners = _plannerStore.OfType<T>().ToList();
+    if (!typedPlanners.Any())
+      throw new KeyNotFoundException($"Unable to find any planners of type {typeof(T).Name} in the registry.");
+
+    return typedPlanners.OrderByDescending(planner => planner.Version).First();
+  }
+
+  public void RegisterPlanner(IPlanner planner)
+  {
+    var plannerExists = _plannerStore.Any(p => p == planner || (p.Name == planner.Name && p.Version == planner.Version && planner.GetType() == p.GetType()));
+    if (plannerExists)
+      throw new InvalidOperationException($"Planner {planner.Name}{planner.Version} of type {planner.GetType().Name} already registered");
+
+    _plannerStore.Add(planner);
+  }
+
+  public IEnumerable<IPlanner> AvailablePlanners => new ReadOnlyCollection<IPlanner>(_plannerStore);
 }

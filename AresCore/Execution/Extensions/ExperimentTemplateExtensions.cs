@@ -14,4 +14,31 @@ internal static class ExperimentTemplateExtensions
 
   public static bool IsResolved(this ExperimentTemplate template)
     => template.GetAllParameters().All(parameter => parameter.Value is not null);
+
+  public static ExperimentTemplate CloneWithNewIds(this ExperimentTemplate template)
+  {
+    var newTemplate = template.Clone();
+    newTemplate.UniqueId = Guid.NewGuid().ToString();
+    foreach (var stepTemplate in newTemplate.StepTemplates)
+    {
+      stepTemplate.UniqueId = Guid.NewGuid().ToString();
+      foreach (var commandTemplate in stepTemplate.CommandTemplates)
+      {
+        commandTemplate.UniqueId = Guid.NewGuid().ToString();
+        foreach (var argument in commandTemplate.Arguments)
+        {
+          argument.UniqueId = Guid.NewGuid().ToString();
+          argument.Metadata.UniqueId = Guid.NewGuid().ToString();
+          if (argument.Value is not null)
+            argument.Value.UniqueId = Guid.NewGuid().ToString();
+          foreach (var constraint in argument.Metadata.Constraints)
+          {
+            constraint.UniqueId = Guid.NewGuid().ToString();
+          }
+        }
+      }
+    }
+
+    return newTemplate;
+  }
 }

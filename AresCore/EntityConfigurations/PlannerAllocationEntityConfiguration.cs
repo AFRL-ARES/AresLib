@@ -13,5 +13,8 @@ internal class PlannerAllocationEntityConfiguration : AresEntityTypeBaseConfigur
 
     builder.HasOne(planner => planner.Planner)
       .WithMany();
+
+    builder.Navigation(allocation => allocation.Parameter).AutoInclude();
+    builder.Navigation(allocation => allocation.Planner).AutoInclude();
   }
 }

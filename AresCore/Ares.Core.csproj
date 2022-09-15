@@ -7,6 +7,7 @@
     <Authors>Infoscitex</Authors>
     <Company>Infoscitex</Company>
     <Description>Library containing the command compilation and execution logic for campaigns.</Description>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
 	<Target Name="NugetPackAutoVersioning" AfterTargets="Build">
@@ -14,12 +15,12 @@
 	</Target>
 
 	<ItemGroup>
-	  <PackageReference Include="Ares.Device.dll" Version="2022.8.26.130014" />
-	  <PackageReference Include="Ares.Messaging.dll" Version="2022.8.26.125957" />
-	  <PackageReference Include="DynamicData" Version="7.9.14" />
-	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.8" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.8" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.1" />
+	  <PackageReference Include="Ares.Device.dll" Version="2022.9.14.194254" />
+	  <PackageReference Include="Ares.Messaging.dll" Version="2022.9.14.194211" />
+	  <PackageReference Include="DynamicData" Version="7.10.2" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.9" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.9" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>

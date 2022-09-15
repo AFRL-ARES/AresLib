@@ -32,6 +32,13 @@ internal static class CampaignUpdateHelper
 
     foreach (var commandParam in commandParams)
       commandParam.PlanningMetadata = template.PlannableParameters.First(metadata => metadata.UniqueId == commandParam.PlanningMetadata.UniqueId);
+
+    foreach (var allocation in template.PlannerAllocations)
+    {
+      // TODO maybe a better way to do this
+      allocation.Parameter = template.PlannableParameters.First(metadata => metadata.UniqueId == allocation.Parameter.UniqueId);
+      allocation.Planner = template.PlannerAllocations.First(plannerAllocation => plannerAllocation.Planner.UniqueId == allocation.Planner.UniqueId).Planner;
+    }
   }
 
   private static void RemovePlannedParameters(this IList<ParameterMetadata> existingData, IEnumerable<ParameterMetadata> incomingData, DbContext context)

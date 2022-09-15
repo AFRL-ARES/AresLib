@@ -14,29 +14,29 @@ public class PlanningHelper : IPlanningHelper
   public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters)
   {
     var parameterArray = parameters.ToArray();
-    var plannerSet = new Dictionary<IPlanner, ParameterMetadata>();
-    foreach (var planSuggestion in plannerAllocations)
+    var plannerSet = new List<(IPlanner Planner, ParameterMetadata Metadata)>();
+    foreach (var plannerAllocation in plannerAllocations)
     {
-      var hasVersion = Version.TryParse(planSuggestion.Planner.Version, out var version);
+      var hasVersion = Version.TryParse(plannerAllocation.Planner.Version, out var version);
       var planner = hasVersion
-        ? _plannerManager.GetPlanner(planSuggestion.Planner.Name, version!)
-        : _plannerManager.GetPlanner(planSuggestion.Planner.Name);
+        ? _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name, version!)
+        : _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name);
 
-      plannerSet[planner] = planSuggestion.Parameter;
+      plannerSet.Add((planner, plannerAllocation.Parameter));
     }
 
-    var planGroup = plannerSet.GroupBy(pair => pair.Key);
+    var planGroup = plannerSet.GroupBy(pair => pair.Planner);
     foreach (var grouping in planGroup)
     {
       var planner = grouping.Key;
-      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Value));
+      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata));
       var results = resultsEnumerable.ToArray();
       if (!results.Any())
         return false;
 
       foreach (var result in results)
       {
-        var parameterPlanTarget = parameterArray.First(parameter => parameter.Metadata.UniqueId == result.Metadata.UniqueId);
+        var parameterPlanTarget = parameterArray.First(parameter => parameter.PlanningMetadata.UniqueId == result.Metadata.UniqueId);
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),

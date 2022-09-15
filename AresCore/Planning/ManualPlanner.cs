@@ -1,28 +1,48 @@
-﻿using System.Text;
-using Ares.Core.Data;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Text;
 using Ares.Messaging;
 
 namespace Ares.Core.Planning;
 
-internal class ManualPlanner : ISeedablePlanner<ManualPlanParameters>
+public class ManualPlanner : ISeedablePlanner<ManualPlannerSeedRequest>
 {
-  private readonly IDataProvider _dataProvider;
-
   private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
-
-  public ManualPlanner(IDataProvider dataProvider)
+  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
+  
+  public ManualPlanner(string name)
   {
-    _dataProvider = dataProvider;
+    PlannerState = _plannerStateSubject.AsObservable();
+    Name = name;
+  }
+  
+  public Task Seed(ManualPlannerSeedRequest seedParam)
+  {
+    Reset();
+    switch (seedParam.PlannerStuffCase)
+    {
+      case ManualPlannerSeedRequest.PlannerStuffOneofCase.None:
+        break;
+      case ManualPlannerSeedRequest.PlannerStuffOneofCase.PlannerValues:
+        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues.Select(set => set.ParameterValues.Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
+        foreach (var manualPlanResults in manualPlanResultCollections)
+        {
+          _planResultsQueue.Enqueue(manualPlanResults);
+        }
+        break;
+      case ManualPlannerSeedRequest.PlannerStuffOneofCase.FileLines:
+        LoadPlanQueue(seedParam.FileLines.PlannerValues);
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    return Task.CompletedTask;
   }
 
-  public async Task Seed(ManualPlanParameters seedParam)
-  {
-    var data = await _dataProvider.GetData<ManualPlanner>(seedParam.FileName);
-    var lines = Encoding.Default.GetString(data).Split(Environment.NewLine);
-    LoadPlanQueue(lines);
-  }
+  public IEnumerable<IEnumerable<(string Name, double Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
 
-  public string Name { get; } = "Manual Planner";
+  public string Name { get; }
   public Version Version { get; } = new(1, 0);
 
   public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters)
@@ -39,13 +59,18 @@ internal class ManualPlanner : ISeedablePlanner<ManualPlanParameters>
     }
   }
 
+  public IObservable<PlannerState> PlannerState { get; }
+
   public void Reset()
   {
     _planResultsQueue.Clear();
   }
 
   public Task Init()
-    => Task.CompletedTask;
+  {
+    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    return Task.CompletedTask;
+  }
 
   private void LoadPlanQueue(IEnumerable<string> lines, char delim = ',')
   {

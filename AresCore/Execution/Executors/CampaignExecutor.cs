@@ -88,7 +88,7 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   private async Task<ExperimentExecutor?> GenerateExperimentExecutor()
   {
     // campaign template should have exactly one experiment template at this time
-    var experimentTemplate = Template.ExperimentTemplates.First();
+    var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if (!experimentTemplate.IsResolved())
     {
       var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters());
