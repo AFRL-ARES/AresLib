@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using Ares.Messaging;
+using Google.Protobuf;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -51,6 +52,18 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
       stepResults.Add(stepResult);
     }
 
-    return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, startTime, DateTime.UtcNow, stepResults);
+    var completedExperiment = new CompletedExperiment
+    {
+      Template = Template
+    };
+
+    if (!string.IsNullOrEmpty(Template.OutputCommandId))
+    {
+      var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).First(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
+      completedExperiment.Format = commandResult.Result?.Format;
+      completedExperiment.SerializedData = ByteString.CopyFrom(commandResult.Result?.ToByteArray() ?? ReadOnlySpan<byte>.Empty);
+    }
+
+    return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepResults);
   }
 }

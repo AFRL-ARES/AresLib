@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package ares.messaging.device;
+
+import "google/protobuf/empty.proto";
+import "Templates/CommandMetadata.proto";
+import "Templates/CommandTemplate.proto";
+import "DeviceCommandResult.proto";
+import "Device/DeviceStatus.proto";
+
+service AresDevices {
+	rpc ListAresDevices(google.protobuf.Empty) returns (ListAresDevicesResponse);
+	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
+	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
+	rpc ExecuteCommand(CommandTemplate) returns (DeviceCommandResult);
+}
+
+message AresDeviceInfo {
+	string name = 1; // Name of the device
+}
+
+message ListAresDevicesResponse
+{
+	repeated AresDeviceInfo ares_devices = 1; // collection of ares_device objects, used when all the ares devices are needed
+}
+
+message CommandMetadatasRequest {
+	string device_name = 1; // device name of the device for which the commands need to be known
+}
+
+message CommandMetadatasResponse {
+	repeated CommandMetadata metadatas = 1;  // list of command information supported by the requested device
+}
+
+message DeviceStatusRequest
+{
+	string device_name = 1; // device name of the device for which the status needs to be known
+}

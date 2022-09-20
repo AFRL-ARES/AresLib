@@ -57,21 +57,19 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   public override async Task<DeviceCommandResult> ExecuteCommand(CommandTemplate request, ServerCallContext context)
   {
-    var test = Any.Pack(new Int32Value { Value = 12 });
     var interpreter = _laboratoryManager.Lab.DeviceInterpreters
       .First(commandInterpreter => commandInterpreter.Device.Name == request.Metadata.DeviceName);
 
     try
     {
       var deviceCommandTask = interpreter.TemplateToDeviceCommand(request);
-      await deviceCommandTask(context.CancellationToken);
+      var result = await deviceCommandTask(context.CancellationToken);
+      return result;
     }
     catch (Exception e)
     {
       return new DeviceCommandResult { Success = false, Error = e.ToString() };
     }
-
-    return new DeviceCommandResult { Success = true, Result = test };
   }
 
   private IAresDevice GetAresDevice(string name)

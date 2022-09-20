@@ -11,10 +11,10 @@ public class PlanningHelper : IPlanningHelper
     _plannerManager = plannerManager;
   }
 
-  public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters)
+  public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters, IEnumerable<Analysis> seedAnalyses)
   {
     var parameterArray = parameters.ToArray();
-    var plannerSet = new List<(IPlanner Planner, ParameterMetadata Metadata)>();
+    var plannerToMetadataMaps = new List<(IPlanner Planner, ParameterMetadata Metadata)>();
     foreach (var plannerAllocation in plannerAllocations)
     {
       var hasVersion = Version.TryParse(plannerAllocation.Planner.Version, out var version);
@@ -22,14 +22,15 @@ public class PlanningHelper : IPlanningHelper
         ? _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name, version!)
         : _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name);
 
-      plannerSet.Add((planner, plannerAllocation.Parameter));
+      plannerToMetadataMaps.Add((planner, plannerAllocation.Parameter));
     }
 
-    var planGroup = plannerSet.GroupBy(pair => pair.Planner);
+    var planGroup = plannerToMetadataMaps.GroupBy(pair => pair.Planner);
+    var seedAnalysesArr = seedAnalyses.ToArray();
     foreach (var grouping in planGroup)
     {
       var planner = grouping.Key;
-      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata));
+      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedAnalysesArr);
       var results = resultsEnumerable.ToArray();
       if (!results.Any())
         return false;

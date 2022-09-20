@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+    <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+  </Target>
+
+  <ItemGroup Label="Nuget Packaging">
+    <_Asset PackagePath="Proto/" Include="**\*.proto" />
+    <None Include="@(_Asset)" Pack="true" Visible="False" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <DataModelProtoPath>$(PkgAres_DataModel_dll)\Proto\</DataModelProtoPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Protobuf Include="AresAutomation.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+        <Generator>MSBuild:Compile</Generator>
+      </Protobuf>
+      <Protobuf Include="AresDevices.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+        <Generator>MSBuild:Compile</Generator>
+      </Protobuf>
+      <Protobuf Include="AresPlanning.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+        <Generator>MSBuild:Compile</Generator>
+      </Protobuf>
+      <Protobuf Include="AresServerInfo.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+        <Generator>MSBuild:Compile</Generator>
+      </Protobuf>
+  </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Ares.DataModel.dll" Version="2022.9.20.165108" GeneratePathProperty="True" />
+      <PackageReference Include="Grpc.Tools" Version="2.48.1">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
+
+</Project>

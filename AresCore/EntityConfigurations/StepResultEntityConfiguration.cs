@@ -18,5 +18,10 @@ internal class StepResultEntityConfiguration : AresEntityTypeBaseConfiguration<S
       .WithOne()
       .HasForeignKey<ExecutionInfo>("StepResultId")
       .OnDelete(DeleteBehavior.ClientCascade);
+
+    builder.HasOne<StepTemplate>()
+      .WithMany()
+      .HasForeignKey(result => result.StepId)
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

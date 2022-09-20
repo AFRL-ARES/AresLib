@@ -5,19 +5,21 @@ namespace Ares.Core.Execution.Executors;
 
 internal static class ExecutorResultHelpers
 {
-  public static ExperimentResult CreateExperimentResult(string experimentId, DateTime startTime, DateTime endTime, IEnumerable<StepResult> stepResults)
+  public static ExperimentResult CreateExperimentResult(string experimentId,
+    CompletedExperiment completedExperiment,
+    DateTime startTime,
+    DateTime endTime,
+    IEnumerable<StepResult> stepResults)
   {
     var experimentResult = new ExperimentResult
     {
-      ExecutionInfo = new ExecutionInfo
-      {
-        TimeFinished = endTime.ToTimestamp(),
-        TimeStarted = startTime.ToTimestamp()
-      },
-      ExperimentId = experimentId
+      UniqueId = Guid.NewGuid().ToString(),
+      ExecutionInfo = MakeExecutionInfo(startTime, endTime),
+      ExperimentId = experimentId,
+      CompletedExperiment = completedExperiment
     };
+
     experimentResult.StepResults.AddRange(stepResults);
-    
     return experimentResult;
   }
 
@@ -28,11 +30,8 @@ internal static class ExecutorResultHelpers
   {
     var stepResult = new StepResult
     {
-      ExecutionInfo = new ExecutionInfo
-      {
-        TimeFinished = endTime.ToTimestamp(),
-        TimeStarted = startTime.ToTimestamp()
-      },
+      UniqueId = Guid.NewGuid().ToString(),
+      ExecutionInfo = MakeExecutionInfo(startTime, endTime),
       StepId = stepId
     };
 
@@ -42,19 +41,26 @@ internal static class ExecutorResultHelpers
   }
 
   public static CommandResult CreateCommandResult(string commandId,
+    DeviceCommandResult deviceResult,
     DateTime startTime,
     DateTime endTime)
   {
     var commandResult = new CommandResult
     {
-      ExecutionInfo = new ExecutionInfo
-      {
-        TimeFinished = endTime.ToTimestamp(),
-        TimeStarted = startTime.ToTimestamp()
-      },
-      CommandId = commandId
+      UniqueId = Guid.NewGuid().ToString(),
+      ExecutionInfo = MakeExecutionInfo(startTime, endTime),
+      CommandId = commandId,
+      Result = deviceResult
     };
-    
+
     return commandResult;
   }
+
+  private static ExecutionInfo MakeExecutionInfo(DateTime startTime, DateTime endTime)
+    => new ExecutionInfo
+    {
+      UniqueId = Guid.NewGuid().ToString(),
+      TimeFinished = endTime.ToTimestamp(),
+      TimeStarted = startTime.ToTimestamp()
+    };
 }

@@ -1,43 +1,19 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
 using Ares.Messaging;
+using Ares.Messaging.Planning;
 
 namespace Ares.Core.Planning;
 
-public class ManualPlanner : ISeedablePlanner<ManualPlannerSeedRequest>
+public class ManualPlanner : IPlanner
 {
-  private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
   private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
-  
+  private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
+
   public ManualPlanner(string name)
   {
     PlannerState = _plannerStateSubject.AsObservable();
     Name = name;
-  }
-  
-  public Task Seed(ManualPlannerSeedRequest seedParam)
-  {
-    Reset();
-    switch (seedParam.PlannerStuffCase)
-    {
-      case ManualPlannerSeedRequest.PlannerStuffOneofCase.None:
-        break;
-      case ManualPlannerSeedRequest.PlannerStuffOneofCase.PlannerValues:
-        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues.Select(set => set.ParameterValues.Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
-        foreach (var manualPlanResults in manualPlanResultCollections)
-        {
-          _planResultsQueue.Enqueue(manualPlanResults);
-        }
-        break;
-      case ManualPlannerSeedRequest.PlannerStuffOneofCase.FileLines:
-        LoadPlanQueue(seedParam.FileLines.PlannerValues);
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
-
-    return Task.CompletedTask;
   }
 
   public IEnumerable<IEnumerable<(string Name, double Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
@@ -45,7 +21,7 @@ public class ManualPlanner : ISeedablePlanner<ManualPlannerSeedRequest>
   public string Name { get; }
   public Version Version { get; } = new(1, 0);
 
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters)
+  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _)
   {
     try
     {
@@ -60,6 +36,29 @@ public class ManualPlanner : ISeedablePlanner<ManualPlannerSeedRequest>
   }
 
   public IObservable<PlannerState> PlannerState { get; }
+
+  public Task Seed(ManualPlannerSeed seedParam)
+  {
+    Reset();
+    switch (seedParam.PlannerStuffCase)
+    {
+      case ManualPlannerSeed.PlannerStuffOneofCase.None:
+        break;
+      case ManualPlannerSeed.PlannerStuffOneofCase.PlannerValues:
+        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues.Select(set => set.ParameterValues.Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
+        foreach (var manualPlanResults in manualPlanResultCollections)
+          _planResultsQueue.Enqueue(manualPlanResults);
+
+        break;
+      case ManualPlannerSeed.PlannerStuffOneofCase.FileLines:
+        LoadPlanQueue(seedParam.FileLines.PlannerValues);
+        break;
+      default:
+        throw new ArgumentOutOfRangeException();
+    }
+
+    return Task.CompletedTask;
+  }
 
   public void Reset()
   {

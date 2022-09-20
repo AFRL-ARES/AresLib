@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "ParameterMetadata.proto";
-import "ParameterValue.proto";
+import "Templates/ParameterMetadata.proto";
+import "Templates/ParameterValue.proto";
 import "google/protobuf/wrappers.proto";
 
 message Parameter {

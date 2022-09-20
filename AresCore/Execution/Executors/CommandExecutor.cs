@@ -7,10 +7,10 @@ namespace Ares.Core.Execution.Executors;
 
 internal class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
 {
-  private readonly Func<CancellationToken, Task> _command;
+  private readonly Func<CancellationToken, Task<DeviceCommandResult>> _command;
   private readonly BehaviorSubject<CommandExecutionStatus> _stateSubject;
 
-  public CommandExecutor(Func<CancellationToken, Task> command, CommandTemplate template)
+  public CommandExecutor(Func<CancellationToken, Task<DeviceCommandResult>> command, CommandTemplate template)
   {
     _command = command;
     Template = template;
@@ -33,16 +33,13 @@ internal class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus
   {
     Status.State = ExecutionState.Running;
     _stateSubject.OnNext(Status);
+    var timeStarted = DateTime.UtcNow;
     var execInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
-    await _command(cancellationToken);
+    var result = await _command(cancellationToken);
     execInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
     Status.State = ExecutionState.Succeeded;
     _stateSubject.OnNext(Status);
     _stateSubject.OnCompleted();
-    return new CommandResult
-    {
-      CommandId = Guid.NewGuid().ToString(),
-      ExecutionInfo = execInfo
-    };
+    return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
   }
 }

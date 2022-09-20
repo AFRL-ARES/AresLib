@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "CommandTemplate.proto";
+import "Templates/CommandTemplate.proto";
 import "google/protobuf/wrappers.proto";
 
 message StepTemplate {

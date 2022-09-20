@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ares.Core.Planning;
 using Ares.Messaging;
+using Ares.Messaging.Planning;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
@@ -17,7 +18,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
   {
     _plannerManager = plannerManager;
   }
-  
+
   public override Task<GetAllPlannersResponse> GetAllPlanners(GetAllPlannersRequest request, ServerCallContext context)
   {
     var response = new GetAllPlannersResponse();
@@ -26,7 +27,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
     return Task.FromResult(response);
   }
 
-  public override async Task<Empty> SeedManualPlanner(ManualPlannerSeedRequest request, ServerCallContext context)
+  public override async Task<Empty> SeedManualPlanner(ManualPlannerSeed request, ServerCallContext context)
   {
     var planner = _plannerManager.GetPlanner<ManualPlanner>();
     await planner.Seed(request);

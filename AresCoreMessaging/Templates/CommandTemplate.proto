@@ -2,8 +2,8 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "Parameter.proto";
-import "CommandMetadata.proto";
+import "Templates/Parameter.proto";
+import "Templates/CommandMetadata.proto";
 import "google/protobuf/wrappers.proto";
 
 message CommandTemplate {

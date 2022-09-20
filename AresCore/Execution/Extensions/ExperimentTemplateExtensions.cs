@@ -24,17 +24,20 @@ internal static class ExperimentTemplateExtensions
       stepTemplate.UniqueId = Guid.NewGuid().ToString();
       foreach (var commandTemplate in stepTemplate.CommandTemplates)
       {
-        commandTemplate.UniqueId = Guid.NewGuid().ToString();
+        var cmdTemplateId = Guid.NewGuid().ToString();
+        if (commandTemplate.UniqueId == template.OutputCommandId)
+          newTemplate.OutputCommandId = cmdTemplateId;
+
+        commandTemplate.UniqueId = cmdTemplateId;
         foreach (var argument in commandTemplate.Arguments)
         {
           argument.UniqueId = Guid.NewGuid().ToString();
           argument.Metadata.UniqueId = Guid.NewGuid().ToString();
           if (argument.Value is not null)
             argument.Value.UniqueId = Guid.NewGuid().ToString();
+
           foreach (var constraint in argument.Metadata.Constraints)
-          {
             constraint.UniqueId = Guid.NewGuid().ToString();
-          }
         }
       }
     }

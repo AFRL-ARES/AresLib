@@ -22,5 +22,10 @@ internal class CampaignResultEntityConfiguration : AresEntityTypeBaseConfigurati
       .WithOne()
       .HasForeignKey<ExecutionInfo>("CampaignResultId")
       .OnDelete(DeleteBehavior.ClientCascade);
+
+    builder.HasOne<CampaignTemplate>()
+      .WithMany()
+      .HasForeignKey(result => result.CampaignId)
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "CampaignTemplate.proto";
+import "Templates/CampaignTemplate.proto";
 import "CompletedExperiment.proto";
 import "google/protobuf/wrappers.proto";
 

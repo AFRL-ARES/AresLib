@@ -6,6 +6,12 @@ public class PlannerManager : IPlannerManager
 {
   private readonly IList<IPlanner> _plannerStore = new List<IPlanner>();
 
+  public PlannerManager()
+  {
+    var manualPlanner = new ManualPlanner("Manual Planner");
+    RegisterPlanner(manualPlanner);
+  }
+  
   public T GetPlanner<T>(Version version) where T : IPlanner
   {
     var typedPlanners = _plannerStore.OfType<T>().ToArray();

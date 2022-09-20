@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Linq;
+using Ares.Core.Analyzing;
 using Ares.Core.Composers;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.StartConditions;
@@ -9,6 +10,7 @@ namespace Ares.Core.Execution;
 
 public class ExecutionManager : IExecutionManager
 {
+  private readonly IAnalyzerManager _analyzerManager;
   private readonly IExecutionReporter _executionReporter;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly IPlanningHelper _planningHelper;
@@ -17,11 +19,13 @@ public class ExecutionManager : IExecutionManager
 
   public ExecutionManager(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     IPlanningHelper planningHelper,
+    IAnalyzerManager analyzerManager,
     IExecutionReporter executionReporter,
     IStartConditionCollector startConditionCollector)
   {
     _experimentComposer = experimentComposer;
     _planningHelper = planningHelper;
+    _analyzerManager = analyzerManager;
     _executionReporter = executionReporter;
     _startConditionCollector = startConditionCollector;
   }
@@ -33,7 +37,8 @@ public class ExecutionManager : IExecutionManager
   public void LoadTemplate(CampaignTemplate template)
   {
     CampaignTemplate = template;
-    CampaignExecutor = new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, CampaignTemplate);
+    var analyzer = template.Analyzer is null ? _analyzerManager.GetAnalyzer<NoneAnalyzer>() : _analyzerManager.GetAnalyzer(template.Analyzer.Type, template.Analyzer.Version);
+    CampaignExecutor = new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, analyzer, CampaignTemplate);
   }
 
   public async void Start()

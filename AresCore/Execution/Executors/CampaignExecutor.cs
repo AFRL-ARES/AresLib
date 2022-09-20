@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Ares.Core.Analyzing;
 using Ares.Core.Composers;
 using Ares.Core.Execution.Extensions;
 using Ares.Core.Planning;
@@ -10,6 +11,7 @@ namespace Ares.Core.Execution.Executors;
 
 internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionStatus>
 {
+  private readonly IAnalyzer _analyzer;
   private readonly CancellationTokenSource _cancellationTokenSource;
   private readonly IExecutionReporter _executionReporter;
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
@@ -19,11 +21,13 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
+    IAnalyzer analyzer,
     CampaignTemplate template)
   {
     _experimentComposer = experimentComposer;
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
+    _analyzer = analyzer;
     Template = template;
     _cancellationTokenSource = new CancellationTokenSource();
 
@@ -46,11 +50,12 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   {
     var startTime = DateTime.UtcNow;
     var experimentResults = new List<ExperimentResult>();
+    var analyses = new List<Analysis>();
     Status.State = ExecutionState.Running;
     _executionReporter.Report(Status);
     while (!ShouldStop() && !cancellationToken.IsCancellationRequested)
     {
-      var experimentExecutor = await GenerateExperimentExecutor();
+      var experimentExecutor = await GenerateExperimentExecutor(analyses);
       if (experimentExecutor is null)
         break;
 
@@ -63,12 +68,15 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
 
       var experimentResult = await experimentExecutor.Execute(_cancellationTokenSource.Token);
       experimentResults.Add(experimentResult);
+      var analysis = await _analyzer.Analyze(experimentResult.CompletedExperiment);
+      analyses.Add(analysis);
     }
 
     Status.State = ExecutionState.Succeeded;
     _executionReporter.Report(Status);
     var campaignResult = new CampaignResult
     {
+      UniqueId = Guid.NewGuid().ToString(),
       CampaignId = Template.UniqueId,
       ExecutionInfo = new ExecutionInfo
       {
@@ -85,13 +93,13 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   private bool ShouldStop()
     => false;
 
-  private async Task<ExperimentExecutor?> GenerateExperimentExecutor()
+  private async Task<ExperimentExecutor?> GenerateExperimentExecutor(IEnumerable<Analysis> analyses)
   {
     // campaign template should have exactly one experiment template at this time
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if (!experimentTemplate.IsResolved())
     {
-      var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters());
+      var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses);
       if (!resolveSuccess)
         return null;
     }

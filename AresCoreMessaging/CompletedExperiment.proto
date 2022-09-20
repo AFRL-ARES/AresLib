@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package ares.messaging;
 
-import "ExperimentTemplate.proto";
+import "Templates/ExperimentTemplate.proto";
 import "PlanTransaction.proto";
 import "google/protobuf/wrappers.proto";
 

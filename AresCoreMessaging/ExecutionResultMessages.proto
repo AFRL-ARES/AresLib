@@ -3,35 +3,43 @@ syntax = "proto3";
 package ares.messaging;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
 import "CompletedCampaign.proto";
 import "CompletedExperiment.proto";
+import "DeviceCommandResult.proto";
 
 message ExecutionInfo {
-  google.protobuf.Timestamp time_started = 1;
-  google.protobuf.Timestamp time_finished = 2;
+  google.protobuf.StringValue unique_id = 1;
+  google.protobuf.Timestamp time_started = 2;
+  google.protobuf.Timestamp time_finished = 3;
 }
 
 message CampaignResult {
-  string campaign_id = 1;
-  repeated ExperimentResult experiment_results = 2;
-  ExecutionInfo execution_info = 3;
-  CompletedCampaign completed_campaign = 4;
+  google.protobuf.StringValue unique_id = 1;
+  string campaign_id = 2;
+  repeated ExperimentResult experiment_results = 3;
+  ExecutionInfo execution_info = 4;
+  CompletedCampaign completed_campaign = 5;
 }
 
 message ExperimentResult {
-  string experiment_id = 1;
-  repeated StepResult step_results = 2;
-  ExecutionInfo execution_info = 3;
-  CompletedExperiment completed_experiment = 4;
+  google.protobuf.StringValue unique_id = 1;
+  string experiment_id = 2;
+  repeated StepResult step_results = 3;
+  ExecutionInfo execution_info = 4;
+  CompletedExperiment completed_experiment = 5;
 }
 
 message StepResult {
-  string step_id = 1;
-  repeated CommandResult command_results = 2;
-  ExecutionInfo execution_info = 3;
+  google.protobuf.StringValue unique_id = 1;
+  string step_id = 2;
+  repeated CommandResult command_results = 3;
+  ExecutionInfo execution_info = 4;
 }
 
 message CommandResult {
-  string command_id = 1;
-  ExecutionInfo execution_info = 2;
+  google.protobuf.StringValue unique_id = 1;
+  string command_id = 2;
+  ExecutionInfo execution_info = 3;
+  DeviceCommandResult result = 4;
 }

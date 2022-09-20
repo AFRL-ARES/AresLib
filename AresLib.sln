@@ -9,13 +9,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device", "AresDevicePl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device.Serial", "AresSerial\AresSerial\Ares.Device.Serial.csproj", "{ED748563-40DE-47D7-860D-C40A4411521A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Messaging", "AresCoreMessaging\Ares.Messaging.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.DataModel", "AresCoreMessaging\Ares.DataModel.csproj", "{067CD71C-FC38-47ED-936D-E67D010CB290}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core.Grpc", "AresCoreServices\Ares.Core.Grpc.csproj", "{371137E9-3D96-402C-AFFD-30FBE4736EC7}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core", "AresCore\Ares.Core.csproj", "{72B2F0BC-7A26-4BFA-9C21-81486504C04E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresLibTests", "AresLibTests\AresLibTests.csproj", "{7DA50816-DD99-407E-88F4-587DE92EBB8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ares.DataModel.Grpc", "Ares.DataModel.Grpc\Ares.DataModel.Grpc.csproj", "{8A4A6E3A-2401-4F82-AD11-82153226AE4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{7DA50816-DD99-407E-88F4-587DE92EBB8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DA50816-DD99-407E-88F4-587DE92EBB8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DA50816-DD99-407E-88F4-587DE92EBB8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A4A6E3A-2401-4F82-AD11-82153226AE4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A4A6E3A-2401-4F82-AD11-82153226AE4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A4A6E3A-2401-4F82-AD11-82153226AE4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A4A6E3A-2401-4F82-AD11-82153226AE4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

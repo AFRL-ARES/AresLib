@@ -14,5 +14,15 @@ internal class CommandResultEntityConfiguration : AresEntityTypeBaseConfiguratio
       .WithOne()
       .HasForeignKey<ExecutionInfo>("CommandResultId")
       .OnDelete(DeleteBehavior.ClientCascade);
+
+    builder.HasOne(result => result.Result)
+      .WithOne()
+      .HasForeignKey<DeviceCommandResult>("CommandResultId")
+      .OnDelete(DeleteBehavior.ClientCascade);
+
+    builder.HasOne<CommandTemplate>()
+      .WithMany()
+      .HasForeignKey(result => result.CommandId)
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }
