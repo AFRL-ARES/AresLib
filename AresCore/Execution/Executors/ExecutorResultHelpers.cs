@@ -41,7 +41,7 @@ internal static class ExecutorResultHelpers
   }
 
   public static CommandResult CreateCommandResult(string commandId,
-    DeviceCommandResult deviceResult,
+    DeviceCommandResult? deviceResult,
     DateTime startTime,
     DateTime endTime)
   {
@@ -57,7 +57,7 @@ internal static class ExecutorResultHelpers
   }
 
   private static ExecutionInfo MakeExecutionInfo(DateTime startTime, DateTime endTime)
-    => new ExecutionInfo
+    => new()
     {
       UniqueId = Guid.NewGuid().ToString(),
       TimeFinished = endTime.ToTimestamp(),

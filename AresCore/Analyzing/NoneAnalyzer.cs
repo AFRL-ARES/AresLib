@@ -12,7 +12,7 @@ internal class NoneAnalyzer : IAnalyzer
   public string Name { get; } = "NONE";
   public Version Version { get; } = new(1, 0);
 
-  public Task<Analysis> Analyze(CompletedExperiment experiment)
+  public Task<Analysis> Analyze(CompletedExperiment experiment, CancellationToken _)
   {
     var analysis = new Analysis
     {

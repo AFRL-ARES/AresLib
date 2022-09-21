@@ -8,4 +8,5 @@ public interface IExecutionManager
   void Start();
   void Stop();
   void Pause();
+  void Resume();
 }

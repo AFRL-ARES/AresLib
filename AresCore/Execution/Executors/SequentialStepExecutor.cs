@@ -8,7 +8,7 @@ internal class SequentialStepExecutor : StepExecutor
   {
   }
 
-  public override async Task<StepResult> Execute(CancellationToken cancellationToken)
+  public override async Task<StepResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
   {
     var startTime = DateTime.UtcNow;
     var commandResults = new List<CommandResult>();
@@ -17,7 +17,7 @@ internal class SequentialStepExecutor : StepExecutor
       if (cancellationToken.IsCancellationRequested)
         break;
 
-      var commandResult = await command.Execute(cancellationToken);
+      var commandResult = await command.Execute(cancellationToken, pauseToken);
       commandResults.Add(commandResult);
     }
 

@@ -26,5 +26,5 @@ public interface IPlanner
   /// <param name="plannableParameters">Collection of parameter metadata to plan for</param>
   /// <param name="experimentAnalyses">The experiment results to use as a seed for planning</param>
   /// <returns>Collection of plan <see cref="PlanResult" /> which has the metadata and the value</returns>
-  Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> experimentAnalyses);
+  Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> experimentAnalyses, CancellationToken cancellationToken);
 }

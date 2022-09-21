@@ -15,5 +15,8 @@ public interface IPlanningHelper
   /// <param name="parameters">Collection of parameters whose values to plan for</param>
   /// <param name="seedAnalyses">The completed experiment analyses used to seed the plan</param>
   /// <returns>True if planning succeeded, false otherwise</returns>
-  Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters, IEnumerable<Analysis> seedAnalyses);
+  Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
+    IEnumerable<Parameter> parameters,
+    IEnumerable<Analysis> seedAnalyses,
+    CancellationToken cancellationToken);
 }

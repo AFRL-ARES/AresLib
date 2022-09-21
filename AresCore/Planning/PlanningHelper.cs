@@ -11,7 +11,10 @@ public class PlanningHelper : IPlanningHelper
     _plannerManager = plannerManager;
   }
 
-  public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations, IEnumerable<Parameter> parameters, IEnumerable<Analysis> seedAnalyses)
+  public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
+    IEnumerable<Parameter> parameters,
+    IEnumerable<Analysis> seedAnalyses,
+    CancellationToken cancellationToken)
   {
     var parameterArray = parameters.ToArray();
     var plannerToMetadataMaps = new List<(IPlanner Planner, ParameterMetadata Metadata)>();
@@ -30,7 +33,7 @@ public class PlanningHelper : IPlanningHelper
     foreach (var grouping in planGroup)
     {
       var planner = grouping.Key;
-      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedAnalysesArr);
+      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedAnalysesArr, cancellationToken);
       var results = resultsEnumerable.ToArray();
       if (!results.Any())
         return false;

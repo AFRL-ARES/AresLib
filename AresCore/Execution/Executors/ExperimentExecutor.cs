@@ -39,7 +39,7 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
   public IObservable<ExperimentExecutionStatus> StatusObservable { get; }
   public ExperimentExecutionStatus Status { get; }
 
-  public async Task<ExperimentResult> Execute(CancellationToken cancellationToken)
+  public async Task<ExperimentResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
   {
     var startTime = DateTime.UtcNow;
     var stepResults = new List<StepResult>();
@@ -48,7 +48,7 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
       if (cancellationToken.IsCancellationRequested)
         break;
 
-      var stepResult = await executableStep.Execute(cancellationToken);
+      var stepResult = await executableStep.Execute(cancellationToken, pauseToken);
       stepResults.Add(stepResult);
     }
 
@@ -59,9 +59,9 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
 
     if (!string.IsNullOrEmpty(Template.OutputCommandId))
     {
-      var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).First(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
-      completedExperiment.Format = commandResult.Result?.Format;
-      completedExperiment.SerializedData = ByteString.CopyFrom(commandResult.Result?.ToByteArray() ?? ReadOnlySpan<byte>.Empty);
+      var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).FirstOrDefault(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
+      completedExperiment.Format = commandResult?.Result?.Format ?? "";
+      completedExperiment.SerializedData = ByteString.CopyFrom(commandResult?.Result?.ToByteArray() ?? ReadOnlySpan<byte>.Empty);
     }
 
     return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepResults);

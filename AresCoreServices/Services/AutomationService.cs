@@ -179,4 +179,16 @@ public class AutomationService : AresAutomation.AresAutomationBase
     _executionManager.Stop();
     return Task.FromResult(new Empty());
   }
+
+  public override Task<Empty> PauseExecution(Empty request, ServerCallContext context)
+  {
+    _executionManager.Pause();
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<Empty> ResumeExecution(Empty request, ServerCallContext context)
+  {
+    _executionManager.Resume();
+    return Task.FromResult(new Empty());
+  }
 }

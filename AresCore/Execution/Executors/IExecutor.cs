@@ -9,5 +9,5 @@ public interface IExecutor<TResult, out TStatus>
   IObservable<TStatus> StatusObservable { get; }
   TStatus Status { get; }
 
-  Task<TResult> Execute(CancellationToken cancellationToken);
+  Task<TResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken);
 }

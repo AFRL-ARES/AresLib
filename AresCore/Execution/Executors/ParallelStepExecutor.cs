@@ -8,10 +8,10 @@ internal class ParallelStepExecutor : StepExecutor
   {
   }
 
-  public override async Task<StepResult> Execute(CancellationToken cancellationToken)
+  public override async Task<StepResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
   {
     var startTime = DateTime.UtcNow;
-    var commandTasks = CommandExecutors.Select(command => command.Execute(cancellationToken));
+    var commandTasks = CommandExecutors.Select(command => command.Execute(cancellationToken, pauseToken));
     var commandResults = await Task.WhenAll(commandTasks);
 
     return ExecutorResultHelpers.CreateStepResult(Template.UniqueId, startTime, DateTime.UtcNow, commandResults);

@@ -25,6 +25,7 @@ public interface IAnalyzer
   /// Returns the values for the given parameter metadata
   /// </summary>
   /// <param name="experiment">The experiment to analyze</param>
+  /// <param name="cancellationToken"></param>
   /// <returns>Collection of plan <see cref="PlanResult" /> which has the metadata and the value</returns>
-  Task<Analysis> Analyze(CompletedExperiment experiment);
+  Task<Analysis> Analyze(CompletedExperiment experiment, CancellationToken cancellationToken);
 }

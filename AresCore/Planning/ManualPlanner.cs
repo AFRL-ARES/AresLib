@@ -21,7 +21,7 @@ public class ManualPlanner : IPlanner
   public string Name { get; }
   public Version Version { get; } = new(1, 0);
 
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _)
+  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
   {
     try
     {

@@ -15,7 +15,8 @@ public class ExecutionManager : IExecutionManager
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IStartConditionCollector _startConditionCollector;
-  private CancellationTokenSource? _cancellationTokenSource;
+  private CancellationTokenSource? _campaignCancellationTokenSource;
+  private PauseTokenSource? _campaignPauseTokenSource;
 
   public ExecutionManager(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     IPlanningHelper planningHelper,
@@ -49,14 +50,23 @@ public class ExecutionManager : IExecutionManager
     if (await _startConditionCollector.CanStart.Take(1) == false)
       throw new InvalidOperationException("Something is preventing this campaign from being started.");
 
-    _cancellationTokenSource = new CancellationTokenSource();
+    _campaignCancellationTokenSource = new CancellationTokenSource();
+    _campaignPauseTokenSource = new PauseTokenSource();
 
-    var campaignResult = await CampaignExecutor.Execute(_cancellationTokenSource.Token);
+    var campaignResult = await CampaignExecutor.Execute(_campaignCancellationTokenSource.Token, _campaignPauseTokenSource.Token);
+
+    _campaignPauseTokenSource.Dispose();
+    _campaignCancellationTokenSource.Dispose();
+    _campaignCancellationTokenSource = null;
+    _campaignPauseTokenSource = null;
   }
 
   public void Stop()
-    => _cancellationTokenSource?.Cancel();
+    => _campaignCancellationTokenSource?.Cancel();
 
   public void Pause()
-    => throw new NotImplementedException();
+    => _campaignPauseTokenSource?.Pause();
+
+  public void Resume()
+    => _campaignPauseTokenSource?.Resume();
 }

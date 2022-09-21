@@ -12,7 +12,7 @@ namespace Ares.Core.Execution.Executors;
 internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionStatus>
 {
   private readonly IAnalyzer _analyzer;
-  private readonly CancellationTokenSource _cancellationTokenSource;
+  // private readonly CancellationTokenSource _cancellationTokenSource;
   private readonly IExecutionReporter _executionReporter;
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
@@ -29,7 +29,7 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
     _executionReporter = executionReporter;
     _analyzer = analyzer;
     Template = template;
-    _cancellationTokenSource = new CancellationTokenSource();
+    // _cancellationTokenSource = new CancellationTokenSource();
 
     Status = new CampaignExecutionStatus
     {
@@ -46,16 +46,17 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   public IObservable<CampaignExecutionStatus> StatusObservable { get; }
   public CampaignExecutionStatus Status { get; }
 
-  public async Task<CampaignResult> Execute(CancellationToken cancellationToken)
+  public async Task<CampaignResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
   {
     var startTime = DateTime.UtcNow;
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
-    Status.State = ExecutionState.Running;
+    Status.State = pauseToken.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
+
     while (!ShouldStop() && !cancellationToken.IsCancellationRequested)
     {
-      var experimentExecutor = await GenerateExperimentExecutor(analyses);
+      var experimentExecutor = await GenerateExperimentExecutor(analyses, cancellationToken);
       if (experimentExecutor is null)
         break;
 
@@ -66,10 +67,16 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
         _executionReporter.Report(Status);
       });
 
-      var experimentResult = await experimentExecutor.Execute(_cancellationTokenSource.Token);
+      var experimentResult = await experimentExecutor.Execute(cancellationToken, pauseToken);
       experimentResults.Add(experimentResult);
-      var analysis = await _analyzer.Analyze(experimentResult.CompletedExperiment);
-      analyses.Add(analysis);
+
+      // if the execution was canceled, the experiment may not have executed the command to provide the output
+      // and thus sending a null result to the analyzer might break it depending on the analyzer
+      if (!cancellationToken.IsCancellationRequested)
+      {
+        var analysis = await _analyzer.Analyze(experimentResult.CompletedExperiment, cancellationToken);
+        analyses.Add(analysis);
+      }
     }
 
     Status.State = ExecutionState.Succeeded;
@@ -93,13 +100,13 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   private bool ShouldStop()
     => false;
 
-  private async Task<ExperimentExecutor?> GenerateExperimentExecutor(IEnumerable<Analysis> analyses)
+  private async Task<ExperimentExecutor?> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
   {
     // campaign template should have exactly one experiment template at this time
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if (!experimentTemplate.IsResolved())
     {
-      var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses);
+      var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
       if (!resolveSuccess)
         return null;
     }

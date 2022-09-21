@@ -29,10 +29,27 @@ internal class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus
   public IObservable<CommandExecutionStatus> StatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
 
-  public async Task<CommandResult> Execute(CancellationToken cancellationToken)
+  public async Task<CommandResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
   {
-    Status.State = ExecutionState.Running;
+    Status.State = pauseToken.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
+    if (pauseToken.IsPaused)
+      try
+      {
+        pauseToken.Wait(cancellationToken);
+      }
+      catch (OperationCanceledException)
+      {
+      }
+
+    if (cancellationToken.IsCancellationRequested)
+    {
+      Status.State = ExecutionState.Failed;
+      _stateSubject.OnNext(Status);
+      _stateSubject.OnCompleted();
+      return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, null, DateTime.UtcNow, DateTime.UtcNow);
+    }
+
     var timeStarted = DateTime.UtcNow;
     var execInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
     var result = await _command(cancellationToken);

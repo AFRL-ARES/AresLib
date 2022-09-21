@@ -33,5 +33,5 @@ public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
 
   public IObservable<StepExecutionStatus> StatusObservable { get; }
   public StepExecutionStatus Status { get; }
-  public abstract Task<StepResult> Execute(CancellationToken cancellationToken);
+  public abstract Task<StepResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken);
 }
