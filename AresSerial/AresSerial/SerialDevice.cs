@@ -26,7 +26,10 @@ public abstract class SerialDevice : AresDevice
   private void Connect()
   {
     if (TargetPortName is null)
+    {
+
       return;
+    }
 
     try
     {
@@ -44,6 +47,13 @@ public abstract class SerialDevice : AresDevice
   public void Disconnect()
   {
     Connection.Disconnect();
+    var connectionStatusUpdate = Connection.ConnectionStatusUpdates.Take(1).ToTask();
+    connectionStatusUpdate.Wait();
+    var connectionStatus = connectionStatusUpdate.Result;
+    if (connectionStatus != ConnectionStatus.Connected)
+    {
+      StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Inactive });
+    }
   }
 
   public override async Task<bool> Activate()

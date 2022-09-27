@@ -30,12 +30,23 @@ public abstract class SerialConnection : ISerialConnection
     ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
   }
 
-  private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
-  private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
-  private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = new Subject<SerialCommandResponse>();
-  private IAresSerialPort Port { get; }
-  private IObservable<SerialCommandResponse> Responses { get; set; }
-  private CancellationTokenSource? ListenerCancellationTokenSource { get; set; }
+  private async Task ListenAsync(CancellationToken cancellationToken)
+  {
+    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
+    while (!cancellationToken.IsCancellationRequested)
+      try
+      {
+        await Port.ListenForEntryAsync(cancellationToken);
+      }
+
+      catch (OperationCanceledException)
+      {
+        Console.WriteLine($"Canceled {GetType().Name} listener loop");
+        ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
+      }
+
+    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Idle);
+  }
 
   public void Connect(string portName)
   {
@@ -155,27 +166,17 @@ public abstract class SerialConnection : ISerialConnection
     return Responses.OfType<T>().FirstAsync().Timeout(timeout).ToTask(cancellationToken);
   }
 
+  private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
+  private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
+  private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = new Subject<SerialCommandResponse>();
+  private IAresSerialPort Port { get; }
+  private IObservable<SerialCommandResponse> Responses { get; set; }
+  private CancellationTokenSource? ListenerCancellationTokenSource { get; set; }
+
+
   public Task<SerialCommandResponse> GetAnyResponse(CancellationToken cancellationToken, TimeSpan timeout)
     => GetResponse<SerialCommandResponse>(cancellationToken, timeout);
 
   public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
   public IObservable<ListenerStatus> ListenerStatusUpdates { get; }
-
-  private async Task ListenAsync(CancellationToken cancellationToken)
-  {
-    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
-    while (!cancellationToken.IsCancellationRequested)
-      try
-      {
-        await Port.ListenForEntryAsync(cancellationToken);
-      }
-
-      catch (OperationCanceledException)
-      {
-        Console.WriteLine($"Canceled {GetType().Name} listener loop");
-        ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
-      }
-
-    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Idle);
-  }
 }
