@@ -9,7 +9,6 @@ namespace Ares.Device.Serial.Simulation;
 
 internal class AresSimPort : IAresSerialPort
 {
-
   public AresSimPort(Channel<string> inputChannel, Channel<string> outputChannel)
   {
     OutboundMessages = OutboundMessagePublisher.AsObservable();

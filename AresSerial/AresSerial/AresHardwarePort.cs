@@ -25,6 +25,8 @@ internal class AresHardwarePort : IAresSerialPort
 
   public string CommandEnding => _connectionInfo.EntryEnding;
 
+  public bool MultilineResponse { get; set; }
+
   public string Name => SystemPort?.PortName ?? string.Empty;
 
   public bool IsOpen => SystemPort?.IsOpen ?? false;
@@ -47,6 +49,7 @@ internal class AresHardwarePort : IAresSerialPort
       _connectionInfo.StopBits
     );
 
+    SystemPort.NewLine = CommandEnding;
     SystemPort.Open();
   }
 
@@ -74,6 +77,7 @@ internal class AresHardwarePort : IAresSerialPort
       SystemPort.StopBits
     );
 
+    unopenedCopy.NewLine = SystemPort.NewLine;
     SystemPort.Close();
     OutboundMessagesPublisher = new Subject<string>();
     InboundMessagesPublisher = new Subject<string>();
@@ -87,26 +91,40 @@ internal class AresHardwarePort : IAresSerialPort
     if (!IsOpen || SystemPort is null)
       throw new InvalidOperationException("Cannot listen as the serial port is not open.");
 
-    var readTimeout = SystemPort.ReadTimeout;
-    if (readTimeout == SerialPort.InfiniteTimeout)
-      readTimeout = 1000;
+    // set the timeout to a reasonable number so we can periodically time out and check to see if our
+    // cancellation token has been cancelled
+    if (SystemPort.ReadTimeout == SerialPort.InfiniteTimeout)
+      SystemPort.ReadTimeout = 5000;
 
-    await Task.Run(
-      async () => {
+    var listenerTask = Task.Factory.StartNew(
+      () => {
         while (!cancellationToken.IsCancellationRequested)
           try
           {
-            var inboundMessage = SystemPort.ReadLine();
-            InboundMessagesPublisher.OnNext(inboundMessage);
+            var message = SystemPort.ReadLine();
+            // the following would only get hit when there's a multiline response coming from the system port
+            while (SystemPort.BytesToRead > 0)
+            {
+              var anotherLine = SystemPort.ReadLine();
+              message = $"{message}{Environment.NewLine}{anotherLine}";
+              // we give a bit of time to repopulate the buffer as reading too fast might
+              // leave the BytesToRead at 0 while there's still data coming in
+              Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken).Wait(cancellationToken);
+            }
+
+            InboundMessagesPublisher.OnNext(message);
           }
           catch (TimeoutException)
           {
             cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(readTimeout, cancellationToken);
           }
       },
-      cancellationToken
+      cancellationToken,
+      TaskCreationOptions.LongRunning,
+      TaskScheduler.Current
     );
+
+    await listenerTask;
   }
 
   public void SendOutboundMessage(string input)
@@ -114,7 +132,7 @@ internal class AresHardwarePort : IAresSerialPort
     if (!IsOpen || SystemPort is null)
       throw new InvalidOperationException("Cannot send message as the serial port is not open.");
 
-    SystemPort.WriteLine($"{input}{CommandEnding}");
+    SystemPort.WriteLine($"{input}");
     OutboundMessagesPublisher.OnNext(input);
   }
 }
