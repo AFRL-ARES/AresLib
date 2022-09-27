@@ -10,6 +10,7 @@ import "Device/DeviceStatus.proto";
 
 service AresDevices {
 	rpc ListAresDevices(google.protobuf.Empty) returns (ListAresDevicesResponse);
+	rpc GetServerSerialPorts(google.protobuf.Empty) returns (ListServerSerialPortsResponse);
 	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
 	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
 	rpc ExecuteCommand(CommandTemplate) returns (DeviceCommandResult);
@@ -22,6 +23,11 @@ message AresDeviceInfo {
 message ListAresDevicesResponse
 {
 	repeated AresDeviceInfo ares_devices = 1; // collection of ares_device objects, used when all the ares devices are needed
+}
+
+message ListServerSerialPortsResponse
+{
+	repeated string serial_ports = 1; // collection of available serial ports reported by the device connection (local) server
 }
 
 message CommandMetadatasRequest {

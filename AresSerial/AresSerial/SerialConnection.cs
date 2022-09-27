@@ -124,10 +124,14 @@ public abstract class SerialConnection : ISerialConnection
       Port.SendOutboundMessage(outboundMessage);
 
       var finishedTask = Task.WhenAny(transactionSyncer, timeoutSyncer).Result;
-
+      if (aggregateCancelSource.IsCancellationRequested)
+      {
+        throw new Exception($"Operation cancelled before receiving receipt for command {request.Serialize()} on port {Port.Name}");
+      }
       if (finishedTask == timeoutSyncer)
+      {
         throw new TimeoutException($"Could not get a receipt for command \"{request.Serialize()}\" on port {Port.Name} within {timeout}");
-
+      }
       timeoutCancel.Cancel();
       var latestPortResponse = transactionSyncer.Result;
 

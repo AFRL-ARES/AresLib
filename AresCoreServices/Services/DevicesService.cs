@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO.Ports;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
@@ -18,6 +19,13 @@ public class DevicesService : AresDevices.AresDevicesBase
   public DevicesService(ILaboratoryManager laboratoryManager)
   {
     _laboratoryManager = laboratoryManager;
+  }
+
+  public override Task<ListServerSerialPortsResponse> GetServerSerialPorts(Empty request, ServerCallContext context)
+  {
+    var availableSerialPorts = SerialPort.GetPortNames();
+    var response = new ListServerSerialPortsResponse { SerialPorts = { availableSerialPorts } };
+    return Task.FromResult(response);
   }
 
   public override Task<ListAresDevicesResponse> ListAresDevices(Empty _, ServerCallContext context)
