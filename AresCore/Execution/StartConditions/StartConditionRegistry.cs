@@ -5,13 +5,13 @@ using DynamicData;
 
 namespace Ares.Core.Execution.StartConditions;
 
-public class StartConditionCollector : IStartConditionCollector
+public class StartConditionRegistry : IStartConditionRegistry
 {
   private readonly ISubject<bool> _canStartSubject = new BehaviorSubject<bool>(true);
   private readonly IList<IDisposable> _conditionObservers = new List<IDisposable>();
   private readonly IDictionary<IStartCondition, bool> _startConditions = new ConcurrentDictionary<IStartCondition, bool>();
 
-  public StartConditionCollector(IEnumerable<IStartCondition> startConditions)
+  public StartConditionRegistry(IEnumerable<IStartCondition> startConditions)
   {
     CanStart = _canStartSubject.AsObservable();
     var test = startConditions.Select(condition => condition.CanStartObservable.Subscribe(b => {

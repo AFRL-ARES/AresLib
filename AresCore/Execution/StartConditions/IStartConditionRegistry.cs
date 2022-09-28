@@ -1,6 +1,6 @@
 ﻿namespace Ares.Core.Execution.StartConditions;
 
-public interface IStartConditionCollector
+public interface IStartConditionRegistry
 {
   public IObservable<bool> CanStart { get; }
 }

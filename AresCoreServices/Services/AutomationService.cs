@@ -16,17 +16,17 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReporter _executionReporter;
-  private readonly IStartConditionCollector _startConditionCollector;
+  private readonly IStartConditionRegistry _startConditionRegistry;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
     IExecutionManager executionManager,
     IExecutionReporter executionReporter,
-    IStartConditionCollector startConditionCollector)
+    IStartConditionRegistry startConditionRegistry)
   {
     _coreContextFactory = coreContextFactory;
     _executionManager = executionManager;
     _executionReporter = executionReporter;
-    _startConditionCollector = startConditionCollector;
+    _startConditionRegistry = startConditionRegistry;
   }
 
 

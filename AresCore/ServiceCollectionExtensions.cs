@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<IPlannerManager, PlannerManager>();
     services.AddTransient<IStartCondition, CampaignInProgressStartCondition>();
     services.AddSingleton<IExecutionReporter, ExecutionReporter>();
-    services.AddSingleton<IStartConditionCollector, StartConditionCollector>();
+    services.AddSingleton<IStartConditionRegistry, StartConditionRegistry>();
     services.AddSingleton<IAnalyzerManager, AnalyzerManager>();
   }
 }

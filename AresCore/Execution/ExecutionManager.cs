@@ -14,7 +14,7 @@ public class ExecutionManager : IExecutionManager
   private readonly IExecutionReporter _executionReporter;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly IPlanningHelper _planningHelper;
-  private readonly IStartConditionCollector _startConditionCollector;
+  private readonly IStartConditionRegistry _startConditionRegistry;
   private CancellationTokenSource? _campaignCancellationTokenSource;
   private PauseTokenSource? _campaignPauseTokenSource;
 
@@ -22,13 +22,13 @@ public class ExecutionManager : IExecutionManager
     IPlanningHelper planningHelper,
     IAnalyzerManager analyzerManager,
     IExecutionReporter executionReporter,
-    IStartConditionCollector startConditionCollector)
+    IStartConditionRegistry startConditionRegistry)
   {
     _experimentComposer = experimentComposer;
     _planningHelper = planningHelper;
     _analyzerManager = analyzerManager;
     _executionReporter = executionReporter;
-    _startConditionCollector = startConditionCollector;
+    _startConditionRegistry = startConditionRegistry;
   }
 
   public CampaignTemplate? CampaignTemplate { get; private set; }
@@ -47,7 +47,7 @@ public class ExecutionManager : IExecutionManager
     if (CampaignExecutor is null)
       throw new InvalidOperationException("Campaign template has not been set");
 
-    if (await _startConditionCollector.CanStart.Take(1) == false)
+    if (await _startConditionRegistry.CanStart.Take(1) == false)
       throw new InvalidOperationException("Something is preventing this campaign from being started.");
 
     _campaignCancellationTokenSource = new CancellationTokenSource();
