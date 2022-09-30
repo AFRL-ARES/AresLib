@@ -8,10 +8,8 @@ internal interface IAresSerialPort
 {
   string? Name { get; }
   bool IsOpen { get; }
-  IObservable<string> OutboundMessages { get; }
-  IObservable<string> InboundMessages { get; }
   void Open(string portName);
   void Close(Exception? error = null);
-  Task ListenForEntryAsync(CancellationToken cancellationToken);
+  Task<string> ListenForEntryAsync(CancellationToken cancellationToken, TimeSpan timeout = default);
   void SendOutboundMessage(string input);
 }

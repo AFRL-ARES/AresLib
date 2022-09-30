@@ -26,10 +26,7 @@ public abstract class SerialDevice : AresDevice
   private void Connect()
   {
     if (TargetPortName is null)
-    {
-
       return;
-    }
 
     try
     {
@@ -51,9 +48,7 @@ public abstract class SerialDevice : AresDevice
     connectionStatusUpdate.Wait();
     var connectionStatus = connectionStatusUpdate.Result;
     if (connectionStatus != ConnectionStatus.Connected)
-    {
       StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Inactive });
-    }
   }
 
   public override async Task<bool> Activate()
@@ -61,9 +56,8 @@ public abstract class SerialDevice : AresDevice
     if (Connection is null)
       throw new Exception("Cannot activate serial device before providing connection.");
 
-    if (await Connection.ConnectionStatusUpdates.FirstAsync() == ConnectionStatus.Connected
-        && await Connection.ListenerStatusUpdates.FirstAsync() == ListenerStatus.Listening)
-      return true;
+    if (await Connection.ConnectionStatusUpdates.FirstAsync() == ConnectionStatus.Connected)
+      return await Validate();
 
     if (await Connection.ConnectionStatusUpdates.FirstAsync() != ConnectionStatus.Connected)
     {
@@ -86,28 +80,7 @@ public abstract class SerialDevice : AresDevice
       }
     }
 
-    if (await Connection.ListenerStatusUpdates.FirstAsync() != ListenerStatus.Listening)
-      Connection.StartListening();
-
-    var listeningRetries = 5;
-    var listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
-    while (listenerStatus != ListenerStatus.Listening)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(200));
-      listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
-      if (listeningRetries-- == 0)
-        break;
-    }
-
-    if (listenerStatus != ListenerStatus.Listening)
-      return false;
-
-    if (!await Validate())
-      return false;
-
-    listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
-
-    return listenerStatus != ListenerStatus.Paused;
+    return await Validate();
   }
 
   protected abstract Task<bool> Validate();

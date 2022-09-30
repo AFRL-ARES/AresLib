@@ -4,13 +4,13 @@ namespace Ares.Device.Serial;
 
 public class SerialPortConnectionInfo
 {
-  public SerialPortConnectionInfo
-    (
+  public SerialPortConnectionInfo(
     int baudRate,
     Parity parity,
     int dataBits,
     StopBits stopBits,
-    string entryEnding
+    string entryEnding,
+    int? readBufferSize = null
     )
   {
     BaudRate = baudRate;
@@ -18,6 +18,7 @@ public class SerialPortConnectionInfo
     DataBits = dataBits;
     StopBits = stopBits;
     EntryEnding = entryEnding;
+    ReadBufferSize = readBufferSize;
   }
 
   public int BaudRate { get; set; }
@@ -25,4 +26,5 @@ public class SerialPortConnectionInfo
   public int DataBits { get; set; }
   public StopBits StopBits { get; set; }
   public string EntryEnding { get; set; }
+  public int? ReadBufferSize { get; }
 }
