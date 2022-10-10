@@ -2,5 +2,5 @@
 
 public interface IStartConditionRegistry
 {
-  public IObservable<bool> CanStart { get; }
+  public IEnumerable<IStartCondition> GetFailedConditions();
 }

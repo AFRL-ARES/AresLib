@@ -3,6 +3,7 @@ using Ares.Core.Composers;
 using Ares.Core.Execution;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.StartConditions;
+using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,5 +23,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<IExecutionReporter, ExecutionReporter>();
     services.AddSingleton<IStartConditionRegistry, StartConditionRegistry>();
     services.AddSingleton<IAnalyzerManager, AnalyzerManager>();
+
+    services.AddSingleton<INumExperimentsRunFactory, NumExperimentsRunFactory>();
   }
 }

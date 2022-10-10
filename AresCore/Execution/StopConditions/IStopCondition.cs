@@ -1,6 +1,7 @@
-﻿namespace Ares.Core.Execution;
+﻿namespace Ares.Core.Execution.StopConditions;
 
 public interface IStopCondition
 {
-  Func<bool> ShouldStop();
+  public string Message { get; }
+  public bool ShouldStop();
 }

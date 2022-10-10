@@ -1,23 +1,24 @@
-﻿using System.Reactive.Linq;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 
 namespace Ares.Core.Execution.StartConditions;
 
 public class CampaignInProgressStartCondition : IStartCondition
 {
+  private readonly IExecutionReporter _executionReporter;
+
   public CampaignInProgressStartCondition(IExecutionReporter executionReporter)
   {
-    CanStartObservable = executionReporter.CampaignStatusObservable
-      .Select(CanCampaignRun);
+    _executionReporter = executionReporter;
   }
 
-  public IObservable<bool> CanStartObservable { get; }
+  public string Message => $"Campaign with id {_executionReporter.CampaignExecutionStatus?.CampaignId} is currently running.";
 
-  private static bool CanCampaignRun(CampaignExecutionStatus? status)
+  public bool CanStart()
   {
-    if (status is null)
+    var state = _executionReporter.CampaignExecutionStatus?.State;
+    if (state is null)
       return true;
 
-    return status.State != ExecutionState.Running && status.State != ExecutionState.Paused;
+    return state != ExecutionState.Running && state != ExecutionState.Paused;
   }
 }

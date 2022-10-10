@@ -1,8 +1,11 @@
-﻿using System.Reactive.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
+using Ares.Core.Execution.StopConditions;
 using Ares.Core.Grpc.Helpers;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
@@ -189,6 +192,54 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<Empty> ResumeExecution(Empty request, ServerCallContext context)
   {
     _executionManager.Resume();
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<StartStopConditionsResponse> GetAssignedStopConditions(Empty request, ServerCallContext context)
+  {
+    var conditions = _executionManager.CampaignStopConditions;
+    var response = new StartStopConditionsResponse();
+    var startStopConditions = conditions?.Select(condition => new StartStopCondition { Message = condition.Message, Name = condition.GetType().Name }) ?? new List<StartStopCondition>();
+    response.StartStopConditions.AddRange(startStopConditions);
+
+    return Task.FromResult(response);
+  }
+
+  public override Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
+  {
+    var response = new StartStopConditionsResponse();
+    var conditions = _startConditionRegistry.GetFailedConditions().Select(condition => new StartStopCondition { Message = condition.Message, Name = condition.GetType().Name });
+    response.StartStopConditions.AddRange(conditions);
+
+    return Task.FromResult(response);
+  }
+
+  public override Task<Empty> RemoveStopCondition(StartStopCondition request, ServerCallContext context)
+  {
+    var stopConditions = _executionManager.CampaignStopConditions;
+    if (stopConditions is null)
+      return Task.FromResult(new Empty());
+
+    var condition = stopConditions.FirstOrDefault(condition => condition.GetType().Name.Equals(request.Name));
+    if (condition is not null)
+      stopConditions.Remove(condition);
+
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<Empty> SetNumExperimentsStopCondition(NumExperimentsCondition request, ServerCallContext context)
+  {
+    var stopConditions = _executionManager.CampaignStopConditions;
+    if (stopConditions is null)
+      return Task.FromResult(new Empty());
+
+    var existingStopCondition = stopConditions.FirstOrDefault(condition => condition.GetType().Name.Equals(nameof(NumExperimentsCondition)));
+    if (existingStopCondition is not null)
+      stopConditions.Remove(existingStopCondition);
+
+    var newCondition = new NumExperimentsRun(_executionReporter, request.NumExperiments);
+    stopConditions.Add(newCondition);
+
     return Task.FromResult(new Empty());
   }
 }

@@ -1,8 +1,8 @@
-﻿using System.Reactive.Linq;
-using Ares.Core.Analyzing;
+﻿using Ares.Core.Analyzing;
 using Ares.Core.Composers;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.StartConditions;
+using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
 using Ares.Messaging;
 
@@ -35,6 +35,10 @@ public class ExecutionManager : IExecutionManager
 
   private CampaignExecutor? CampaignExecutor { get; set; }
 
+  public IList<IStopCondition>? CampaignStopConditions => CampaignExecutor?.StopConditions;
+
+  public bool CanRun => !_startConditionRegistry.GetFailedConditions().Any() && CampaignExecutor is not null;
+
   public void LoadTemplate(CampaignTemplate template)
   {
     CampaignTemplate = template;
@@ -47,8 +51,9 @@ public class ExecutionManager : IExecutionManager
     if (CampaignExecutor is null)
       throw new InvalidOperationException("Campaign template has not been set");
 
-    if (await _startConditionRegistry.CanStart.Take(1) == false)
-      throw new InvalidOperationException("Something is preventing this campaign from being started.");
+    var failedStartConditions = _startConditionRegistry.GetFailedConditions().ToArray();
+    if (failedStartConditions.Any())
+      throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, failedStartConditions.Select(condition => condition.Message))}");
 
     _campaignCancellationTokenSource = new CancellationTokenSource();
     _campaignPauseTokenSource = new PauseTokenSource();
