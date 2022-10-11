@@ -4,6 +4,5 @@ public enum ListenerStatus
 {
   Idle,
   Listening,
-  Paused,
-  Busy
+  Error,
 }

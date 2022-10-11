@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
@@ -10,7 +12,23 @@ namespace Ares.Device.Serial;
 
 public abstract class SerialConnection : ISerialConnection
 {
-  private readonly object _lock = new();
+  private IDisposable _listener = Disposable.Empty;
+  private ISubject<string> DataBufferStatePublisher { get; }
+  private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
+  private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
+  private ISubject<string> ResponsePublisher { get; set; } = new Subject<string>();
+  private IAresSerialPort Port { get; }
+
+  private SerialConnection(IAresSerialPort port)
+  {
+    Port = port;
+    ConnectionStatusUpdates = ConnectionStatusUpdatesSource.AsObservable();
+    ListenerStatusUpdates = ListenerStatusUpdatesSource.AsObservable();
+    DataBufferStatePublisher = new BehaviorSubject<string>(string.Empty);
+    DataBufferState = DataBufferStatePublisher.AsObservable();
+    ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
+    DataBufferState.Subscribe(ProcessBuffer);
+  }
 
   protected SerialConnection(SerialPortConnectionInfo connectionInfo) : this(new AresHardwarePort(connectionInfo))
   {
@@ -20,32 +38,37 @@ public abstract class SerialConnection : ISerialConnection
   {
   }
 
-  private SerialConnection(IAresSerialPort port)
-  {
-    Port = port;
-    ConnectionStatusUpdates = ConnectionStatusUpdatesSource.AsObservable();
-    Responses = ResponsePublisher.AsObservable();
+  protected abstract string[] CollectMessageEntries(string buffer);
 
-    ListenerStatusUpdates = ListenerStatusUpdatesSource.AsObservable();
-    ConnectionStatusUpdatesSource.OnNext(ConnectionStatus.Unattempted);
+  protected virtual void ProcessBuffer(string currentBuffer)
+  {
+    var consumableMessageEntries = CollectMessageEntries(currentBuffer);
+    var processedBuffer = new string(currentBuffer);
+    foreach (var consumableMessageEntry in consumableMessageEntries)
+    {
+      processedBuffer = processedBuffer.Replace(consumableMessageEntry, string.Empty);
+    }
+
+    if (currentBuffer.Equals(processedBuffer))
+    {
+      return;
+    }
+
+    DataBufferStatePublisher.OnNext(processedBuffer);
   }
 
-  private async Task ListenAsync(CancellationToken cancellationToken)
+  private void Listen()
   {
+    Port.Listen();
+    _listener = Port.DataReceived.Subscribe(AddDataReceived); 
     ListenerStatusUpdatesSource.OnNext(ListenerStatus.Listening);
-    while (!cancellationToken.IsCancellationRequested)
-      try
-      {
-        await Port.ListenForEntryAsync(cancellationToken);
-      }
+  }
 
-      catch (OperationCanceledException)
-      {
-        Console.WriteLine($"Canceled {GetType().Name} listener loop");
-        ListenerStatusUpdatesSource.OnNext(ListenerStatus.Paused);
-      }
-
-    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Idle);
+  private void AddDataReceived(string dataReceived)
+  {
+    var currentBuffer = DataBufferState.Take(1).Wait();
+    var updatedBuffer = currentBuffer + dataReceived;
+    DataBufferStatePublisher.OnNext(updatedBuffer);
   }
 
   public void Connect(string portName)
@@ -79,103 +102,29 @@ public abstract class SerialConnection : ISerialConnection
 
   public void StartListening()
   {
-    var alreadyListening = !ListenerCancellationTokenSource?.Token.IsCancellationRequested ?? false;
-    if (!alreadyListening)
-    {
-      ResponsePublisher = new Subject<SerialCommandResponse>();
-      Responses = ResponsePublisher.AsObservable();
-      ListenerCancellationTokenSource = new CancellationTokenSource();
-    }
-    else
+    if (!Equals(_listener, Disposable.Empty))
     {
       throw new InvalidOperationException($"{Port.Name} Listener loop already started");
     }
 
-    _ = ListenAsync(ListenerCancellationTokenSource.Token);
+    ResponsePublisher = new Subject<string>();
+    Listen();
   }
 
   public void StopListening()
   {
-    ListenerCancellationTokenSource?.Cancel();
+    Port.StopListening();
+    _listener.Dispose();
+    _listener = Disposable.Empty;
+    ListenerStatusUpdatesSource.OnNext(ListenerStatus.Idle);
     ResponsePublisher.OnCompleted();
   }
 
-  public virtual void Send(SerialCommandRequest request)
+  public virtual void Send(string request)
   {
-    lock ( _lock )
-    {
-      Port.SendOutboundMessage(request.Serialize());
-    }
+    Port.SendOutboundMessage(request);
   }
-
-  public Task<T> SendAndGetResponseAsync<T>(SerialCommandRequestWithResponse<T> request, CancellationToken cancellationToken, TimeSpan timeout) where T : SerialCommandResponse
-  {
-    return Task.Run(() => SendAndGetResponse(request, cancellationToken, timeout), cancellationToken);
-  }
-
-  public Task<T> SendAndGetResponseAsync<T>(SerialCommandRequestWithResponse<T> request, CancellationToken cancellationToken) where T : SerialCommandResponse
-  {
-    return Task.Run(() => SendAndGetResponse(request, cancellationToken), cancellationToken);
-  }
-
-  public virtual T SendAndGetResponse<T>(SerialCommandRequestWithResponse<T> request, CancellationToken cancellationToken, TimeSpan timeout) where T : SerialCommandResponse
-  {
-    lock ( _lock )
-    {
-      var transactionSyncer = Port.InboundMessages.Take(1)
-        .ToTask(cancellationToken);
-
-      var timeoutCancel = new CancellationTokenSource();
-      var aggregateCancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCancel.Token);
-      var timeoutSyncer = Task.Delay(timeout, aggregateCancelSource.Token);
-      var outboundMessage = request.Serialize();
-
-
-      Port.SendOutboundMessage(outboundMessage);
-
-      var finishedTask = Task.WhenAny(transactionSyncer, timeoutSyncer).Result;
-      if (aggregateCancelSource.IsCancellationRequested)
-      {
-        throw new Exception($"Operation cancelled before receiving receipt for command {request.Serialize()} on port {Port.Name}");
-      }
-      if (finishedTask == timeoutSyncer)
-      {
-        throw new TimeoutException($"Could not get a receipt for command \"{request.Serialize()}\" on port {Port.Name} within {timeout}");
-      }
-      timeoutCancel.Cancel();
-      var latestPortResponse = transactionSyncer.Result;
-
-      if (request is SimRequestWithResponse<T> simRequest)
-        request = simRequest.ActualRequest;
-
-      var response = request.DeserializeResponse(latestPortResponse);
-      ResponsePublisher.OnNext(response);
-      return response;
-    }
-  }
-
-  public T SendAndGetResponse<T>(SerialCommandRequestWithResponse<T> request, CancellationToken cancellationToken) where T : SerialCommandResponse
-    => SendAndGetResponse(request, cancellationToken, Timeout.InfiniteTimeSpan);
-
-  public Task<T> GetResponse<T>(CancellationToken cancellationToken, TimeSpan timeout) where T : SerialCommandResponse
-  {
-    var listenerStatus = ListenerStatusUpdates.FirstAsync().Wait();
-    if (listenerStatus != ListenerStatus.Listening)
-      throw new InvalidOperationException($"{Port.Name} Connection attempted to get a response while the listener is {listenerStatus}");
-
-    return Responses.OfType<T>().FirstAsync().Timeout(timeout).ToTask(cancellationToken);
-  }
-
-  private ISubject<ConnectionStatus> ConnectionStatusUpdatesSource { get; } = new BehaviorSubject<ConnectionStatus>(ConnectionStatus.Unattempted);
-  private ISubject<ListenerStatus> ListenerStatusUpdatesSource { get; } = new BehaviorSubject<ListenerStatus>(ListenerStatus.Idle);
-  private ISubject<SerialCommandResponse> ResponsePublisher { get; set; } = new Subject<SerialCommandResponse>();
-  private IAresSerialPort Port { get; }
-  private IObservable<SerialCommandResponse> Responses { get; set; }
-  private CancellationTokenSource? ListenerCancellationTokenSource { get; set; }
-
-
-  public Task<SerialCommandResponse> GetAnyResponse(CancellationToken cancellationToken, TimeSpan timeout)
-    => GetResponse<SerialCommandResponse>(cancellationToken, timeout);
+  public IObservable<string> DataBufferState { get; }
 
   public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }
   public IObservable<ListenerStatus> ListenerStatusUpdates { get; }

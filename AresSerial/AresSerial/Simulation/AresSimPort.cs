@@ -30,6 +30,11 @@ internal class AresSimPort : IAresSerialPort
 
   public IObservable<string> InboundMessages { get; private set; }
 
+  public void StopListening()
+  {
+    throw new NotImplementedException();
+  }
+
   public void SendOutboundMessage(string input)
   {
     if (!IsOpen)
@@ -46,20 +51,9 @@ internal class AresSimPort : IAresSerialPort
         throw new InvalidOperationException($"{Name} couldn't write to channel.");
       }
     });
-
-    // var simIo = SimRequestWithResponse<SerialCommandResponse>.GetSimulatedIo(input);
-    // OutboundMessagePublisher.OnNext(simIo[0]!);
-    // if (simIo[1] == null)
-    //   // response not expected
-    //   return;
-    //
-    // var fakeInput = simIo[1];
-    // if (fakeInput is null)
-    //   return;
-    //
-    // var random = new Random();
-    // Task.Delay(TimeSpan.FromMilliseconds(random.Next(100, 500))).ContinueWith(_ => InputChannel.Writer.TryWrite(fakeInput));
   }
+
+  public IObservable<string> DataReceived { get; }
 
   public void Open(string portName)
   {
@@ -90,6 +84,11 @@ internal class AresSimPort : IAresSerialPort
 
     Name = null;
     IsOpen = false;
+  }
+
+  public void Listen()
+  {
+    throw new NotImplementedException();
   }
 
   public Task ListenForEntryAsync(CancellationToken cancellationToken)

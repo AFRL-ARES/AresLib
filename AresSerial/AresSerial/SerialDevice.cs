@@ -56,59 +56,68 @@ public abstract class SerialDevice : AresDevice
     }
   }
 
-  public override async Task<bool> Activate()
+  public override bool Activate()
   {
     if (Connection is null)
       throw new Exception("Cannot activate serial device before providing connection.");
-
-    if (await Connection.ConnectionStatusUpdates.FirstAsync() == ConnectionStatus.Connected
-        && await Connection.ListenerStatusUpdates.FirstAsync() == ListenerStatus.Listening)
+    var connectionStatusUpdate = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
+    var listenerStatusUpdate = Connection.ListenerStatusUpdates.FirstAsync().ToTask();
+    connectionStatusUpdate.Wait();
+    listenerStatusUpdate.Wait();
+    if (connectionStatusUpdate.Result  == ConnectionStatus.Connected
+        && listenerStatusUpdate.Result  == ListenerStatus.Listening)
       return true;
 
-    if (await Connection.ConnectionStatusUpdates.FirstAsync() != ConnectionStatus.Connected)
+    connectionStatusUpdate = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
+    connectionStatusUpdate.Wait();
+    if (connectionStatusUpdate.Result != ConnectionStatus.Connected)
     {
-      var connectionStatusListener = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
+      connectionStatusUpdate = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
       Connect();
-      var connectionStatus = connectionStatusListener.Result;
-
-      if (connectionStatus != ConnectionStatus.Connected)
+      connectionStatusUpdate.Wait();
+      if (connectionStatusUpdate.Result != ConnectionStatus.Connected)
       {
         StatusPublisher.OnNext(new DeviceStatus
         {
           DeviceState = DeviceState.Error,
-          Message = $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}"
+          Message = $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatusUpdate.Result}"
         });
 
         throw new Exception
         (
-          $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatus}"
+          $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatusUpdate.Result}"
         );
       }
     }
 
-    if (await Connection.ListenerStatusUpdates.FirstAsync() != ListenerStatus.Listening)
+    listenerStatusUpdate = Connection.ListenerStatusUpdates.FirstAsync().ToTask();
+    listenerStatusUpdate.Wait();
+    if (listenerStatusUpdate.Result != ListenerStatus.Listening)
       Connection.StartListening();
 
     var listeningRetries = 5;
-    var listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
-    while (listenerStatus != ListenerStatus.Listening)
+    listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
+    listenerStatusUpdate.Wait();
+    while (listenerStatusUpdate.Result != ListenerStatus.Listening)
     {
-      await Task.Delay(TimeSpan.FromMilliseconds(200));
-      listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
+      Task.Delay(TimeSpan.FromMilliseconds(200)).Wait();
+      listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
+      listenerStatusUpdate.Wait();
       if (listeningRetries-- == 0)
         break;
     }
 
-    if (listenerStatus != ListenerStatus.Listening)
+    if (listenerStatusUpdate.Result != ListenerStatus.Listening)
       return false;
 
-    if (!await Validate())
+    if (!Validate())
       return false;
 
-    listenerStatus = await Connection.ListenerStatusUpdates.Take(1).ToTask();
+    listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
+    listenerStatusUpdate.Wait();
 
-    return listenerStatus != ListenerStatus.Paused;
+    return listenerStatusUpdate.Result != ListenerStatus.Error;
   }
 
-  protected abstract Task<bool> Validate();
+  protected abstract bool Validate();
 }

@@ -19,5 +19,5 @@ public abstract class AresDevice : IAresDevice
 
   public string Name { get; }
   public IObservable<DeviceStatus> Status { get; }
-  public abstract Task<bool> Activate();
+  public abstract bool Activate();
 }

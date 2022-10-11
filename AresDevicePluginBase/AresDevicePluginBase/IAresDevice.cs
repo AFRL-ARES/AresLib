@@ -8,5 +8,5 @@ public interface IAresDevice
 {
   string Name { get; }
   IObservable<DeviceStatus> Status { get; }
-  Task<bool> Activate();
+  bool Activate();
 }

@@ -37,9 +37,9 @@ public abstract class LaboratoryManager : ILaboratoryManager
     //   .Wait();
   }
 
-  public async Task<bool> RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter)
+  public bool RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter)
   {
-    var deviceActivated = await deviceInterpreter.Device.Activate();
+    var deviceActivated = deviceInterpreter.Device.Activate();
     if (!deviceActivated)
       throw new Exception("Could not activate device, not going to register");
 
