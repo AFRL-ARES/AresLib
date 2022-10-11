@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using Ares.Core.Analyzing;
 using Ares.Core.Composers;
 using Ares.Core.Execution.Extensions;
+using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
@@ -29,7 +30,6 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
     _executionReporter = executionReporter;
     _analyzer = analyzer;
     Template = template;
-    // _cancellationTokenSource = new CancellationTokenSource();
 
     Status = new CampaignExecutionStatus
     {
@@ -43,14 +43,22 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
 
   public CampaignTemplate Template { get; set; }
 
+  public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
+
   public IObservable<CampaignExecutionStatus> StatusObservable { get; }
-  public CampaignExecutionStatus Status { get; }
+  public CampaignExecutionStatus Status { get; private set; }
 
   public async Task<CampaignResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
   {
     var startTime = DateTime.UtcNow;
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
+    Status = new CampaignExecutionStatus
+    {
+      CampaignId = Template.UniqueId,
+      State = ExecutionState.Waiting
+    };
+
     Status.State = pauseToken.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
@@ -98,7 +106,9 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   }
 
   private bool ShouldStop()
-    => false;
+  {
+    return StopConditions.Any(condition => condition.ShouldStop());
+  }
 
   private async Task<ExperimentExecutor?> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
   {
