@@ -15,7 +15,7 @@ internal class CampaignTemplateEntityConfiguration : AresEntityTypeBaseConfigura
 
     builder.HasMany(campaignTemplate => campaignTemplate.ExperimentTemplates)
       .WithOne()
-      .IsRequired();
+      .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasMany(campaignTemplate => campaignTemplate.PlannerAllocations)
       .WithOne()

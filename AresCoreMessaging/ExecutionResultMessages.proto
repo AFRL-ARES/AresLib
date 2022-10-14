@@ -4,7 +4,6 @@ package ares.messaging;
 
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
-import "CompletedCampaign.proto";
 import "CompletedExperiment.proto";
 import "DeviceCommandResult.proto";
 
@@ -19,7 +18,6 @@ message CampaignResult {
   string campaign_id = 2;
   repeated ExperimentResult experiment_results = 3;
   ExecutionInfo execution_info = 4;
-  CompletedCampaign completed_campaign = 5;
 }
 
 message ExperimentResult {

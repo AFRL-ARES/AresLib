@@ -10,7 +10,7 @@ internal class CommandTemplateEntityConfiguration : AresEntityTypeBaseConfigurat
   {
     base.Configure(builder);
     builder.ToTable("CommandTemplates");
-    builder.HasMany(commandTemplate => commandTemplate.Arguments)
+    builder.HasMany(commandTemplate => commandTemplate.Parameters)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
@@ -18,7 +18,7 @@ internal class CommandTemplateEntityConfiguration : AresEntityTypeBaseConfigurat
       .WithOne()
       .HasForeignKey<CommandMetadata>("CommandTemplateId");
 
-    builder.Navigation(commandTemplate => commandTemplate.Arguments)
+    builder.Navigation(commandTemplate => commandTemplate.Parameters)
       .AutoInclude();
 
     builder.Navigation(commandTemplate => commandTemplate.Metadata)

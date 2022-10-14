@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Linq;
+using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
@@ -33,5 +34,5 @@ public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
 
   public IObservable<StepExecutionStatus> StatusObservable { get; }
   public StepExecutionStatus Status { get; }
-  public abstract Task<StepResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken);
+  public abstract Task<StepResult> Execute(ExecutionControlToken token);
 }

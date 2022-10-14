@@ -1,4 +1,4 @@
-﻿namespace Ares.Core.Execution;
+﻿namespace Ares.Core.Execution.ControlTokens;
 
 public class PauseToken
 {

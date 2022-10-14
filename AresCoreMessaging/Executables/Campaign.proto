@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "Executables/Experiment.proto";
+import "google/protobuf/wrappers.proto";
+
+message Campaign {
+	google.protobuf.StringValue unique_id = 1; // A unique id for this campaign
+	repeated Experiment experiments = 2; // Collection of experiments
+	string name = 3; // Name of the campaign. Doesn't have to be descriptive, and is used for lookup
+}

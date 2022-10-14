@@ -1,7 +1,6 @@
-﻿using Ares.Core.Execution.Executors;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 
-namespace Ares.Core.Composers;
+namespace Ares.Core.Execution.Executors.Composers;
 
 public class ExperimentComposer : ICommandComposer<ExperimentTemplate, ExperimentExecutor>
 {

@@ -1,7 +1,8 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Ares.Core.Analyzing;
-using Ares.Core.Composers;
+using Ares.Core.Execution.ControlTokens;
+using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
@@ -41,14 +42,14 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
     StatusObservable = _executionStatusSubject.AsObservable();
   }
 
-  public CampaignTemplate Template { get; set; }
+  public CampaignTemplate Template { get; }
 
   public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
 
   public IObservable<CampaignExecutionStatus> StatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
 
-  public async Task<CampaignResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
+  public async Task<CampaignResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
     var experimentResults = new List<ExperimentResult>();
@@ -59,12 +60,12 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
       State = ExecutionState.Waiting
     };
 
-    Status.State = pauseToken.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+    Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
-    while (!ShouldStop() && !cancellationToken.IsCancellationRequested)
+    while (!ShouldStop() && !token.IsCancelled)
     {
-      var experimentExecutor = await GenerateExperimentExecutor(analyses, cancellationToken);
+      var experimentExecutor = await GenerateExperimentExecutor(analyses, token.CancellationToken);
       if (experimentExecutor is null)
         break;
 
@@ -75,20 +76,21 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
         _executionReporter.Report(Status);
       });
 
-      var experimentResult = await experimentExecutor.Execute(cancellationToken, pauseToken);
+      var experimentResult = await experimentExecutor.Execute(token);
       experimentResults.Add(experimentResult);
 
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
-      if (!cancellationToken.IsCancellationRequested)
+      if (!token.IsCancelled)
       {
-        var analysis = await _analyzer.Analyze(experimentResult.CompletedExperiment, cancellationToken);
+        var analysis = await _analyzer.Analyze(experimentResult.CompletedExperiment, token.CancellationToken);
         analyses.Add(analysis);
       }
     }
 
     Status.State = ExecutionState.Succeeded;
     _executionReporter.Report(Status);
+
     var campaignResult = new CampaignResult
     {
       UniqueId = Guid.NewGuid().ToString(),

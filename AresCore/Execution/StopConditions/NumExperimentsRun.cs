@@ -2,20 +2,20 @@
 
 public class NumExperimentsRun : IStopCondition
 {
-  private readonly IExecutionReporter _executionReporter;
+  private readonly IExecutionReportStore _executionReportStore;
   private readonly uint _numExperiments;
 
-  public NumExperimentsRun(IExecutionReporter executionReporter, uint numExperiments)
+  public NumExperimentsRun(IExecutionReportStore executionReportStore, uint numExperiments)
   {
-    _executionReporter = executionReporter;
+    _executionReportStore = executionReportStore;
     _numExperiments = numExperiments;
   }
 
-  public string Message => $"Stopped because {_executionReporter.CampaignExecutionStatus?.ExperimentExecutionStatuses.Count}/{_numExperiments} experiments have been run";
+  public string Message => $"Stopped because {_executionReportStore.CampaignExecutionStatus?.ExperimentExecutionStatuses.Count}/{_numExperiments} experiments have been run";
 
   public bool ShouldStop()
   {
-    var currentExperiments = _executionReporter.CampaignExecutionStatus?.ExperimentExecutionStatuses.Count;
+    var currentExperiments = _executionReportStore.CampaignExecutionStatus?.ExperimentExecutionStatuses.Count;
     return currentExperiments >= _numExperiments;
   }
 }

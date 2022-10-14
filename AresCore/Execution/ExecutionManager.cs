@@ -1,77 +1,77 @@
-﻿using Ares.Core.Analyzing;
-using Ares.Core.Composers;
+﻿using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors;
+using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
-using Ares.Core.Planning;
 using Ares.Messaging;
+using DynamicData;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Execution;
 
-public class ExecutionManager : IExecutionManager
+internal class ExecutionManager : IExecutionManager
 {
-  private readonly IAnalyzerManager _analyzerManager;
-  private readonly IExecutionReporter _executionReporter;
-  private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
-  private readonly IPlanningHelper _planningHelper;
-  private readonly IStartConditionRegistry _startConditionRegistry;
-  private CancellationTokenSource? _campaignCancellationTokenSource;
-  private PauseTokenSource? _campaignPauseTokenSource;
+  private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
+  private readonly ICommandComposer<CampaignTemplate, CampaignExecutor> _campaignComposer;
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
+  private readonly IEnumerable<IStartCondition> _startConditions;
+  private ExecutionControlTokenSource? _executionControlTokenSource;
 
-  public ExecutionManager(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
-    IPlanningHelper planningHelper,
-    IAnalyzerManager analyzerManager,
-    IExecutionReporter executionReporter,
-    IStartConditionRegistry startConditionRegistry)
+  public ExecutionManager(IEnumerable<IStartCondition> startConditions,
+    IDbContextFactory<CoreDatabaseContext> dbContext,
+    IActiveCampaignTemplateStore activeCampaignTemplateStore,
+    ICommandComposer<CampaignTemplate, CampaignExecutor> campaignComposer)
   {
-    _experimentComposer = experimentComposer;
-    _planningHelper = planningHelper;
-    _analyzerManager = analyzerManager;
-    _executionReporter = executionReporter;
-    _startConditionRegistry = startConditionRegistry;
+    _startConditions = startConditions;
+    _dbContext = dbContext;
+    _activeCampaignTemplateStore = activeCampaignTemplateStore;
+    _campaignComposer = campaignComposer;
   }
 
-  public CampaignTemplate? CampaignTemplate { get; private set; }
+  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>();
 
-  private CampaignExecutor? CampaignExecutor { get; set; }
+  public bool CanRun => !_startConditions.Any(condition => condition.CanStart()) && _activeCampaignTemplateStore.CampaignTemplate is not null;
 
-  public IList<IStopCondition>? CampaignStopConditions => CampaignExecutor?.StopConditions;
-
-  public bool CanRun => !_startConditionRegistry.GetFailedConditions().Any() && CampaignExecutor is not null;
-
-  public void LoadTemplate(CampaignTemplate template)
+  public async Task Start()
   {
-    CampaignTemplate = template;
-    var analyzer = template.Analyzer is null ? _analyzerManager.GetAnalyzer<NoneAnalyzer>() : _analyzerManager.GetAnalyzer(template.Analyzer.Type, template.Analyzer.Version);
-    CampaignExecutor = new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, analyzer, CampaignTemplate);
-  }
-
-  public async void Start()
-  {
-    if (CampaignExecutor is null)
-      throw new InvalidOperationException("Campaign template has not been set");
-
-    var failedStartConditions = _startConditionRegistry.GetFailedConditions().ToArray();
-    if (failedStartConditions.Any())
-      throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, failedStartConditions.Select(condition => condition.Message))}");
-
-    _campaignCancellationTokenSource = new CancellationTokenSource();
-    _campaignPauseTokenSource = new PauseTokenSource();
-
-    var campaignResult = await CampaignExecutor.Execute(_campaignCancellationTokenSource.Token, _campaignPauseTokenSource.Token);
-
-    _campaignPauseTokenSource.Dispose();
-    _campaignCancellationTokenSource.Dispose();
-    _campaignCancellationTokenSource = null;
-    _campaignPauseTokenSource = null;
+    CheckCampaignStartPrerequisites();
+    var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
+    executor.StopConditions.Add(CampaignStopConditions);
+    _executionControlTokenSource = new ExecutionControlTokenSource();
+    var campaignResult = await executor.Execute(_executionControlTokenSource.Token);
+    await PostExecution(campaignResult);
   }
 
   public void Stop()
-    => _campaignCancellationTokenSource?.Cancel();
+    => _executionControlTokenSource?.Cancel();
 
   public void Pause()
-    => _campaignPauseTokenSource?.Pause();
+    => _executionControlTokenSource?.Pause();
 
   public void Resume()
-    => _campaignPauseTokenSource?.Resume();
+    => _executionControlTokenSource?.Resume();
+
+  private void CheckCampaignStartPrerequisites()
+  {
+    if (_activeCampaignTemplateStore.CampaignTemplate is null)
+      throw new InvalidOperationException("CampaignTemplate was not assigned to the active template store.");
+
+    var failedStartConditions = _startConditions.Where(condition => !condition.CanStart()).ToArray();
+    if (failedStartConditions.Any())
+      throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, failedStartConditions.Select(condition => condition.Message))}");
+  }
+
+  private async Task PostExecution(CampaignResult result)
+  {
+    await StoreCompletedCampaign(result);
+    _executionControlTokenSource?.Dispose();
+    _executionControlTokenSource = null;
+  }
+
+  private async Task StoreCompletedCampaign(CampaignResult result)
+  {
+    await using var context = await _dbContext.CreateDbContextAsync();
+    context.CampaignResults.Add(result);
+    await context.SaveChangesAsync();
+  }
 }

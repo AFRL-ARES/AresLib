@@ -16,6 +16,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<ExperimentTemplate> ExperimentTemplates => Set<ExperimentTemplate>();
   public DbSet<CommandTemplate> CommandTemplates => Set<CommandTemplate>();
   public DbSet<PlannerTransaction> PlannerTransactions => Set<PlannerTransaction>();
+  public DbSet<CampaignResult> CampaignResults => Set<CampaignResult>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

@@ -10,10 +10,5 @@ internal class ProjectEntityConfiguration : AresEntityTypeBaseConfiguration<Proj
   {
     base.Configure(builder);
     builder.ToTable("Projects");
-    builder.HasMany(entity => entity.CompletedCampaigns)
-      .WithOne();
-
-    builder.Navigation(entity => entity.CompletedCampaigns)
-      .AutoInclude();
   }
 }

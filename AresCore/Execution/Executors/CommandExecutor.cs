@@ -1,5 +1,6 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 
@@ -29,20 +30,20 @@ internal class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus
   public IObservable<CommandExecutionStatus> StatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
 
-  public async Task<CommandResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
+  public async Task<CommandResult> Execute(ExecutionControlToken token)
   {
-    Status.State = pauseToken.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+    Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
-    if (pauseToken.IsPaused)
+    if (token.IsPaused)
       try
       {
-        pauseToken.Wait(cancellationToken);
+        token.WaitForResume(token.CancellationToken);
       }
       catch (OperationCanceledException)
       {
       }
 
-    if (cancellationToken.IsCancellationRequested)
+    if (token.IsCancelled)
     {
       Status.State = ExecutionState.Failed;
       _stateSubject.OnNext(Status);
@@ -52,7 +53,7 @@ internal class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus
 
     var timeStarted = DateTime.UtcNow;
     var execInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
-    var result = await _command(cancellationToken);
+    var result = await _command(token.CancellationToken);
     execInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
     Status.State = ExecutionState.Succeeded;
     _stateSubject.OnNext(Status);

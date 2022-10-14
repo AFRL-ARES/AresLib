@@ -67,5 +67,9 @@ public interface IAnalyzerManager
   /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
   IAnalyzer GetAnalyzer(string type, string name);
 
+  /// <summary>
+  /// Adds an analyzer to the registry so that it can later be used by experiment execution
+  /// </summary>
+  /// <param name="analyzer">The analyzer to register</param>
   void RegisterAnalyzer(IAnalyzer analyzer);
 }

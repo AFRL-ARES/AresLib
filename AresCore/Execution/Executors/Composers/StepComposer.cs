@@ -1,8 +1,7 @@
-﻿using Ares.Core.Execution.Executors;
-using Ares.Device;
+﻿using Ares.Device;
 using Ares.Messaging;
 
-namespace Ares.Core.Composers;
+namespace Ares.Core.Execution.Executors.Composers;
 
 public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
 {

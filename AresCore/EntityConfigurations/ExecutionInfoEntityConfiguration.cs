@@ -12,9 +12,15 @@ internal class ExecutionInfoEntityConfiguration : AresEntityTypeBaseConfiguratio
     base.Configure(builder);
     builder.ToTable("ExecutionInfos");
     builder.Property(info => info.TimeStarted)
-      .HasConversion(timestamp => timestamp.ToDateTime(), time => time.ToTimestamp());
+      .HasConversion(timestamp => timestamp.ToDateTime(), time => ToTimestampUtc(time));
 
     builder.Property(info => info.TimeFinished)
-      .HasConversion(timestamp => timestamp.ToDateTime(), time => time.ToTimestamp());
+      .HasConversion(timestamp => timestamp.ToDateTime(), time => ToTimestampUtc(time));
+  }
+
+  private static Timestamp ToTimestampUtc(DateTime dateTime)
+  {
+    var utc = DateTime.SpecifyKind(dateTime, DateTimeKind.Utc);
+    return utc.ToTimestamp();
   }
 }

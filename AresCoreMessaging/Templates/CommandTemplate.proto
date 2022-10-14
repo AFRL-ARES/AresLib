@@ -9,6 +9,6 @@ import "google/protobuf/wrappers.proto";
 message CommandTemplate {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this template
 	CommandMetadata metadata = 2; // Non-volatile information about the command to be generated for execution
-	repeated Parameter arguments = 3; // Collection of command parameters/arguments used for generating an executable (device qualified) command
+	repeated Parameter parameters = 3; // Collection of command parameters used for generating an executable (device qualified) command
 	int64 index = 4; // Index of the collection in which executed this template
 }

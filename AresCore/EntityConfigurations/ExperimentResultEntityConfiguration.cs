@@ -23,9 +23,13 @@ internal class ExperimentResultEntityConfiguration : AresEntityTypeBaseConfigura
       .HasForeignKey<ExecutionInfo>("ExperimentResultId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
-    builder.HasOne<ExperimentTemplate>()
-      .WithMany()
-      .HasForeignKey(result => result.ExperimentId)
-      .OnDelete(DeleteBehavior.ClientCascade);
+    builder.Navigation(result => result.CompletedExperiment)
+      .AutoInclude();
+
+    builder.Navigation(result => result.ExecutionInfo)
+      .AutoInclude();
+
+    builder.Navigation(result => result.StepResults)
+      .AutoInclude();
   }
 }

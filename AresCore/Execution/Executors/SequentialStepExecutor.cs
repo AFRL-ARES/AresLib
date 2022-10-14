@@ -1,4 +1,5 @@
-﻿using Ares.Messaging;
+﻿using Ares.Core.Execution.ControlTokens;
+using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -8,16 +9,16 @@ internal class SequentialStepExecutor : StepExecutor
   {
   }
 
-  public override async Task<StepResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
+  public override async Task<StepResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
     var commandResults = new List<CommandResult>();
     foreach (var command in CommandExecutors)
     {
-      if (cancellationToken.IsCancellationRequested)
+      if (token.IsCancelled)
         break;
 
-      var commandResult = await command.Execute(cancellationToken, pauseToken);
+      var commandResult = await command.Execute(token);
       commandResults.Add(commandResult);
     }
 

@@ -24,5 +24,8 @@ internal class CommandResultEntityConfiguration : AresEntityTypeBaseConfiguratio
       .WithMany()
       .HasForeignKey(result => result.CommandId)
       .OnDelete(DeleteBehavior.ClientCascade);
+
+    builder.Navigation(result => result.ExecutionInfo).AutoInclude();
+    builder.Navigation(result => result.Result).AutoInclude();
   }
 }
