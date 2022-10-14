@@ -41,7 +41,7 @@ public abstract class SerialDevice : AresDevice
       throw;
     }
 
-    StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Active });
+    // StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Active });
   }
 
   public void Disconnect()
@@ -109,9 +109,22 @@ public abstract class SerialDevice : AresDevice
 
     if (listenerStatusUpdate.Result != ListenerStatus.Listening)
       return false;
+    try
+    {
 
-    if (!Validate())
+      if (!Validate())
+      {
+        StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation. Wrong target?"});
+        return false;
+      }
+    }
+    catch (Exception e)
+    {
+      StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message});
       return false;
+    }
+
+    StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Active });
 
     listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
     listenerStatusUpdate.Wait();
