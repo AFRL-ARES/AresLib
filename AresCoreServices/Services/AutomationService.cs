@@ -16,20 +16,23 @@ namespace Ares.Core.Grpc.Services;
 
 public class AutomationService : AresAutomation.AresAutomationBase
 {
+  private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
   private readonly IExecutionManager _executionManager;
-  private readonly IExecutionReporter _executionReporter;
-  private readonly IStartConditionRegistry _startConditionRegistry;
+  private readonly IExecutionReportStore _executionReportStore;
+  private readonly IEnumerable<IStartCondition> _startConditions;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
     IExecutionManager executionManager,
-    IExecutionReporter executionReporter,
-    IStartConditionRegistry startConditionRegistry)
+    IExecutionReportStore executionReportStore,
+    IActiveCampaignTemplateStore activeCampaignTemplateStore,
+    IEnumerable<IStartCondition> startConditions)
   {
     _coreContextFactory = coreContextFactory;
     _executionManager = executionManager;
-    _executionReporter = executionReporter;
-    _startConditionRegistry = startConditionRegistry;
+    _executionReportStore = executionReportStore;
+    _activeCampaignTemplateStore = activeCampaignTemplateStore;
+    _startConditions = startConditions;
   }
 
 
@@ -158,19 +161,19 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<CampaignTemplate> SetCampaignForExecution(CampaignRequest request, ServerCallContext context)
   {
     var template = await GetCampaignTemplate(request, context);
-    _executionManager.LoadTemplate(template);
+    _activeCampaignTemplateStore.CampaignTemplate = template;
     return template;
   }
 
   public override Task GetExecutionStatusStream(Empty request, IServerStreamWriter<ExperimentExecutionStatus> responseStream, ServerCallContext context)
   {
-    var observable = _executionReporter.ExperimentStatusObservable;
-    return observable.Do(status => responseStream.WriteAsync(status)).ToTask(context.CancellationToken);
+    var observable = _executionReportStore.ExperimentStatusObservable;
+    return observable.Where(status => status is not null).Do(status => responseStream.WriteAsync(status!)).ToTask(context.CancellationToken);
   }
 
   public override Task<CampaignExecutionStatusResponse> GetCampaignExecutionStatus(Empty request, ServerCallContext context)
   {
-    var status = _executionReporter.CampaignExecutionStatus;
+    var status = _executionReportStore.CampaignExecutionStatus;
     return Task.FromResult(new CampaignExecutionStatusResponse
     {
       Status = status
@@ -208,7 +211,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
   {
     var response = new StartStopConditionsResponse();
-    var conditions = _startConditionRegistry.GetFailedConditions().Select(condition => new StartStopCondition { Message = condition.Message, Name = condition.GetType().Name });
+    var conditions = _startConditions.Where(condition => !condition.CanStart()).Select(condition => new StartStopCondition { Message = condition.Message, Name = condition.GetType().Name });
     response.StartStopConditions.AddRange(conditions);
 
     return Task.FromResult(response);
@@ -237,9 +240,32 @@ public class AutomationService : AresAutomation.AresAutomationBase
     if (existingStopCondition is not null)
       stopConditions.Remove(existingStopCondition);
 
-    var newCondition = new NumExperimentsRun(_executionReporter, request.NumExperiments);
+    var newCondition = new NumExperimentsRun(_executionReportStore, request.NumExperiments);
     stopConditions.Add(newCondition);
 
     return Task.FromResult(new Empty());
+  }
+
+  public override async Task<AvailableCampaignResultsResponse> GetAvailableCampaignResults(Empty request, ServerCallContext context)
+  {
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    var results = dbContext.CampaignResults.Select(result => new CampaignResultMetadata
+    {
+      CompletionTime = result.ExecutionInfo.TimeFinished,
+      ResultId = result.UniqueId
+    }).ToArray();
+
+    var response = new AvailableCampaignResultsResponse();
+    response.AvailableCampaignResults.AddRange(results);
+
+    return response;
+  }
+
+  public override async Task<CampaignResult> GetCampaignResult(CampaignResultRequest request, ServerCallContext context)
+  {
+    await using var dbContext = _coreContextFactory.CreateDbContext();
+    var result = dbContext.CampaignResults.First(campaignResult => campaignResult.UniqueId == request.ResultId);
+
+    return result;
   }
 }

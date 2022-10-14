@@ -1,6 +1,6 @@
 ﻿using Google.Protobuf;
 
-namespace Ares.Core.Composers;
+namespace Ares.Core.Execution.Executors.Composers;
 
 public interface ICommandComposer<in TDbTemplate, out TExecutor>
   where TDbTemplate : IMessage

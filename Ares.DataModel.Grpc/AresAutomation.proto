@@ -4,6 +4,7 @@ package ares.messaging;
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
 import "Templates/CampaignTemplate.proto";
 import "Templates/CommandTemplate.proto";
 import "Templates/ExperimentTemplate.proto";
@@ -12,6 +13,7 @@ import "Templates/ParameterMetadata.proto";
 import "Project.proto";
 import "Templates/StepTemplate.proto";
 import "ExecutionStatusMessages.proto";
+import "ExecutionResultMessages.proto";
 
 service AresAutomation {
 	// Campaigns
@@ -48,6 +50,10 @@ service AresAutomation {
 	rpc GetExecutionStatusStream(google.protobuf.Empty) returns (stream ExperimentExecutionStatus);
 	// Gets the current status of a campaign execution assuming one is running
 	rpc GetCampaignExecutionStatus(google.protobuf.Empty) returns (CampaignExecutionStatusResponse);
+
+	// Results
+	rpc GetAvailableCampaignResults(google.protobuf.Empty) returns (AvailableCampaignResultsResponse);
+	rpc GetCampaignResult(CampaignResultRequest) returns (CampaignResult);
 }
 
 message RequestById {
@@ -90,4 +96,18 @@ message StartStopCondition {
 
 message NumExperimentsCondition {
 	uint32 num_experiments = 1;
+}
+
+message AvailableCampaignResultsResponse {
+	repeated CampaignResultMetadata available_campaign_results = 1;
+}
+
+message CampaignResultMetadata {
+	string campaign_name = 1;
+	google.protobuf.Timestamp completion_time = 2;
+	string result_id = 3;
+}
+
+message CampaignResultRequest {
+	string result_id = 1;
 }

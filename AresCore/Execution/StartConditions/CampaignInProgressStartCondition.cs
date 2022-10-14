@@ -2,20 +2,23 @@
 
 namespace Ares.Core.Execution.StartConditions;
 
-public class CampaignInProgressStartCondition : IStartCondition
+/// <summary>
+/// A simple condition that checks whether or not the experiment is currently running
+/// </summary>
+internal class CampaignInProgressStartCondition : IStartCondition
 {
-  private readonly IExecutionReporter _executionReporter;
+  private readonly IExecutionReportStore _executionReportStore;
 
-  public CampaignInProgressStartCondition(IExecutionReporter executionReporter)
+  public CampaignInProgressStartCondition(IExecutionReportStore executionReportStore)
   {
-    _executionReporter = executionReporter;
+    _executionReportStore = executionReportStore;
   }
 
-  public string Message => $"Campaign with id {_executionReporter.CampaignExecutionStatus?.CampaignId} is currently running.";
+  public string Message => $"Campaign with id {_executionReportStore.CampaignExecutionStatus?.CampaignId} is currently in progress.";
 
   public bool CanStart()
   {
-    var state = _executionReporter.CampaignExecutionStatus?.State;
+    var state = _executionReportStore.CampaignExecutionStatus?.State;
     if (state is null)
       return true;
 

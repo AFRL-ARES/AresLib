@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using Ares.Core.Execution.ControlTokens;
+using Google.Protobuf;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -9,5 +10,5 @@ public interface IExecutor<TResult, out TStatus>
   IObservable<TStatus> StatusObservable { get; }
   TStatus Status { get; }
 
-  Task<TResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken);
+  Task<TResult> Execute(ExecutionControlToken executionToken);
 }

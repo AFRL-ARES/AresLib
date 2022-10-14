@@ -21,17 +21,16 @@ public class CommandTemplateBuilder : TemplateBuilder<CommandTemplate>, ICommand
   public override CommandTemplate Build()
   {
     var parameters = ParameterBuilders.Select
-      (
-       (parameterBuilder, index) =>
-       {
-         var parameter = parameterBuilder.Build();
-         parameter.Index = index;
-         return parameter;
-       }
-      );
+    (
+      (parameterBuilder, index) => {
+        var parameter = parameterBuilder.Build();
+        parameter.Index = index;
+        return parameter;
+      }
+    );
 
     var commandTemplate = new CommandTemplate();
-    commandTemplate.Arguments.AddRange(parameters);
+    commandTemplate.Parameters.AddRange(parameters);
     commandTemplate.Metadata = Metadata;
     return commandTemplate;
   }

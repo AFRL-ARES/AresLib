@@ -27,7 +27,7 @@ internal static class CampaignUpdateHelper
     var commandParams = template.ExperimentTemplates
       .SelectMany(experimentTemplate => experimentTemplate.StepTemplates)
       .SelectMany(stepTemplate => stepTemplate.CommandTemplates)
-      .SelectMany(commandTemplate => commandTemplate.Arguments)
+      .SelectMany(commandTemplate => commandTemplate.Parameters)
       .Where(param => param.PlanningMetadata is not null);
 
     foreach (var commandParam in commandParams)

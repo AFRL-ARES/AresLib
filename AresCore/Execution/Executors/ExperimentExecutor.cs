@@ -1,4 +1,5 @@
 ﻿using System.Reactive.Linq;
+using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
 using Google.Protobuf;
 
@@ -39,16 +40,16 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
   public IObservable<ExperimentExecutionStatus> StatusObservable { get; }
   public ExperimentExecutionStatus Status { get; }
 
-  public async Task<ExperimentResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
+  public async Task<ExperimentResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
     var stepResults = new List<StepResult>();
     foreach (var executableStep in StepExecutors)
     {
-      if (cancellationToken.IsCancellationRequested)
+      if (token.IsCancelled)
         break;
 
-      var stepResult = await executableStep.Execute(cancellationToken, pauseToken);
+      var stepResult = await executableStep.Execute(token);
       stepResults.Add(stepResult);
     }
 
@@ -61,7 +62,7 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
     {
       var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).FirstOrDefault(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
       completedExperiment.Format = commandResult?.Result?.Format ?? "";
-      completedExperiment.SerializedData = ByteString.CopyFrom(commandResult?.Result?.ToByteArray() ?? ReadOnlySpan<byte>.Empty);
+      completedExperiment.SerializedData = commandResult?.Result?.Result ?? ByteString.Empty;
     }
 
     return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepResults);

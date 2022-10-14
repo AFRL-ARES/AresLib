@@ -5,7 +5,8 @@ using Ares.Messaging;
 namespace Ares.Core.Analyzing;
 
 /// <summary>
-/// Analyzer that returns a 0 as its analysis result
+/// Analyzer that returns a 0 as its analysis result.
+/// Used as a default analyzer in case no actual analyzers are present
 /// </summary>
 internal class NoneAnalyzer : IAnalyzer
 {

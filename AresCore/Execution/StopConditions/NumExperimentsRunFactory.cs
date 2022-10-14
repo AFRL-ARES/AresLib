@@ -2,13 +2,13 @@
 
 internal class NumExperimentsRunFactory : INumExperimentsRunFactory
 {
-  private readonly IExecutionReporter _executionReporter;
+  private readonly IExecutionReportStore _executionReportStore;
 
-  public NumExperimentsRunFactory(IExecutionReporter executionReporter)
+  public NumExperimentsRunFactory(IExecutionReportStore executionReportStore)
   {
-    _executionReporter = executionReporter;
+    _executionReportStore = executionReportStore;
   }
 
   public NumExperimentsRun Create(uint numExperiments)
-    => new(_executionReporter, numExperiments);
+    => new(_executionReportStore, numExperiments);
 }

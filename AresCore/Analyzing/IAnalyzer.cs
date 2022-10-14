@@ -1,5 +1,4 @@
-﻿using Ares.Core.Planning;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 
 namespace Ares.Core.Analyzing;
 
@@ -26,6 +25,6 @@ public interface IAnalyzer
   /// </summary>
   /// <param name="experiment">The experiment to analyze</param>
   /// <param name="cancellationToken"></param>
-  /// <returns>Collection of plan <see cref="PlanResult" /> which has the metadata and the value</returns>
+  /// <returns><see cref="Analysis" /> which has the result as well as the metadata about the analyzer.</returns>
   Task<Analysis> Analyze(CompletedExperiment experiment, CancellationToken cancellationToken);
 }

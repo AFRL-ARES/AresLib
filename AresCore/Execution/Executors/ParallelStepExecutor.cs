@@ -1,4 +1,5 @@
-﻿using Ares.Messaging;
+﻿using Ares.Core.Execution.ControlTokens;
+using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -8,10 +9,10 @@ internal class ParallelStepExecutor : StepExecutor
   {
   }
 
-  public override async Task<StepResult> Execute(CancellationToken cancellationToken, PauseToken pauseToken)
+  public override async Task<StepResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
-    var commandTasks = CommandExecutors.Select(command => command.Execute(cancellationToken, pauseToken));
+    var commandTasks = CommandExecutors.Select(command => command.Execute(token));
     var commandResults = await Task.WhenAll(commandTasks);
 
     return ExecutorResultHelpers.CreateStepResult(Template.UniqueId, startTime, DateTime.UtcNow, commandResults);

@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "Executables/Command.proto";
+import "google/protobuf/wrappers.proto";
+
+message Step {
+  google.protobuf.StringValue unique_id = 1; // A unique id for this step
+	string name = 2; // Name identification
+	bool is_parallel = 3; // Flag indicating whether or not commands are to be executed sequentially or in parallel
+	repeated Command commands = 4; // Collection of commands used to generate executable (device qualified) commands
+	int64 index = 5; // Index of the collection in which this step is executed
+}
