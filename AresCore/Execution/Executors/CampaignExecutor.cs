@@ -13,7 +13,7 @@ namespace Ares.Core.Execution.Executors;
 
 internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionStatus>
 {
-  private readonly IAnalyzer _analyzer;
+  private readonly IAnalyzerManager _analyzerManager;
   // private readonly CancellationTokenSource _cancellationTokenSource;
   private readonly IExecutionReporter _executionReporter;
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
@@ -23,13 +23,13 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
   public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
-    IAnalyzer analyzer,
+    IAnalyzerManager analyzerManager,
     CampaignTemplate template)
   {
     _experimentComposer = experimentComposer;
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
-    _analyzer = analyzer;
+    _analyzerManager = analyzerManager;
     Template = template;
 
     Status = new CampaignExecutionStatus
@@ -83,7 +83,11 @@ internal class CampaignExecutor : IExecutor<CampaignResult, CampaignExecutionSta
       // and thus sending a null result to the analyzer might break it depending on the analyzer
       if (!token.IsCancelled)
       {
-        var analysis = await _analyzer.Analyze(experimentResult.CompletedExperiment, token.CancellationToken);
+        var analyzer = experimentExecutor.Template.Analyzer is null ? _analyzerManager.GetAnalyzer<NoneAnalyzer>() : _analyzerManager.GetAnalyzer(experimentExecutor.Template.Analyzer);
+        if (analyzer is null)
+          continue;
+
+        var analysis = await analyzer.Analyze(experimentResult.CompletedExperiment.Result, token.CancellationToken);
         analyses.Add(analysis);
       }
     }

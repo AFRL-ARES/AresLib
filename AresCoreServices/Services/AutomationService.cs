@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
+using Ares.Core.Analyzing;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
@@ -17,6 +19,7 @@ namespace Ares.Core.Grpc.Services;
 public class AutomationService : AresAutomation.AresAutomationBase
 {
   private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
+  private readonly IAnalyzerManager _analyzerManager;
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReportStore _executionReportStore;
@@ -26,13 +29,15 @@ public class AutomationService : AresAutomation.AresAutomationBase
     IExecutionManager executionManager,
     IExecutionReportStore executionReportStore,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
-    IEnumerable<IStartCondition> startConditions)
+    IEnumerable<IStartCondition> startConditions,
+    IAnalyzerManager analyzerManager)
   {
     _coreContextFactory = coreContextFactory;
     _executionManager = executionManager;
     _executionReportStore = executionReportStore;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _startConditions = startConditions;
+    _analyzerManager = analyzerManager;
   }
 
 
@@ -211,7 +216,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
   {
     var response = new StartStopConditionsResponse();
-    var conditions = _startConditions.Where(condition => !condition.CanStart()).Select(condition => new StartStopCondition { Message = condition.Message, Name = condition.GetType().Name });
+    var conditions = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
     response.StartStopConditions.AddRange(conditions);
 
     return Task.FromResult(response);
@@ -267,5 +272,22 @@ public class AutomationService : AresAutomation.AresAutomationBase
     var result = dbContext.CampaignResults.First(campaignResult => campaignResult.UniqueId == request.ResultId);
 
     return result;
+  }
+
+  public override Task<GetAllAnalyzersResponse> GetAllAnalyzers(Empty request, ServerCallContext context)
+  {
+    var response = new GetAllAnalyzersResponse();
+    var analyzers = _analyzerManager.AvailableAnalyzers.Select(analyzer => new AnalyzerInfo { Name = analyzer.Name, Type = analyzer.GetType().Name, Version = analyzer.Version.ToString(), UniqueId = Guid.NewGuid().ToString() });
+    response.Analyzers.AddRange(analyzers);
+    return Task.FromResult(response);
+  }
+
+  public override Task<StartStopConditionsResponse> GetPreliminaryFailedStartConditions(CampaignTemplate request, ServerCallContext context)
+  {
+    var response = new StartStopConditionsResponse();
+    var conditions = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
+    response.StartStopConditions.AddRange(conditions);
+
+    return Task.FromResult(response);
   }
 }

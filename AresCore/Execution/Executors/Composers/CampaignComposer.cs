@@ -23,8 +23,5 @@ internal class CampaignComposer : ICommandComposer<CampaignTemplate, CampaignExe
   }
 
   public CampaignExecutor Compose(CampaignTemplate template)
-  {
-    var analyzer = template.Analyzer is null ? _analyzerManager.GetAnalyzer<NoneAnalyzer>() : _analyzerManager.GetAnalyzer(template.Analyzer.Type, template.Analyzer.Version);
-    return new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, analyzer, template);
-  }
+    => new CampaignExecutor(_experimentComposer, _planningHelper, _executionReporter, _analyzerManager, template);
 }

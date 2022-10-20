@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core", "AresCore\Ares.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AresLibTests", "AresLibTests\AresLibTests.csproj", "{7DA50816-DD99-407E-88F4-587DE92EBB8F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ares.DataModel.Grpc", "Ares.DataModel.Grpc\Ares.DataModel.Grpc.csproj", "{8A4A6E3A-2401-4F82-AD11-82153226AE4D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.DataModel.Grpc", "Ares.DataModel.Grpc\Ares.DataModel.Grpc.csproj", "{8A4A6E3A-2401-4F82-AD11-82153226AE4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

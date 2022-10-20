@@ -1,6 +1,5 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Messaging;
+﻿using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Analyzing;
 
@@ -8,12 +7,14 @@ namespace Ares.Core.Analyzing;
 /// Analyzer that returns a 0 as its analysis result.
 /// Used as a default analyzer in case no actual analyzers are present
 /// </summary>
-internal class NoneAnalyzer : IAnalyzer
+internal class NoneAnalyzer : AnalyzerBase<Any>
 {
-  public string Name { get; } = "NONE";
-  public Version Version { get; } = new(1, 0);
 
-  public Task<Analysis> Analyze(CompletedExperiment experiment, CancellationToken _)
+  public NoneAnalyzer() : base("NONE", new Version(1, 0))
+  {
+  }
+
+  protected override Task<Analysis> AnalyzeMessage(Any _, CancellationToken __)
   {
     var analysis = new Analysis
     {
@@ -24,12 +25,12 @@ internal class NoneAnalyzer : IAnalyzer
         UniqueId = Guid.NewGuid().ToString(),
         Version = Version.ToString()
       },
-      CompletedExperiment = experiment,
       Result = 0
     };
 
     return Task.FromResult(analysis);
   }
 
-  public IObservable<AnalyzerState> AnalyzerState { get; } = new BehaviorSubject<AnalyzerState>(Analyzing.AnalyzerState.Connected).AsObservable();
+  public override bool InputSupported(string fullTypeName)
+    => true;
 }

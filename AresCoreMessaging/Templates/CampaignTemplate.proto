@@ -6,7 +6,6 @@ import "Templates/ExperimentTemplate.proto";
 import "Templates/ParameterMetadata.proto";
 import "PlannerInfo.proto";
 import "Templates/PlannerAllocation.proto";
-import "AnalyzerInfo.proto";
 import "google/protobuf/wrappers.proto";
 
 message CampaignTemplate {
@@ -16,5 +15,4 @@ message CampaignTemplate {
 	int64 index = 4; // Index of the collection in which executed this template
 	repeated ParameterMetadata plannable_parameters = 5; // The plannable parameters or variables available to commands within experiments
 	repeated PlannerAllocation planner_allocations = 6; // Collection of planner-to-parameter allocations for planning purposes
-	AnalyzerInfo analyzer = 7; // the analyzer assigned to this template
 }

@@ -1,12 +1,13 @@
 ﻿using System.Reactive.Linq;
+using Ares.Core.Analyzing;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
-using Google.Protobuf;
 
 namespace Ares.Core.Execution.Executors;
 
 public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutionStatus>
 {
+  private readonly IAnalyzer _analyzer;
 
   public ExperimentExecutor(ExperimentTemplate template, StepExecutor[] stepExecutors)
   {
@@ -61,8 +62,7 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
     if (!string.IsNullOrEmpty(Template.OutputCommandId))
     {
       var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).FirstOrDefault(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
-      completedExperiment.Format = commandResult?.Result?.Format ?? "";
-      completedExperiment.SerializedData = commandResult?.Result?.Result ?? ByteString.Empty;
+      completedExperiment.Result = commandResult?.Result.Result;
     }
 
     return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepResults);

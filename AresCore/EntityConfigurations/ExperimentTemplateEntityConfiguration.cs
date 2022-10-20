@@ -14,7 +14,15 @@ internal class ExperimentTemplateEntityConfiguration : AresEntityTypeBaseConfigu
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
+    builder.HasOne(experimentTemplate => experimentTemplate.Analyzer)
+      .WithOne()
+      .HasForeignKey<AnalyzerInfo>("ExperimentTemplateId")
+      .OnDelete(DeleteBehavior.ClientCascade);
+
     builder.Navigation(experimentTemplate => experimentTemplate.StepTemplates)
+      .AutoInclude();
+
+    builder.Navigation(experimentTemplate => experimentTemplate.Analyzer)
       .AutoInclude();
   }
 }

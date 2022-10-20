@@ -13,5 +13,6 @@ public static class ServiceMapper
     routeBuilder.MapGrpcService<AutomationService>();
     routeBuilder.MapGrpcService<HealthCheckService>();
     routeBuilder.MapGrpcService<PlanningService>();
+    routeBuilder.MapGrpcService<ValidationService>();
   }
 }

@@ -21,7 +21,15 @@ internal class CommandMetadataEntityConfiguration : AresEntityTypeBaseConfigurat
       .HasForeignKey<CommandMetadata>("CommandTemplateId")
       .IsRequired();
 
+    builder.HasOne(commandMetadata => commandMetadata.OutputMetadata)
+      .WithOne()
+      .HasForeignKey<OutputMetadata>()
+      .IsRequired();
+
     builder.Navigation(commandMetadata => commandMetadata.ParameterMetadatas)
+      .AutoInclude();
+
+    builder.Navigation(commandMetadata => commandMetadata.OutputMetadata)
       .AutoInclude();
   }
 }

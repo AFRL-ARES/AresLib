@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Analyzing;
 
@@ -15,16 +16,23 @@ public interface IAnalyzer
   Version Version { get; }
 
   /// <summary>
+  /// Provides an observable for the <see cref="AnalyzerState" />
+  /// </summary>
+  IObservable<AnalyzerState> AnalyzerStateObservable { get; }
+
+  /// <summary>
   /// Current state (<see cref="AnalyzerState" />) of the analyzer which essentially indicated
   /// whether or not this analyzer is currently available for analyzing
   /// </summary>
-  IObservable<AnalyzerState> AnalyzerState { get; }
+  AnalyzerState AnalyzerState { get; }
+
+  bool InputSupported(string fullTypeName);
 
   /// <summary>
   /// Returns the values for the given parameter metadata
   /// </summary>
-  /// <param name="experiment">The experiment to analyze</param>
+  /// <param name="input">The experiment output to analyze in the form of the <see cref="Any" /> proto message</param>
   /// <param name="cancellationToken"></param>
   /// <returns><see cref="Analysis" /> which has the result as well as the metadata about the analyzer.</returns>
-  Task<Analysis> Analyze(CompletedExperiment experiment, CancellationToken cancellationToken);
+  Task<Analysis> Analyze(Any input, CancellationToken cancellationToken);
 }

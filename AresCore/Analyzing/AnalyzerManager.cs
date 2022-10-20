@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Ares.Messaging;
 
 namespace Ares.Core.Analyzing;
 
@@ -91,7 +92,25 @@ internal class AnalyzerManager : IAnalyzerManager
     if (versionedAnalyzers is null)
       throw new KeyNotFoundException($"Unable to find analyzer of type {type} named {name} in the registry.");
 
+
     return versionedAnalyzers.OrderByDescending(analyzer => analyzer.Version).First();
+  }
+
+  public IAnalyzer GetAnalyzer(AnalyzerInfo info)
+  {
+    if (!string.IsNullOrEmpty(info.Type) && string.IsNullOrEmpty(info.Name) && string.IsNullOrEmpty(info.Version))
+      return GetAnalyzer(info.Type);
+
+    if (!string.IsNullOrEmpty(info.Type) && string.IsNullOrEmpty(info.Name) && !string.IsNullOrEmpty(info.Version))
+      return GetAnalyzer(info.Type, Version.Parse(info.Version));
+
+    if (!string.IsNullOrEmpty(info.Type) && !string.IsNullOrEmpty(info.Name) && !string.IsNullOrEmpty(info.Version))
+      return GetAnalyzer(info.Type, info.Name, Version.Parse(info.Version));
+
+    if (!string.IsNullOrEmpty(info.Type) && !string.IsNullOrEmpty(info.Name) && string.IsNullOrEmpty(info.Version))
+      return GetAnalyzer(info.Type, info.Name);
+
+    throw new KeyNotFoundException($"Unable to find an analyzer with the description: {info}");
   }
 
   public T GetAnalyzer<T>() where T : IAnalyzer
