@@ -28,7 +28,7 @@
   </PropertyGroup>
   
 	<ItemGroup>
-    <PackageReference Include="Ares.Device.dll" Version="2022.10.19.211234" />
+    <PackageReference Include="Ares.Device.dll" Version="2022.10.24.110531" />
     <PackageReference Include="System.IO.Ports" Version="6.0.0" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
