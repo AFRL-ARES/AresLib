@@ -3,6 +3,7 @@ syntax = "proto3";
 package ares.messaging;
 
 import "Templates/ParameterMetadata.proto";
+import "Templates/OutputMetadata.proto";
 import "google/protobuf/wrappers.proto";
 
 message CommandMetadata {
@@ -10,5 +11,6 @@ message CommandMetadata {
 	string name = 2; // Name of the command, registered by a device
 	string description = 3; // Helpful text describing the command
 	string device_name = 4; // Name of the device to lookup for execution/generation of the command
-	repeated ParameterMetadata parameter_metadatas = 5; // Collection of metadata describing parameters/arguments
+	OutputMetadata output_metadata = 5; // provides metadata for the output of this command if there is one. Set to null if the command does not provide an output
+	repeated ParameterMetadata parameter_metadatas = 6; // Collection of metadata describing parameters/arguments
 }

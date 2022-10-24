@@ -13,6 +13,7 @@ import "Templates/ParameterMetadata.proto";
 import "Project.proto";
 import "Templates/StepTemplate.proto";
 import "ExecutionStatusMessages.proto";
+import "AnalyzerInfo.proto";
 import "ExecutionResultMessages.proto";
 
 service AresAutomation {
@@ -43,6 +44,7 @@ service AresAutomation {
 	rpc ResumeExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
 	rpc GetAssignedStopConditions(google.protobuf.Empty) returns (StartStopConditionsResponse);
 	rpc GetFailedStartConditions(google.protobuf.Empty) returns (StartStopConditionsResponse);
+	rpc GetPreliminaryFailedStartConditions(CampaignTemplate) returns (StartStopConditionsResponse);
 	rpc SetNumExperimentsStopCondition(NumExperimentsCondition) returns (google.protobuf.Empty);
 	rpc RemoveStopCondition(StartStopCondition) returns (google.protobuf.Empty);
 	// Gets a stream of experiment execution statuses that can be observed in real time as experiment is running
@@ -54,6 +56,8 @@ service AresAutomation {
 	// Results
 	rpc GetAvailableCampaignResults(google.protobuf.Empty) returns (AvailableCampaignResultsResponse);
 	rpc GetCampaignResult(CampaignResultRequest) returns (CampaignResult);
+
+	rpc GetAllAnalyzers(google.protobuf.Empty) returns (GetAllAnalyzersResponse);
 }
 
 message RequestById {
@@ -110,4 +114,8 @@ message CampaignResultMetadata {
 
 message CampaignResultRequest {
 	string result_id = 1;
+}
+
+message GetAllAnalyzersResponse {
+	repeated AnalyzerInfo analyzers = 1;
 }

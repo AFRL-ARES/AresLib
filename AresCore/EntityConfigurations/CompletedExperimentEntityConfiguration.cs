@@ -1,5 +1,5 @@
 ﻿using Ares.Messaging;
-using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -27,9 +27,9 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
-    builder.Property(experiment => experiment.SerializedData)
-      .HasConversion(
-        s => s.ToByteArray(),
-        bytes => ByteString.CopyFrom(bytes));
+    builder.HasOne(experiment => experiment.Result)
+      .WithOne()
+      .HasForeignKey<Any>("CompletedExperimentId")
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

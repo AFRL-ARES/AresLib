@@ -1,5 +1,5 @@
 ﻿using Ares.Messaging;
-using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,8 +12,9 @@ internal class DeviceCommandResultEntityConfiguration : AresEntityTypeBaseConfig
     base.Configure(builder);
     builder.ToTable("DeviceCommandResults");
 
-    builder.Property(result => result.Result)
-      .HasConversion(s => s.ToByteArray(),
-        bytes => ByteString.CopyFrom(bytes));
+    builder.HasOne(result => result.Result)
+      .WithOne()
+      .HasForeignKey<Any>("DeviceCommandResultId")
+      .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

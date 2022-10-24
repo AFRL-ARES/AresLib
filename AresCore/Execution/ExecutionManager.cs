@@ -30,7 +30,7 @@ internal class ExecutionManager : IExecutionManager
 
   public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>();
 
-  public bool CanRun => !_startConditions.Any(condition => condition.CanStart()) && _activeCampaignTemplateStore.CampaignTemplate is not null;
+  public bool CanRun => _startConditions.All(condition => condition.CanStart()?.Success ?? true) && _activeCampaignTemplateStore.CampaignTemplate is not null;
 
   public async Task Start()
   {
@@ -56,9 +56,9 @@ internal class ExecutionManager : IExecutionManager
     if (_activeCampaignTemplateStore.CampaignTemplate is null)
       throw new InvalidOperationException("CampaignTemplate was not assigned to the active template store.");
 
-    var failedStartConditions = _startConditions.Where(condition => !condition.CanStart()).ToArray();
-    if (failedStartConditions.Any())
-      throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, failedStartConditions.Select(condition => condition.Message))}");
+    var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
+    if (startConditionResults.Any())
+      throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}");
   }
 
   private async Task PostExecution(CampaignResult result)

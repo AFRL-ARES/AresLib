@@ -1,4 +1,6 @@
-﻿namespace Ares.Core.Analyzing;
+﻿using Ares.Messaging;
+
+namespace Ares.Core.Analyzing;
 
 public interface IAnalyzerManager
 {
@@ -66,6 +68,13 @@ public interface IAnalyzerManager
   /// <returns>Analyzer of the given type and name</returns>
   /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
   IAnalyzer GetAnalyzer(string type, string name);
+
+  /// <summary>
+  /// Gets a named analyzer based on the given <see cref="AnalyzerInfo" /> object
+  /// </summary>
+  /// <param name="info"></param>
+  /// <returns></returns>
+  IAnalyzer? GetAnalyzer(AnalyzerInfo info);
 
   /// <summary>
   /// Adds an analyzer to the registry so that it can later be used by experiment execution

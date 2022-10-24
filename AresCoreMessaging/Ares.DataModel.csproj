@@ -42,11 +42,6 @@
 
   <ItemGroup Label="Protobuf Compile">
     <_Asset Include="**\*.proto" />
-    <_Asset Remove="Executables\Argument.proto" />
-    <_Asset Remove="Executables\Campaign.proto" />
-    <_Asset Remove="Executables\Command.proto" />
-    <_Asset Remove="Executables\Experiment.proto" />
-    <_Asset Remove="Executables\Step.proto" />
     <Protobuf Include="@(_Asset)" Visible="True" GrpcServices="None" />
     <!-- <Protobuf Include="AnalyzerInfo.proto" GrpcServices="None" /> -->
     <!-- <Protobuf Include="AresUserType.proto" GrpcServices="None" /> -->
@@ -71,28 +66,5 @@
     <!-- <Protobuf Include="ExecutionResultMessages.proto" GrpcServices="None" /> -->
     <!-- <Protobuf Include="DeviceCommandResult.proto" GrpcServices="None" /> -->
     <!-- <Protobuf Include="Planning\ManualPlanner.proto" GrpcServices="None" /> -->
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Executables\Argument.proto" GrpcServices="None">
-      <PackagePath>\Proto\</PackagePath>
-      <Visible>True</Visible>
-    </None>
-    <None Update="Executables\Campaign.proto" GrpcServices="None">
-      <PackagePath>\Proto\</PackagePath>
-      <Visible>True</Visible>
-    </None>
-    <None Update="Executables\Command.proto" GrpcServices="None">
-      <PackagePath>\Proto\</PackagePath>
-      <Visible>True</Visible>
-    </None>
-    <None Update="Executables\Experiment.proto" GrpcServices="None">
-      <PackagePath>\Proto\</PackagePath>
-      <Visible>True</Visible>
-    </None>
-    <None Update="Executables\Step.proto" GrpcServices="None">
-      <PackagePath>\Proto\</PackagePath>
-      <Visible>True</Visible>
-    </None>
   </ItemGroup>
 </Project>
