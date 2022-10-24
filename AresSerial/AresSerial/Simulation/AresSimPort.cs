@@ -53,6 +53,11 @@ internal class AresSimPort : IAresSerialPort
     });
   }
 
+  public void SendOutboundMessage(byte[] input)
+  {
+    throw new NotImplementedException();
+  }
+
   public IObservable<string> DataReceived { get; }
 
   public void Open(string portName)

@@ -13,5 +13,6 @@ internal interface IAresSerialPort
   void Listen();
   void StopListening();
   void SendOutboundMessage(string input);
+  void SendOutboundMessage(byte[] input);
   IObservable<string> DataReceived { get; }
 }

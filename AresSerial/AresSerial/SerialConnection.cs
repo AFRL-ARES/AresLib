@@ -120,10 +120,8 @@ public abstract class SerialConnection : ISerialConnection
     ResponsePublisher.OnCompleted();
   }
 
-  public virtual void Send(string request)
-  {
-    Port.SendOutboundMessage(request);
-  }
+  public virtual void Send(string request) => Port.SendOutboundMessage(request);
+  public virtual void Send(byte[] request) => Port.SendOutboundMessage(request);
   public IObservable<string> DataBufferState { get; }
 
   public IObservable<ConnectionStatus> ConnectionStatusUpdates { get; }

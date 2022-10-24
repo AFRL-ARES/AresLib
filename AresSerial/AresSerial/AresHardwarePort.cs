@@ -79,6 +79,13 @@ internal class AresHardwarePort : IAresSerialPort
 
     SystemPort.Write(input);
   }
+  public void SendOutboundMessage(byte[] input)
+  {
+    if (!IsOpen || SystemPort is null)
+      throw new InvalidOperationException("Cannot send message as the serial port is not open.");
+
+    SystemPort.Write(input, 0, input.Length);
+  }
 
   private ISubject<string> DataPublisher { get; set; } = new Subject<string>();
   private SerialPort? SystemPort { get; set; }

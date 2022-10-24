@@ -41,10 +41,16 @@ public interface ISerialConnection
   /// </summary>
   void StopListening();
 
- 
+
   /// <summary>
   /// Sends a request over the serial port without waiting for a response
   /// </summary>
   /// <param name="request"></param>
   void Send(string request);
+
+  /// <summary>
+  /// Sends a request over the serial port without waiting for a response
+  /// </summary>
+  /// <param name="request"></param>
+  void Send(byte[] request);
 }
