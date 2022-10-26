@@ -6,131 +6,79 @@ using Ares.Messaging.Device;
 
 namespace Ares.Device.Serial;
 
-public abstract class SerialDevice : AresDevice
+public abstract class SerialDevice : AresDevice, ISerialDevice
 {
-  protected SerialDevice(string name, ISerialConnection connection) : base(name)
+  protected SerialDevice(string name) : base(name)
   {
-    Connection = connection;
   }
 
-  private string? TargetPortName { get; set; }
-
-  public ISerialConnection Connection { get; }
-
-  public void Connect(string portName)
+  public void Connect(IAresSerialPort serialPort, string portName)
   {
-    TargetPortName = portName;
-    Connect();
-  }
-
-  private void Connect()
-  {
-    if (TargetPortName is null)
+    // TODO: Are there edge cases... Maybe we already have a connection that we need to check?
+    if (Connection != null)
     {
-
-      return;
+      Disconnect();
     }
-
+    Connection = serialPort;
     try
     {
-      Connection.Connect(TargetPortName);
+      Connection.AttemptOpen(portName);
     }
     catch (Exception e)
     {
-      StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message });
+      Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message };
       throw;
     }
-
-    // StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Active });
   }
 
   public void Disconnect()
   {
-    Connection.Disconnect();
-    var connectionStatusUpdate = Connection.ConnectionStatusUpdates.Take(1).ToTask();
-    connectionStatusUpdate.Wait();
-    var connectionStatus = connectionStatusUpdate.Result;
-    if (connectionStatus != ConnectionStatus.Connected)
+    if (Connection == null)
     {
-      StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Inactive });
+      return;
     }
+    Connection.Disconnect();
+      Status = new DeviceStatus { DeviceState = DeviceState.Inactive, Message = "Explicitly disconnected"};
   }
 
   public override bool Activate()
   {
     if (Connection is null)
       throw new Exception("Cannot activate serial device before providing connection.");
-    var connectionStatusUpdate = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
-    var listenerStatusUpdate = Connection.ListenerStatusUpdates.FirstAsync().ToTask();
-    connectionStatusUpdate.Wait();
-    listenerStatusUpdate.Wait();
-    if (connectionStatusUpdate.Result  == ConnectionStatus.Connected
-        && listenerStatusUpdate.Result  == ListenerStatus.Listening)
-      return true;
-
-    connectionStatusUpdate = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
-    connectionStatusUpdate.Wait();
-    if (connectionStatusUpdate.Result != ConnectionStatus.Connected)
+    if (!Connection.IsOpen)
     {
-      connectionStatusUpdate = Connection.ConnectionStatusUpdates.FirstAsync().ToTask();
-      Connect();
-      connectionStatusUpdate.Wait();
-      if (connectionStatusUpdate.Result != ConnectionStatus.Connected)
-      {
-        StatusPublisher.OnNext(new DeviceStatus
+      // Connect(Connection, Connection.Name);
+      // if (!Connection.IsOpen)
+      // {
+        var errorMessage = $"Established connection {Connection.Name} failed to report being open";
+        Status = new DeviceStatus
         {
           DeviceState = DeviceState.Error,
-          Message = $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatusUpdate.Result}"
-        });
+          Message = errorMessage
+        };
 
-        throw new Exception
-        (
-          $"Failing to connect should result in {ConnectionStatus.Failed} and throw before this statement, or be {ConnectionStatus.Connected}. Result is {connectionStatusUpdate.Result}"
-        );
-      }
+        throw new Exception(errorMessage);
+      // }
     }
-
-    listenerStatusUpdate = Connection.ListenerStatusUpdates.FirstAsync().ToTask();
-    listenerStatusUpdate.Wait();
-    if (listenerStatusUpdate.Result != ListenerStatus.Listening)
-      Connection.StartListening();
-
-    var listeningRetries = 5;
-    listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
-    listenerStatusUpdate.Wait();
-    while (listenerStatusUpdate.Result != ListenerStatus.Listening)
-    {
-      Task.Delay(TimeSpan.FromMilliseconds(200)).Wait();
-      listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
-      listenerStatusUpdate.Wait();
-      if (listeningRetries-- == 0)
-        break;
-    }
-
-    if (listenerStatusUpdate.Result != ListenerStatus.Listening)
-      return false;
     try
     {
-
       if (!Validate())
       {
-        StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation. Wrong target?"});
+        Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation. Wrong target device?"};
         return false;
       }
     }
     catch (Exception e)
     {
-      StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message});
+      Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message};
       return false;
     }
 
-    StatusPublisher.OnNext(new DeviceStatus { DeviceState = DeviceState.Active });
-
-    listenerStatusUpdate = Connection.ListenerStatusUpdates.Take(1).ToTask();
-    listenerStatusUpdate.Wait();
-
-    return listenerStatusUpdate.Result != ListenerStatus.Error;
+    Status = new DeviceStatus { DeviceState = DeviceState.Active, Message = $"Activated {Name}"};
+    return true;
   }
 
   protected abstract bool Validate();
+
+  public IAresSerialPort? Connection { get; private set; }
 }

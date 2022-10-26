@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -8,19 +10,18 @@ using System.Threading.Tasks;
 
 namespace Ares.Device.Serial;
 
-internal class AresHardwarePort : IAresSerialPort
+public class AresHardwarePort : AresSerialPort
 {
-  private readonly SerialPortConnectionInfo _connectionInfo;
-
-  public AresHardwarePort(SerialPortConnectionInfo connectionInfo)
+  protected AresHardwarePort(SerialPortConnectionInfo connectionInfo) : base(connectionInfo)
   {
-    _connectionInfo = connectionInfo;
-
-    DataReceived = DataPublisher.AsObservable();
   }
 
+  protected override void ProcessBuffer(ref List<byte> currentData)
+  {
+    throw new NotImplementedException();
+  }
 
-  public void Open(string portName)
+  protected override void Open(string portName)
   {
     // Make sure the port isn't already connected?
     if (SystemPort is not null && SystemPort.IsOpen)
@@ -28,34 +29,17 @@ internal class AresHardwarePort : IAresSerialPort
 
     SystemPort = new SerialPort(
       portName,
-      _connectionInfo.BaudRate,
-      _connectionInfo.Parity,
-      _connectionInfo.DataBits,
-      _connectionInfo.StopBits
+      ConnectionInfo.BaudRate,
+      ConnectionInfo.Parity,
+      ConnectionInfo.DataBits,
+      ConnectionInfo.StopBits
     );
 
     SystemPort.Open();
+    IsOpen = SystemPort.IsOpen;
   }
 
-  public void Listen()
-  {
-    SystemPort.DataReceived += ProcessReceivedData;
-  }
-
-  public void StopListening()
-  {
-    SystemPort.DataReceived -= ProcessReceivedData;
-  }
-
-  private void ProcessReceivedData(object sender, SerialDataReceivedEventArgs e)
-  {
-    var port = (SerialPort)sender;
-    var receivedData = port.ReadExisting();
-    DataPublisher.OnNext(receivedData);
-  }
-
-
-  public void Close(Exception? error = null)
+  public override void Disconnect()
   {
     if (SystemPort is null)
       return;
@@ -72,14 +56,25 @@ internal class AresHardwarePort : IAresSerialPort
     SystemPort = unopenedCopy;
   }
 
-  public void SendOutboundMessage(string input)
+  private void ProcessReceivedData(object sender, SerialDataReceivedEventArgs e)
   {
-    if (!IsOpen || SystemPort is null)
-      throw new InvalidOperationException("Cannot send message as the serial port is not open.");
-
-    SystemPort.Write(input);
+    var port = (SerialPort)sender;
+    var buffer = new byte[port.BytesToRead];
+    port.Read(buffer, 0, buffer.Length);
+    AddDataReceived(buffer);
   }
-  public void SendOutboundMessage(byte[] input)
+
+  public override void Listen()
+  {
+    SystemPort.DataReceived += ProcessReceivedData;
+  }
+
+  public override void StopListening()
+  {
+    SystemPort.DataReceived -= ProcessReceivedData;
+  }
+
+  public override void SendOutboundMessage(byte[] input)
   {
     if (!IsOpen || SystemPort is null)
       throw new InvalidOperationException("Cannot send message as the serial port is not open.");
@@ -87,12 +82,5 @@ internal class AresHardwarePort : IAresSerialPort
     SystemPort.Write(input, 0, input.Length);
   }
 
-  private ISubject<string> DataPublisher { get; set; } = new Subject<string>();
   private SerialPort? SystemPort { get; set; }
-
-  public string Name => SystemPort?.PortName ?? string.Empty;
-
-  public bool IsOpen => SystemPort?.IsOpen ?? false;
-
-  public IObservable<string> DataReceived { get; }
 }

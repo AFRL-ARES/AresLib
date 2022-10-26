@@ -1,18 +1,25 @@
-﻿using System;
+﻿using Ares.Device.Serial.Simulation;
+using System;
+using System.Collections.Generic;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Ares.Device.Serial;
 
-internal interface IAresSerialPort
+public interface IAresSerialPort
 {
   string? Name { get; }
   bool IsOpen { get; }
-  void Open(string portName);
-  void Close(Exception? error = null);
+  void AttemptOpen(string portName);
   void Listen();
-  void StopListening();
-  void SendOutboundMessage(string input);
   void SendOutboundMessage(byte[] input);
-  IObservable<string> DataReceived { get; }
+  
+  /// <summary>
+  /// Closes the underlying port and stops the internal message listener
+  /// </summary>
+  void Disconnect();
+  void StopListening();
 }

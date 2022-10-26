@@ -2,7 +2,7 @@
 
 public interface ISerialDevice : IAresDevice
 {
-  ISerialConnection Connection { get; }
-  void Connect(string portName);
+  // void Connect(string portName);
+  void Connect(IAresSerialPort aresSerialPort, string portName);
   void Disconnect();
 }

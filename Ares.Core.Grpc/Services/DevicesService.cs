@@ -47,7 +47,7 @@ public class DevicesService : AresDevices.AresDevicesBase
   {
     var aresDevice = GetAresDevice(request.DeviceName);
 
-    return aresDevice.Status.FirstAsync().ToTask();
+    return Task.FromResult(aresDevice.Status);
   }
 
   public override Task<CommandMetadatasResponse> GetCommandMetadatas(CommandMetadatasRequest request, ServerCallContext context)

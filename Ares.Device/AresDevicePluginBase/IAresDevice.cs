@@ -7,6 +7,6 @@ namespace Ares.Device;
 public interface IAresDevice
 {
   string Name { get; }
-  IObservable<DeviceStatus> Status { get; }
+  DeviceStatus Status { get; }
   bool Activate();
 }
