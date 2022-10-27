@@ -7,7 +7,7 @@ namespace Ares.Core.Execution.Executors;
 public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutionStatus>
 {
 
-  public ExperimentExecutor(ExperimentTemplate template, StepExecutor[] stepExecutors)
+  public ExperimentExecutor(ExperimentTemplate template, IExecutor<StepResult, StepExecutionStatus>[] stepExecutors)
   {
     StepExecutors = stepExecutors;
     Template = template;
@@ -32,7 +32,7 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
   }
 
 
-  public StepExecutor[] StepExecutors { get; }
+  public IExecutor<StepResult, StepExecutionStatus>[] StepExecutors { get; }
 
   public ExperimentTemplate Template { get; set; }
 

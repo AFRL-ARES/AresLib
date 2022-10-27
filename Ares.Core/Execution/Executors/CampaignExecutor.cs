@@ -14,7 +14,6 @@ namespace Ares.Core.Execution.Executors;
 public class CampaignExecutor : ICampaignExecutor
 {
   private readonly IAnalyzerManager _analyzerManager;
-  // private readonly CancellationTokenSource _cancellationTokenSource;
   private readonly IExecutionReporter _executionReporter;
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;

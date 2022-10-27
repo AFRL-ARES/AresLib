@@ -6,7 +6,7 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Executors;
 
-internal class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
+public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
 {
   private readonly Func<CancellationToken, Task<DeviceCommandResult>> _command;
   private readonly BehaviorSubject<CommandExecutionStatus> _stateSubject;

@@ -7,9 +7,9 @@ public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
 {
   private readonly IEnumerable<IDeviceCommandInterpreter<IAresDevice>> _availableDeviceCommandInterpreters;
 
-  public StepComposer(ILaboratoryManager laboratoryManager)
+  public StepComposer(IEnumerable<IDeviceCommandInterpreter<IAresDevice>> aresDeviceCommandInterpreters)
   {
-    _availableDeviceCommandInterpreters = laboratoryManager.Lab.DeviceInterpreters;
+    _availableDeviceCommandInterpreters = aresDeviceCommandInterpreters;
   }
 
   public StepExecutor Compose(StepTemplate template)

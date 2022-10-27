@@ -38,7 +38,7 @@ internal class ExecutionManagerTests
   }
 
   [Test]
-  public void Execution_Manager_Should_Execute_Without_Throwing_Exception()
+  public void ExecutionManager_Should_Execute_Without_Throwing_Exception()
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());
@@ -47,7 +47,7 @@ internal class ExecutionManagerTests
   }
 
   [Test]
-  public void Execution_Manager_Should_Throw_When_CampaignTemplate_Is_Null()
+  public void ExecutionManager_Should_Throw_When_CampaignTemplate_Is_Null()
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns((CampaignTemplate)null);
@@ -56,7 +56,7 @@ internal class ExecutionManagerTests
   }
 
   [Test]
-  public void Execution_Manager_Should_Throw_When_Start_Condition_Fails()
+  public void ExecutionManager_Should_Throw_When_Start_Condition_Fails()
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());

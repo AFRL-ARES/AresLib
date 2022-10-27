@@ -5,7 +5,7 @@ namespace Ares.Core.Tests;
 internal class DeviceLibraryTests
 {
   [Test]
-  public void Device_Should_Return_Properly_Ordered_Commands()
+  public void DeviceCommandInterpreter_Should_Return_Properly_Ordered_Commands()
   {
     var device = new TestDevice();
     var interpreter = new TestDeviceInterpreter(device);

@@ -3,7 +3,7 @@ using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
 
-internal class ParallelStepExecutor : StepExecutor
+public class ParallelStepExecutor : StepExecutor
 {
   public ParallelStepExecutor(StepTemplate template, CommandExecutor[] commandExecutors) : base(template, commandExecutors)
   {
