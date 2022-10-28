@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using System.Reactive.Linq;
 using System.Text;
 using Ares.Device.Serial.Commands;
 using Ares.Device.Serial.Simulation;
@@ -14,8 +15,11 @@ internal class SerialPortTests
     const string stringToTest = "<-Oh Hello->";
     var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var response = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.That(response, Is.Not.Null);
     StringAssert.AreEqualIgnoringCase(stringToTest, response.Response);
+    var currentBuffer = await port.DataBufferState.FirstAsync();
+    Assert.That(currentBuffer, Is.Empty);
   }
 
   [Test]
@@ -25,8 +29,11 @@ internal class SerialPortTests
     const string stringToTest = "<-Oh Hello->";
     var port = new TestPort2(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var response = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.That(response, Is.Not.Null);
     StringAssert.AreEqualIgnoringCase(stringToTest, response.Response);
+    var currentBuffer = await port.DataBufferState.FirstAsync();
+    Assert.That(currentBuffer, Is.Empty);
   }
 
   [Test]
@@ -38,8 +45,11 @@ internal class SerialPortTests
     const string stringToTest3 = "<-This Is A Test->";
     var port = new TestPort2(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var test1 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test2 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest2));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test3 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest3));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.Multiple(() => {
       Assert.That(test1, Is.Not.Null);
       Assert.That(test2, Is.Not.Null);
@@ -51,6 +61,8 @@ internal class SerialPortTests
       StringAssert.AreEqualIgnoringCase(stringToTest2, test2.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest3, test3.Response);
     });
+
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
   }
 
   [Test]
@@ -63,9 +75,13 @@ internal class SerialPortTests
     const string stringToTest4 = "!-More Tests-!";
     var port = new TestPort2(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var test1 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test2 = await port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest2));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test3 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest3));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test4 = await port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest4));
+    Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.Multiple(() => {
       Assert.That(test1, Is.Not.Null);
       Assert.That(test2, Is.Not.Null);
@@ -79,6 +95,47 @@ internal class SerialPortTests
       StringAssert.AreEqualIgnoringCase(stringToTest3, test3.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest4, test4.OtherResponse);
     });
+
+    var currentBuffer = await port.DataBufferState.FirstAsync();
+    Assert.That(currentBuffer, Is.Empty);
+  }
+
+  [Test]
+  [Timeout(5000)]
+  [Repeat(20)]
+  public async Task AresSerialPort_Returns_Good_Response_From_Multiple_Types_Of_Commands_Asynchronously()
+  {
+    const string stringToTest1 = "<-Oh Hello->";
+    const string stringToTest2 = "!-Noice-!";
+    const string stringToTest3 = "<-This Is A Test->";
+    const string stringToTest4 = "!-More Tests-!";
+    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var test1 = port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest1));
+    var test2 = port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest2));
+    var test3 = port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest3));
+    var test4 = port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest4));
+    await Task.WhenAll(test1, test2, test3, test4);
+    Assert.Multiple(() => {
+      Assert.That(test1.Result, Is.Not.Null);
+      Assert.That(test2.Result, Is.Not.Null);
+      Assert.That(test3.Result, Is.Not.Null);
+      Assert.That(test4.Result, Is.Not.Null);
+    });
+
+    // since the TestPort does not guarantee the responses in order, it can only guarantee
+    // that the proper parser is used for each of the commands
+    // ex.: two parsers expecting a "<- ->" type string are added to the queue
+    // the first result coming from the port will be parsed with the first available parser
+    // so the result may not match.
+    Assert.Multiple(() => {
+      StringAssert.StartsWith("<-", test1.Result.Response);
+      StringAssert.StartsWith("!-", test2.Result.OtherResponse);
+      StringAssert.StartsWith("<-", test3.Result.Response);
+      StringAssert.StartsWith("!-", test4.Result.OtherResponse);
+    });
+
+    var currentBuffer = await port.DataBufferState.FirstAsync();
+    Assert.That(currentBuffer, Is.Empty);
   }
 }
 internal class SomeResponse : ISerialResponse
@@ -117,15 +174,18 @@ internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
     try
     {
       var parsed = Encoding.ASCII.GetString(bufferArr.ToArray());
-      if (!parsed.StartsWith("<-") || !parsed.EndsWith("->"))
+      var startIdx = parsed.IndexOf("<-", StringComparison.InvariantCultureIgnoreCase);
+      var endIdx = startIdx >= 0 ? parsed.IndexOf("->", startIdx, StringComparison.InvariantCultureIgnoreCase) : -1;
+      endIdx = endIdx > 0 ? endIdx + "->".Length : endIdx;
+      if (startIdx < 0 || endIdx < 0 || string.IsNullOrEmpty(parsed))
       {
         response = null;
         dataToRemove = null;
         return false;
       }
 
-      response = new SomeResponse(parsed);
-      dataToRemove = new ArraySegment<byte>(bufferArr.ToArray(), 0, bufferArr.Length);
+      response = new SomeResponse(parsed[startIdx..endIdx]);
+      dataToRemove = new ArraySegment<byte>(bufferArr.ToArray(), startIdx, endIdx - startIdx);
       return true;
     }
     catch (Exception)
@@ -154,15 +214,18 @@ internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse
     try
     {
       var parsed = Encoding.ASCII.GetString(bufferArr.ToArray());
-      if (!parsed.StartsWith("!-") || !parsed.EndsWith("-!"))
+      var startIdx = parsed.IndexOf("!-", StringComparison.InvariantCultureIgnoreCase);
+      var endIdx = startIdx >= 0 ? parsed.IndexOf("-!", startIdx, StringComparison.InvariantCultureIgnoreCase) : -1;
+      endIdx = endIdx > 0 ? endIdx + "-!".Length : endIdx;
+      if (startIdx < 0 || endIdx <= 0 || string.IsNullOrEmpty(parsed))
       {
         response = null;
         dataToRemove = null;
         return false;
       }
 
-      response = new SomeResponse2(parsed);
-      dataToRemove = new ArraySegment<byte>(bufferArr.ToArray(), 0, bufferArr.Length);
+      response = new SomeResponse2(parsed[startIdx..endIdx]);
+      dataToRemove = new ArraySegment<byte>(bufferArr.ToArray(), startIdx, endIdx - startIdx);
       return true;
     }
     catch (Exception)
@@ -186,7 +249,10 @@ public class TestPort : AresSimPort
 
   public override void SendOutboundMessage(SerialCommand command)
   {
-    AddDataReceived(command.SerializedData);
+    var random = new Random();
+    Task.Delay(random.Next(100, 300)).ContinueWith(_ => {
+      AddDataReceived(command.SerializedData);
+    });
   }
 }
 public class TestPort2 : AresSimPort

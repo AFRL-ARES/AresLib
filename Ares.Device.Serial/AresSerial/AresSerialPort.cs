@@ -11,6 +11,7 @@ namespace Ares.Device.Serial;
 
 public abstract class AresSerialPort : IAresSerialPort
 {
+  private readonly object _bufferLock = new();
 
   private readonly ISubject<(ISerialCommandWithResponse, ISerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, ISerialResponse)>();
   private readonly IList<ISerialCommandWithResponse> _responseQueue = new List<ISerialCommandWithResponse>();
@@ -80,30 +81,33 @@ public abstract class AresSerialPort : IAresSerialPort
     if (!currentData.Any())
       return;
 
-    var distinctResponseParsers = _responseQueue.DistinctBy(response => response.GetType());
-    var parsedResponses = distinctResponseParsers.Select(cmd => {
-        var parsed = cmd.TryParse(currentData, out var response, out var dataToRemove);
-        return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
-      }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null)
-      .ToArray();
-
     var totalBytesRemoved = 0;
-    foreach (var arrSegment in parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset))
+    lock ( _bufferLock )
     {
-      currentData.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
-      totalBytesRemoved += arrSegment.Value.Count;
-    }
+      var distinctResponseParsers = _responseQueue.DistinctBy(response => response.GetType());
+      var parsedResponses = distinctResponseParsers.Select(cmd => {
+          var parsed = cmd.TryParse(currentData, out var response, out var dataToRemove);
+          return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
+        }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null)
+        .ToArray();
 
-    foreach (var values in parsedResponses)
-    {
-      _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
-      _responseQueue.Remove(values.CommandToRemove);
+
+      foreach (var arrSegment in parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset))
+      {
+        currentData.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
+        totalBytesRemoved += arrSegment.Value.Count;
+      }
+
+      foreach (var values in parsedResponses)
+      {
+        _responseQueue.Remove(values.CommandToRemove);
+        _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
+      }
     }
 
     if (totalBytesRemoved > 0)
       DataBufferStatePublisher.OnNext(currentData);
   }
-
 
   public void Connect(string portName)
   {
@@ -126,8 +130,13 @@ public abstract class AresSerialPort : IAresSerialPort
 
   protected void AddDataReceived(byte[] dataReceived)
   {
-    var currentData = DataBufferState.Take(1).Wait();
-    currentData.AddRange(dataReceived);
+    List<byte> currentData;
+    lock ( _bufferLock )
+    {
+      currentData = DataBufferState.Take(1).Wait();
+      currentData.AddRange(dataReceived);
+    }
+
     DataBufferStatePublisher.OnNext(currentData);
   }
 
