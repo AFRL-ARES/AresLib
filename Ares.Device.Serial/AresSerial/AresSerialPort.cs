@@ -1,102 +1,136 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
-using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text;
+using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
-using Ares.Device.Serial.Simulation;
+using Ares.Device.Serial.Commands;
 
-namespace Ares.Device.Serial
+namespace Ares.Device.Serial;
+
+public abstract class AresSerialPort : IAresSerialPort
 {
-  public abstract class AresSerialPort : IAresSerialPort
+
+  private readonly ISubject<(ISerialCommandWithResponse, ISerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, ISerialResponse)>();
+  private readonly IList<ISerialCommandWithResponse> _responseQueue = new List<ISerialCommandWithResponse>();
+
+  protected AresSerialPort(SerialPortConnectionInfo connectionInfo)
   {
-
-    protected AresSerialPort(SerialPortConnectionInfo connectionInfo)
-    {
-      ConnectionInfo = connectionInfo;
-      DataBufferState = DataBufferStatePublisher.AsObservable();
-      DataBufferState.Subscribe(ProcessBufferCore);
-    }
-
-    private void ProcessBufferCore(List<byte> currentData)
-    {
-      var preprocessedSize = currentData.Count;
-      ProcessBuffer(ref currentData);
-      var processedSize = currentData.Count;
-      if (processedSize == preprocessedSize)
-      {
-        return;
-      }
-      DataBufferStatePublisher.OnNext(currentData);
-    }
-
-    public void AttemptOpen(string portName)
-    {
-      try
-      {
-        Open(portName);
-        if (IsOpen)
-        {
-          Name = portName;
-        }
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e);
-        throw;
-      }
-    }
-
-
-    public void Connect(string portName)
-    {
-      try
-      {
-        AttemptOpen(portName);
-      }
-      catch (Exception e)
-      {
-        Console.WriteLine(e);
-        throw;
-      }
-
-      if (IsOpen)
-      {
-        return;
-      }
-
-      throw new InvalidOperationException(
-        $"Successfully attempted to open port, but the port is not reporting as open");
-    }
-    protected void AddDataReceived(byte[] dataReceived)
-    {
-      var currentData = DataBufferState.Take(1).Wait();
-      currentData.AddRange(dataReceived);
-      DataBufferStatePublisher.OnNext(currentData);
-    }
-
-    public abstract void Disconnect();
-
-    public abstract void SendOutboundMessage(byte[] input);
-    protected abstract void ProcessBuffer(ref List<byte> currentData);
-    protected abstract void Open(string portName);
-
-    public virtual void Listen()
-    {
-    }
-
-    public virtual void StopListening()
-    {
-
-    }
-
-    public IObservable<List<byte>> DataBufferState { get; }
-    public string? Name { get; private set; }
-    public bool IsOpen { get; protected set; }
-    protected SerialPortConnectionInfo ConnectionInfo { get; }
-    protected ISubject<List<byte>> DataBufferStatePublisher { get; } = new BehaviorSubject<List<byte>>(new List<byte>());
+    ConnectionInfo = connectionInfo;
+    DataBufferState = DataBufferStatePublisher.AsObservable();
+    DataBufferState.Subscribe(ProcessBufferCore);
   }
+
+  public IObservable<List<byte>> DataBufferState { get; }
+  protected SerialPortConnectionInfo ConnectionInfo { get; }
+  protected ISubject<List<byte>> DataBufferStatePublisher { get; } = new BehaviorSubject<List<byte>>(new List<byte>());
+
+  public void AttemptOpen(string portName)
+  {
+    try
+    {
+      Open(portName);
+      if (IsOpen)
+        Name = portName;
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+      throw;
+    }
+  }
+
+  public Task<T> SendOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
+  {
+    _responseQueue.Add(command);
+    var task = _responsePublisher
+      .Where(response => response.Item1 == command)
+      .Select(tuple => (T)tuple.Item2)
+      .Take(1)
+      .ToTask();
+
+    SendOutboundMessage(command);
+
+    return task;
+  }
+
+  public void SendOutboundCommand(SerialCommand command)
+  {
+    SendOutboundMessage(command);
+  }
+
+  public abstract void Disconnect();
+
+  public virtual void Listen()
+  {
+  }
+
+  public virtual void StopListening()
+  {
+  }
+
+  public string? Name { get; private set; }
+  public bool IsOpen { get; protected set; }
+
+  public abstract void SendOutboundMessage(SerialCommand command);
+
+  private void ProcessBufferCore(List<byte> currentData)
+  {
+    if (!currentData.Any())
+      return;
+
+    var distinctResponseParsers = _responseQueue.DistinctBy(response => response.GetType());
+    var parsedResponses = distinctResponseParsers.Select(cmd => {
+        var parsed = cmd.TryParse(currentData, out var response, out var dataToRemove);
+        return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
+      }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null)
+      .ToArray();
+
+    var totalBytesRemoved = 0;
+    foreach (var arrSegment in parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset))
+    {
+      currentData.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
+      totalBytesRemoved += arrSegment.Value.Count;
+    }
+
+    foreach (var values in parsedResponses)
+    {
+      _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
+      _responseQueue.Remove(values.CommandToRemove);
+    }
+
+    if (totalBytesRemoved > 0)
+      DataBufferStatePublisher.OnNext(currentData);
+  }
+
+
+  public void Connect(string portName)
+  {
+    try
+    {
+      AttemptOpen(portName);
+    }
+    catch (Exception e)
+    {
+      Console.WriteLine(e);
+      throw;
+    }
+
+    if (IsOpen)
+      return;
+
+    throw new InvalidOperationException(
+      "Successfully attempted to open port, but the port is not reporting as open");
+  }
+
+  protected void AddDataReceived(byte[] dataReceived)
+  {
+    var currentData = DataBufferState.Take(1).Wait();
+    currentData.AddRange(dataReceived);
+    DataBufferStatePublisher.OnNext(currentData);
+  }
+
+  // protected abstract void ProcessBuffer(ref List<byte> currentData);
+  protected abstract void Open(string portName);
 }

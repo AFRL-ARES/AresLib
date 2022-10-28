@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Ports;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading;
-using System.Threading.Tasks;
+using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
@@ -16,10 +10,12 @@ public class AresHardwarePort : AresSerialPort
   {
   }
 
-  protected override void ProcessBuffer(ref List<byte> currentData)
-  {
-    throw new NotImplementedException();
-  }
+  private SerialPort? SystemPort { get; set; }
+
+  // protected override void ProcessBuffer(ref List<byte> currentData)
+  // {
+  //   throw new NotImplementedException();
+  // }
 
   protected override void Open(string portName)
   {
@@ -74,13 +70,11 @@ public class AresHardwarePort : AresSerialPort
     SystemPort.DataReceived -= ProcessReceivedData;
   }
 
-  public override void SendOutboundMessage(byte[] input)
+  public override void SendOutboundMessage(SerialCommand command)
   {
     if (!IsOpen || SystemPort is null)
       throw new InvalidOperationException("Cannot send message as the serial port is not open.");
 
-    SystemPort.Write(input, 0, input.Length);
+    SystemPort.Write(command.SerializedData, 0, command.SerializedData.Length);
   }
-
-  private SerialPort? SystemPort { get; set; }
 }
