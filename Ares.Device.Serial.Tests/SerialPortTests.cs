@@ -102,7 +102,6 @@ internal class SerialPortTests
 
   [Test]
   [Timeout(5000)]
-  [Repeat(20)]
   public async Task AresSerialPort_Returns_Good_Response_From_Multiple_Types_Of_Commands_Asynchronously()
   {
     const string stringToTest1 = "<-Oh Hello->";
@@ -137,6 +136,33 @@ internal class SerialPortTests
     var currentBuffer = await port.DataBufferState.FirstAsync();
     Assert.That(currentBuffer, Is.Empty);
   }
+
+  [Test]
+  [Timeout(5000)]
+  public async Task AresSerialPort_Previous_Stream_Observable_Fires_Once_New_Command_Appears()
+  {
+    const string stringToTest = "<-Oh Hello->";
+    const string stringToTest2 = "<-This Is A Test->";
+    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var test1Observable = port.SendOutboundCommandWithStream(new SomeCommandWithResponse(stringToTest));
+    var test1ObservableFirstResponse = await test1Observable.Take(1);
+    var test2Observable = port.SendOutboundCommandWithStream(new SomeCommandWithResponse(stringToTest2));
+    var secondResponseWaiter = Task.Run(async () => {
+      var test1ObservableSecondResponse = await test1Observable.Take(1);
+      return test1ObservableSecondResponse;
+    });
+
+    var test2ObservableFirestResponse = await test2Observable.Take(1);
+    var test1ObservableSecondResponse = await secondResponseWaiter;
+    Assert.Multiple(() => {
+      StringAssert.AreEqualIgnoringCase(stringToTest, test1ObservableFirstResponse.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest2, test2ObservableFirestResponse.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest2, test1ObservableSecondResponse.Response);
+    });
+
+    var currentBuffer = await port.DataBufferState.FirstAsync();
+    Assert.That(currentBuffer, Is.Empty);
+  }
 }
 internal class SomeResponse : ISerialResponse
 {
@@ -156,19 +182,9 @@ internal class SomeResponse2 : ISerialResponse
 
   public string OtherResponse { get; }
 }
-internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
+internal class SomeResponseParser : SerialResponseParser<SomeResponse>
 {
-  public SomeCommandWithResponse(string message)
-  {
-    Message = message;
-  }
-
-  public string Message { get; }
-
-  protected override byte[] Serialize()
-    => Encoding.ASCII.GetBytes(Message);
-
-  public override bool TryParse(IEnumerable<byte> buffer, out SomeResponse? response, out ArraySegment<byte>? dataToRemove)
+  public override bool TryParseResponse(IEnumerable<byte> buffer, out SomeResponse? response, out ArraySegment<byte>? dataToRemove)
   {
     var bufferArr = buffer.ToArray();
     try
@@ -196,19 +212,9 @@ internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
     }
   }
 }
-internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse2>
+internal class SomeResponse2Parser : SerialResponseParser<SomeResponse2>
 {
-  public SomeCommandWithResponse2(string otherMessage)
-  {
-    OtherMessage = otherMessage;
-  }
-
-  public string OtherMessage { get; }
-
-  protected override byte[] Serialize()
-    => Encoding.ASCII.GetBytes(OtherMessage);
-
-  public override bool TryParse(IEnumerable<byte> buffer, out SomeResponse2? response, out ArraySegment<byte>? dataToRemove)
+  public override bool TryParseResponse(IEnumerable<byte> buffer, out SomeResponse2? response, out ArraySegment<byte>? dataToRemove)
   {
     var bufferArr = buffer.ToArray();
     try
@@ -235,6 +241,30 @@ internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse
       return false;
     }
   }
+}
+internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
+{
+  public SomeCommandWithResponse(string message) : base(new SomeResponseParser())
+  {
+    Message = message;
+  }
+
+  public string Message { get; }
+
+  protected override byte[] Serialize()
+    => Encoding.ASCII.GetBytes(Message);
+}
+internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse2>
+{
+  public SomeCommandWithResponse2(string otherMessage) : base(new SomeResponse2Parser())
+  {
+    OtherMessage = otherMessage;
+  }
+
+  public string OtherMessage { get; }
+
+  protected override byte[] Serialize()
+    => Encoding.ASCII.GetBytes(OtherMessage);
 }
 public class TestPort : AresSimPort
 {

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
@@ -10,6 +11,7 @@ public interface IAresSerialPort
   void AttemptOpen(string portName);
   void Listen();
   Task<T> SendOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse;
+  IObservable<T> SendOutboundCommandWithStream<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse;
   void SendOutboundCommand(SerialCommand command);
 
   /// <summary>
