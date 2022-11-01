@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
+using Ares.Core.Device;
 using Ares.Device;
 using Ares.Messaging;
 using Ares.Messaging.Device;
@@ -14,11 +15,11 @@ namespace Ares.Core.Grpc.Services;
 
 public class DevicesService : AresDevices.AresDevicesBase
 {
-  private readonly ILaboratoryManager _laboratoryManager;
+  private readonly IDeviceCommandInterpreterRepo _deviceCommandInterpreterRepo;
 
-  public DevicesService(ILaboratoryManager laboratoryManager)
+  public DevicesService(IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo)
   {
-    _laboratoryManager = laboratoryManager;
+    _deviceCommandInterpreterRepo = deviceCommandInterpreterRepo;
   }
 
   public override Task<ListServerSerialPortsResponse> GetServerSerialPorts(Empty request, ServerCallContext context)
@@ -30,7 +31,7 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   public override Task<ListAresDevicesResponse> ListAresDevices(Empty _, ServerCallContext context)
   {
-    var aresDeviceMessages = _laboratoryManager.Lab.DeviceInterpreters
+    var aresDeviceMessages = _deviceCommandInterpreterRepo
       .Select(interpreter => interpreter.Device)
       .Select(device => device.Name)
       .Select(s => new AresDeviceInfo { Name = s });
@@ -52,7 +53,7 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   public override Task<CommandMetadatasResponse> GetCommandMetadatas(CommandMetadatasRequest request, ServerCallContext context)
   {
-    var interpreter = _laboratoryManager.Lab.DeviceInterpreters
+    var interpreter = _deviceCommandInterpreterRepo
       .First(commandInterpreter => commandInterpreter.Device.Name == request.DeviceName);
 
     var commands = interpreter.CommandsToIndexedMetadatas();
@@ -65,7 +66,7 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   public override async Task<DeviceCommandResult> ExecuteCommand(CommandTemplate request, ServerCallContext context)
   {
-    var interpreter = _laboratoryManager.Lab.DeviceInterpreters
+    var interpreter = _deviceCommandInterpreterRepo
       .First(commandInterpreter => commandInterpreter.Device.Name == request.Metadata.DeviceName);
 
     try
@@ -82,7 +83,7 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   private IAresDevice GetAresDevice(string name)
   {
-    var aresDevice = _laboratoryManager.Lab.DeviceInterpreters
+    var aresDevice = _deviceCommandInterpreterRepo
       .Select(interpreter => interpreter.Device)
       .FirstOrDefault(device => device.Name == name);
 

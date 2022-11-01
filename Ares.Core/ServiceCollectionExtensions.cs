@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<ICampaignValidatorRepository, CampaignValidatorRepository>();
     services.AddTransient<ICampaignValidator, AllPlannersAssignedCampaignValidator>();
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
+    services.AddTransient<ICampaignValidator, RequiredDeviceInterpretersValidator>();
     services.AddTransient<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
     services.BindComposers();
     services.BindStartConditions();
@@ -41,6 +42,7 @@ public static class ServiceCollectionExtensions
     services.AddTransient<IStartCondition, CampaignInProgressStartCondition>();
     services.AddTransient<IStartCondition, AllPlannersAssignedStartCondition>();
     services.AddTransient<IStartCondition, GoodAnalyzerForExperimentOutputCondition>();
+    services.AddTransient<IStartCondition, RequiredDeviceInterpretersStartCondition>();
   }
 
   private static void BindComposers(this IServiceCollection services)
