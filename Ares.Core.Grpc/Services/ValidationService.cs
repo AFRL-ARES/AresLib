@@ -6,6 +6,7 @@ using Ares.Core.Analyzing;
 using Ares.Core.Validation.Campaign;
 using Ares.Core.Validation.Validators;
 using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
 namespace Ares.Core.Grpc.Services;
@@ -57,5 +58,10 @@ public class ValidationService : AresValidation.AresValidationBase
     response.Messages.AddRange(validatorResponses.SelectMany(result => result.Messages));
 
     return Task.FromResult(response);
+  }
+
+  public override Task<ValidationResponse> VlidateRegisteredDevices(Empty request, ServerCallContext context)
+  {
+    throw new NotImplementedException("Might not need this method");
   }
 }

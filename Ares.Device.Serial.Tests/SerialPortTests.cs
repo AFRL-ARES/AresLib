@@ -199,7 +199,7 @@ internal class SerialPortTests
     Assert.That(currentBuffer, Is.Empty);
   }
 }
-internal class SomeResponse : ISerialResponse
+internal class SomeResponse : SerialResponse
 {
   public SomeResponse(string response)
   {
@@ -207,9 +207,8 @@ internal class SomeResponse : ISerialResponse
   }
 
   public string Response { get; }
-  Guid ISerialResponse.RequestId { get; set; }
 }
-internal class SomeResponse2 : ISerialResponse
+internal class SomeResponse2 : SerialResponse
 {
   public SomeResponse2(string otherResponse)
   {
@@ -217,7 +216,6 @@ internal class SomeResponse2 : ISerialResponse
   }
 
   public string OtherResponse { get; }
-  Guid ISerialResponse.RequestId { get; set; }
 }
 internal class SomeResponseParser : SerialResponseParser<SomeResponse>
 {
@@ -310,7 +308,7 @@ public class TestPort : AresSimPort
   {
   }
 
-  public override void Disconnect()
+  public override void Close()
   {
   }
 
@@ -329,7 +327,7 @@ public class TestPort2 : AresSimPort
   {
   }
 
-  public override void Disconnect()
+  public override void Close()
   {
   }
 

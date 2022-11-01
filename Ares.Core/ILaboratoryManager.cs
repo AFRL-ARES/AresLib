@@ -7,6 +7,4 @@ public interface ILaboratoryManager
 {
   // TODO: User, authentication/availability, etc.
   Laboratory Lab { get; }
-  void RunCampaign(CampaignTemplate campaignTemplate);
-  bool RegisterDeviceInterpreter(IDeviceCommandInterpreter<IAresDevice> deviceInterpreter);
 }

@@ -6,13 +6,13 @@ using Ares.Messaging.Device;
 
 namespace Ares.Device.Serial;
 
-public abstract class SerialDevice : AresDevice, ISerialDevice
+public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TConnection> where TConnection : IAresSerialPort
 {
   protected SerialDevice(string name) : base(name)
   {
   }
 
-  public void Connect(IAresSerialPort serialPort, string portName)
+  public void Connect(TConnection serialPort, string portName)
   {
     // TODO: Are there edge cases... Maybe we already have a connection that we need to check?
     if (Connection != null)
@@ -29,6 +29,7 @@ public abstract class SerialDevice : AresDevice, ISerialDevice
       Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message };
       throw;
     }
+    OnConnected();
   }
 
   public void Disconnect()
@@ -37,8 +38,9 @@ public abstract class SerialDevice : AresDevice, ISerialDevice
     {
       return;
     }
-    Connection.Disconnect();
-      Status = new DeviceStatus { DeviceState = DeviceState.Inactive, Message = "Explicitly disconnected"};
+    Connection.Close();
+    Status = new DeviceStatus { DeviceState = DeviceState.Inactive, Message = "Explicitly disconnected" };
+    OnDisconnected();
   }
 
   public override bool Activate()
@@ -78,7 +80,18 @@ public abstract class SerialDevice : AresDevice, ISerialDevice
     return true;
   }
 
+
+  protected virtual void OnConnected()
+  {
+
+  }
+
+  protected virtual void OnDisconnected()
+  {
+
+  }
+
   protected abstract bool Validate();
 
-  public IAresSerialPort? Connection { get; private set; }
+  public TConnection? Connection { get; private set; }
 }

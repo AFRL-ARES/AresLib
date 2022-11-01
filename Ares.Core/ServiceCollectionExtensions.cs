@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.Device;
 using Ares.Core.Execution;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
@@ -30,6 +31,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<ICampaignValidatorRepository, CampaignValidatorRepository>();
     services.AddTransient<ICampaignValidator, AllPlannersAssignedCampaignValidator>();
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
+    services.AddTransient<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
     services.BindComposers();
     services.BindStartConditions();
   }

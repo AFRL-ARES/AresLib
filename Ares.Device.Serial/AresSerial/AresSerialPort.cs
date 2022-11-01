@@ -13,7 +13,7 @@ public abstract class AresSerialPort : IAresSerialPort
 {
   private readonly object _bufferLock = new();
   private readonly IList<ISerialCommandWithResponse> _multiResponseQueue = new List<ISerialCommandWithResponse>();
-  private readonly ISubject<(ISerialCommandWithResponse, ISerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, ISerialResponse)>();
+  private readonly ISubject<(ISerialCommandWithResponse, SerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, SerialResponse)>();
   private readonly IList<ISerialCommandWithResponse> _singleResponseQueue = new List<ISerialCommandWithResponse>();
 
   protected AresSerialPort(SerialPortConnectionInfo connectionInfo)
@@ -42,7 +42,7 @@ public abstract class AresSerialPort : IAresSerialPort
     }
   }
 
-  public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
+  public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
   {
     _singleResponseQueue.Add(command);
     var blah = _responsePublisher
@@ -54,7 +54,7 @@ public abstract class AresSerialPort : IAresSerialPort
     return blah;
   }
 
-  public void PersistOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
+  public void PersistOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
   {
     // TODO create a way to clean up the multi response queue if nothing is subscribed
     var existsInMultiQueue = _multiResponseQueue.OfType<SerialCommandWithResponse<T>>().Any();
@@ -67,7 +67,7 @@ public abstract class AresSerialPort : IAresSerialPort
       SendOutboundMessage(command);
   }
 
-  public IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : ISerialResponse
+  public IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : SerialResponse
   {
     var observable = _responsePublisher
       .Where(response => response.Item2.GetType() == typeof(T))
@@ -81,7 +81,7 @@ public abstract class AresSerialPort : IAresSerialPort
     SendOutboundMessage(command);
   }
 
-  public abstract void Disconnect();
+  public abstract void Close();
 
   public virtual void Listen()
   {
@@ -132,25 +132,6 @@ public abstract class AresSerialPort : IAresSerialPort
       DataBufferStatePublisher.OnNext(currentData);
   }
 
-  public void Connect(string portName)
-  {
-    try
-    {
-      AttemptOpen(portName);
-    }
-    catch (Exception e)
-    {
-      Console.WriteLine(e);
-      throw;
-    }
-
-    if (IsOpen)
-      return;
-
-    throw new InvalidOperationException(
-      "Successfully attempted to open port, but the port is not reporting as open");
-  }
-
   protected void AddDataReceived(byte[] dataReceived)
   {
     List<byte> currentData;
@@ -164,4 +145,5 @@ public abstract class AresSerialPort : IAresSerialPort
   }
 
   protected abstract void Open(string portName);
+
 }

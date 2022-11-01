@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Ares.Device.Serial.Commands;
 
-public abstract class SerialResponseParser<T> : ISerialResponseParser where T : ISerialResponse
+public abstract class SerialResponseParser<T> : ISerialResponseParser where T : SerialResponse
 {
-  public bool TryParseResponse(IEnumerable<byte> buffer, out ISerialResponse? response, out ArraySegment<byte>? dataToRemove)
+  public bool TryParseResponse(IEnumerable<byte> buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove)
   {
     var test = TryParseResponse(buffer, out T? typedResponse, out var toRemove);
     response = typedResponse;

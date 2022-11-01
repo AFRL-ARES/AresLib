@@ -10,6 +10,7 @@ import "Templates/CommandMetadata.proto";
 service AresValidation {
 	rpc ValidateFullCampaign(CampaignTemplate) returns (ValidationResponse);
 	rpc ValidateAnalyzerSelection(AnalyzerValidationRequest) returns (ValidationResponse);
+	rpc VlidateRegisteredDevices(google.protobuf.Empty) returns (.ares.messaging.ValidationResponse);
 }
 
 message AnalyzerValidationRequest {

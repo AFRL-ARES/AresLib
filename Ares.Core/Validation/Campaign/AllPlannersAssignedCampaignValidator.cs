@@ -11,4 +11,5 @@ public class AllPlannersAssignedCampaignValidator : ICampaignValidator
     var parameters = template.ExperimentTemplates.SelectMany(experimentTemplate => experimentTemplate.GetAllPlannedParameters());
     return AllPlannersAssignedValidator.Validate(parameters, template.PlannerAllocations);
   }
+
 }

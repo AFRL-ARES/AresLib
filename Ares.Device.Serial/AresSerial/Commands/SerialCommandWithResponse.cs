@@ -2,7 +2,7 @@
 
 namespace Ares.Device.Serial.Commands;
 
-public abstract class SerialCommandWithResponse<T> : SerialCommand, ISerialCommandWithResponse where T : ISerialResponse
+public abstract class SerialCommandWithResponse<T> : SerialCommand, ISerialCommandWithResponse where T : SerialResponse
 {
   public SerialCommandWithResponse(SerialResponseParser<T> parser)
   {
