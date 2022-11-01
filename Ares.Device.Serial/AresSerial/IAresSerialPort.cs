@@ -10,9 +10,10 @@ public interface IAresSerialPort
   bool IsOpen { get; }
   void AttemptOpen(string portName);
   void Listen();
-  Task<T> SendOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse;
-  IObservable<T> SendOutboundCommandWithStream<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse;
-  void SendOutboundCommand(SerialCommand command);
+  Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse;
+  void PersistOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse;
+  IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : ISerialResponse;
+  void Send(SerialCommand command);
 
   /// <summary>
   /// Closes the underlying port and stops the internal message listener

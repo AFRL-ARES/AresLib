@@ -1,8 +1,9 @@
-﻿namespace Ares.Device.Serial.Commands;
+﻿using System;
+
+namespace Ares.Device.Serial.Commands;
 
 public abstract class SerialCommandWithResponse<T> : SerialCommand, ISerialCommandWithResponse where T : ISerialResponse
 {
-
   public SerialCommandWithResponse(SerialResponseParser<T> parser)
   {
     Parser = parser;
@@ -10,5 +11,6 @@ public abstract class SerialCommandWithResponse<T> : SerialCommand, ISerialComma
 
   internal SerialResponseParser<T> Parser { get; }
 
+  Guid ISerialCommandWithResponse.Id { get; set; }
   ISerialResponseParser ISerialCommandWithResponse.ResponseParser => Parser;
 }

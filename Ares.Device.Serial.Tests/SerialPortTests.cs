@@ -14,7 +14,7 @@ internal class SerialPortTests
   {
     const string stringToTest = "<-Oh Hello->";
     var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var response = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    var response = await port.Send(new SomeCommandWithResponse(stringToTest));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.That(response, Is.Not.Null);
     StringAssert.AreEqualIgnoringCase(stringToTest, response.Response);
@@ -28,7 +28,7 @@ internal class SerialPortTests
   {
     const string stringToTest = "<-Oh Hello->";
     var port = new TestPort2(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var response = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    var response = await port.Send(new SomeCommandWithResponse(stringToTest));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.That(response, Is.Not.Null);
     StringAssert.AreEqualIgnoringCase(stringToTest, response.Response);
@@ -44,11 +44,11 @@ internal class SerialPortTests
     const string stringToTest2 = "<-Noice->";
     const string stringToTest3 = "<-This Is A Test->";
     var port = new TestPort2(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var test1 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    var test1 = await port.Send(new SomeCommandWithResponse(stringToTest));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    var test2 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest2));
+    var test2 = await port.Send(new SomeCommandWithResponse(stringToTest2));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    var test3 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest3));
+    var test3 = await port.Send(new SomeCommandWithResponse(stringToTest3));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.Multiple(() => {
       Assert.That(test1, Is.Not.Null);
@@ -74,13 +74,13 @@ internal class SerialPortTests
     const string stringToTest3 = "<-This Is A Test->";
     const string stringToTest4 = "!-More Tests-!";
     var port = new TestPort2(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var test1 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    var test1 = await port.Send(new SomeCommandWithResponse(stringToTest));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    var test2 = await port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest2));
+    var test2 = await port.Send(new SomeCommandWithResponse2(stringToTest2));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    var test3 = await port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest3));
+    var test3 = await port.Send(new SomeCommandWithResponse(stringToTest3));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    var test4 = await port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest4));
+    var test4 = await port.Send(new SomeCommandWithResponse2(stringToTest4));
     Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.Multiple(() => {
       Assert.That(test1, Is.Not.Null);
@@ -109,10 +109,10 @@ internal class SerialPortTests
     const string stringToTest3 = "<-This Is A Test->";
     const string stringToTest4 = "!-More Tests-!";
     var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var test1 = port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest1));
-    var test2 = port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest2));
-    var test3 = port.SendOutboundCommand(new SomeCommandWithResponse(stringToTest3));
-    var test4 = port.SendOutboundCommand(new SomeCommandWithResponse2(stringToTest4));
+    var test1 = port.Send(new SomeCommandWithResponse(stringToTest1));
+    var test2 = port.Send(new SomeCommandWithResponse2(stringToTest2));
+    var test3 = port.Send(new SomeCommandWithResponse(stringToTest3));
+    var test4 = port.Send(new SomeCommandWithResponse2(stringToTest4));
     await Task.WhenAll(test1, test2, test3, test4);
     Assert.Multiple(() => {
       Assert.That(test1.Result, Is.Not.Null);
@@ -144,20 +144,55 @@ internal class SerialPortTests
     const string stringToTest = "<-Oh Hello->";
     const string stringToTest2 = "<-This Is A Test->";
     var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
-    var test1Observable = port.SendOutboundCommandWithStream(new SomeCommandWithResponse(stringToTest));
-    var test1ObservableFirstResponse = await test1Observable.Take(1);
-    var test2Observable = port.SendOutboundCommandWithStream(new SomeCommandWithResponse(stringToTest2));
+    var responseObserver = port.GetTransactionStream<SomeResponse>();
+    port.PersistOutboundCommand(new SomeCommandWithResponse(stringToTest));
+    var test1ObservableFirstResponse = await responseObserver.Take(1);
+    _ = port.Send(new SomeCommandWithResponse(stringToTest2));
     var secondResponseWaiter = Task.Run(async () => {
+      var test1ObservableSecondResponse = await responseObserver.Take(1);
+      return test1ObservableSecondResponse;
+    });
+
+    var test2ObservableFirestResponse = await responseObserver.Take(1);
+    var test1ObservableSecondResponse = await secondResponseWaiter;
+    Assert.Multiple(() => {
+      StringAssert.AreEqualIgnoringCase(stringToTest, test1ObservableFirstResponse.Response.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest2, test2ObservableFirestResponse.Response.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest2, test1ObservableSecondResponse.Response.Response);
+    });
+
+    var currentBuffer = await port.DataBufferState.FirstAsync();
+    Assert.That(currentBuffer, Is.Empty);
+  }
+
+  [Test]
+  [Timeout(5000)]
+  public async Task AresSerialPort_Subscription_To_Response_Stream_Works_Without_Sending_Command()
+  {
+    const string stringToTest = "<-Oh Hello->";
+    const string stringToTest2 = "<-This Is A Test->";
+    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var test1Observable = port.GetTransactionStream<SomeResponse>();
+    var test2Observable = port.GetTransactionStream<SomeResponse>();
+    port.PersistOutboundCommand(new SomeCommandWithResponse(stringToTest2));
+    var test1ObservableResponseWaiter = Task.Run(async () => {
       var test1ObservableSecondResponse = await test1Observable.Take(1);
       return test1ObservableSecondResponse;
     });
 
-    var test2ObservableFirestResponse = await test2Observable.Take(1);
-    var test1ObservableSecondResponse = await secondResponseWaiter;
+    var test2ObservableFirstResponse = await test2Observable.Take(1);
+    var test1ObservableSecondResponse = await test1ObservableResponseWaiter;
+    var test1ObservableResponseWaiter2 = Task.Run(async () => {
+      var test1ObservableSecondResponse2 = await test1Observable.Take(1);
+      return test1ObservableSecondResponse2;
+    });
+
+    var test3Task = await port.Send(new SomeCommandWithResponse(stringToTest));
+    var test1ObservableSecondResponse2 = await test1ObservableResponseWaiter2;
     Assert.Multiple(() => {
-      StringAssert.AreEqualIgnoringCase(stringToTest, test1ObservableFirstResponse.Response);
-      StringAssert.AreEqualIgnoringCase(stringToTest2, test2ObservableFirestResponse.Response);
-      StringAssert.AreEqualIgnoringCase(stringToTest2, test1ObservableSecondResponse.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest, test1ObservableSecondResponse2.Response.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest2, test2ObservableFirstResponse.Response.Response);
+      StringAssert.AreEqualIgnoringCase(stringToTest2, test1ObservableSecondResponse.Response.Response);
     });
 
     var currentBuffer = await port.DataBufferState.FirstAsync();
@@ -172,6 +207,7 @@ internal class SomeResponse : ISerialResponse
   }
 
   public string Response { get; }
+  Guid ISerialResponse.RequestId { get; set; }
 }
 internal class SomeResponse2 : ISerialResponse
 {
@@ -181,6 +217,7 @@ internal class SomeResponse2 : ISerialResponse
   }
 
   public string OtherResponse { get; }
+  Guid ISerialResponse.RequestId { get; set; }
 }
 internal class SomeResponseParser : SerialResponseParser<SomeResponse>
 {

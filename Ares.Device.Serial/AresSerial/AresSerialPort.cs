@@ -13,7 +13,6 @@ public abstract class AresSerialPort : IAresSerialPort
 {
   private readonly object _bufferLock = new();
   private readonly IList<ISerialCommandWithResponse> _multiResponseQueue = new List<ISerialCommandWithResponse>();
-
   private readonly ISubject<(ISerialCommandWithResponse, ISerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, ISerialResponse)>();
   private readonly IList<ISerialCommandWithResponse> _singleResponseQueue = new List<ISerialCommandWithResponse>();
 
@@ -43,36 +42,41 @@ public abstract class AresSerialPort : IAresSerialPort
     }
   }
 
-  public Task<T> SendOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
+  public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
   {
     _singleResponseQueue.Add(command);
-    var task = _responsePublisher
-      .Where(response => response.Item1 == command)
-      .Select(tuple => (T)tuple.Item2)
+    var blah = _responsePublisher
+      .Where(tuple => tuple.Item1 == command)
       .Take(1)
-      .ToTask();
+      .Select(transaction => (T)transaction.Item2).ToTask();
 
     SendOutboundMessage(command);
-
-    return task;
+    return blah;
   }
 
-  public IObservable<T> SendOutboundCommandWithStream<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
+  public void PersistOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : ISerialResponse
   {
-    // TODO create a way to clean up the multi response queue if nothing is subscribed to the returned observable
-    if (_multiResponseQueue.All(cmd => cmd.GetType() != command.GetType()))
-      _multiResponseQueue.Add(command);
+    // TODO create a way to clean up the multi response queue if nothing is subscribed
+    var existsInMultiQueue = _multiResponseQueue.OfType<SerialCommandWithResponse<T>>().Any();
+    if (existsInMultiQueue)
+      throw new InvalidOperationException($"Command of type {command.GetType().Name} already persisting.");
 
+    _multiResponseQueue.Add(command);
+
+    if (_singleResponseQueue.All(singleCommandWithResponse => singleCommandWithResponse.GetType() != command.GetType()))
+      SendOutboundMessage(command);
+  }
+
+  public IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : ISerialResponse
+  {
     var observable = _responsePublisher
-      .Where(response => response.Item1.GetType() == command.GetType())
-      .Select(tuple => (T)tuple.Item2);
-
-    SendOutboundMessage(command);
+      .Where(response => response.Item2.GetType() == typeof(T))
+      .Select(tuple => new SerialTransaction<T>((SerialCommandWithResponse<T>)tuple.Item1, (T)tuple.Item2));
 
     return observable;
   }
 
-  public void SendOutboundCommand(SerialCommand command)
+  public void Send(SerialCommand command)
   {
     SendOutboundMessage(command);
   }
@@ -100,13 +104,16 @@ public abstract class AresSerialPort : IAresSerialPort
     var totalBytesRemoved = 0;
     lock ( _bufferLock )
     {
-      var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.GetType()).Concat(_multiResponseQueue);
-      var parsedResponses = distinctResponseParsers.Select(cmd => {
-          var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
-          return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
-        }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null)
-        .ToArray();
+      var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.GetType()).ToArray();
+      var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.GetType() != multiResponseCmd.GetType())).ToArray();
+      var considerableParsers = distinctResponseParsers.Concat(unparsedMultiParsers);
+      var parsedResponses = considerableParsers.Select(cmd => {
+        var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
+        if (parsed && response is not null)
+          response.RequestId = cmd.Id;
 
+        return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
+      }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null).ToArray();
 
       foreach (var arrSegment in parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset))
       {
@@ -117,7 +124,6 @@ public abstract class AresSerialPort : IAresSerialPort
       foreach (var values in parsedResponses)
       {
         _singleResponseQueue.Remove(values.CommandToRemove);
-
         _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
       }
     }
@@ -157,6 +163,5 @@ public abstract class AresSerialPort : IAresSerialPort
     DataBufferStatePublisher.OnNext(currentData);
   }
 
-  // protected abstract void ProcessBuffer(ref List<byte> currentData);
   protected abstract void Open(string portName);
 }
