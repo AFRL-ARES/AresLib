@@ -35,7 +35,7 @@ public class AresHardwarePort : AresSerialPort
     IsOpen = SystemPort.IsOpen;
   }
 
-  public override void Close()
+  protected internal override void CloseCore()
   {
     if (SystemPort is null)
       return;

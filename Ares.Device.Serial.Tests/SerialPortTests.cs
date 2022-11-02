@@ -308,10 +308,6 @@ public class TestPort : AresSimPort
   {
   }
 
-  public override void Close()
-  {
-  }
-
   public override void SendOutboundMessage(SerialCommand command)
   {
     var random = new Random();
@@ -324,10 +320,6 @@ public class TestPort2 : AresSimPort
 {
 
   public TestPort2(SerialPortConnectionInfo connectionInfo) : base(connectionInfo)
-  {
-  }
-
-  public override void Close()
   {
   }
 

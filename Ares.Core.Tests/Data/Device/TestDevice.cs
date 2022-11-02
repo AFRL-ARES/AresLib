@@ -9,6 +9,6 @@ public class TestDevice : AresDevice
   {
   }
 
-  public override bool Activate()
-    => true;
+  public override Task<bool> Activate()
+    => Task.FromResult(true);
 }

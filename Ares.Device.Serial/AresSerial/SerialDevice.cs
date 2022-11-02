@@ -43,40 +43,36 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
     OnDisconnected();
   }
 
-  public override bool Activate()
+  public override async Task<bool> Activate()
   {
     if (Connection is null)
       throw new Exception("Cannot activate serial device before providing connection.");
     if (!Connection.IsOpen)
     {
-      // Connect(Connection, Connection.Name);
-      // if (!Connection.IsOpen)
-      // {
-        var errorMessage = $"Established connection {Connection.Name} failed to report being open";
-        Status = new DeviceStatus
-        {
-          DeviceState = DeviceState.Error,
-          Message = errorMessage
-        };
+      var errorMessage = $"Established connection {Connection.Name} failed to report being open";
+      Status = new DeviceStatus
+      {
+        DeviceState = DeviceState.Error,
+        Message = errorMessage
+      };
 
-        throw new Exception(errorMessage);
-      // }
+      throw new Exception(errorMessage);
     }
     try
     {
-      if (!Validate())
+      if (!await Validate())
       {
-        Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation. Wrong target device?"};
+        Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation. Wrong target device?" };
         return false;
       }
     }
     catch (Exception e)
     {
-      Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message};
+      Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message };
       return false;
     }
 
-    Status = new DeviceStatus { DeviceState = DeviceState.Active, Message = $"Activated {Name}"};
+    Status = new DeviceStatus { DeviceState = DeviceState.Active, Message = $"Activated {Name}" };
     return true;
   }
 
@@ -91,7 +87,7 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
 
   }
 
-  protected abstract bool Validate();
+  protected abstract Task<bool> Validate();
 
   public TConnection? Connection { get; private set; }
 }

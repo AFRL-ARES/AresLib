@@ -32,8 +32,12 @@ public abstract class AresSerialPort : IAresSerialPort
     try
     {
       Open(portName);
-      if (IsOpen)
-        Name = portName;
+      if (!IsOpen)
+      {
+        throw new InvalidOperationException($"Successfully executed Open on {portName}, but did not report IsOpen");
+      }
+      Name = portName;
+      Listen();
     }
     catch (Exception e)
     {
@@ -81,7 +85,20 @@ public abstract class AresSerialPort : IAresSerialPort
     SendOutboundMessage(command);
   }
 
-  public abstract void Close();
+  protected internal abstract void CloseCore();
+
+  
+  public void Close()
+  {
+    StopListening();
+    CloseCore();
+    if (!IsOpen)
+    {
+      return;
+    }
+
+    throw new InvalidOperationException($"Successfully executed Close, but did not report IsOpen as false");
+  }
 
   public virtual void Listen()
   {

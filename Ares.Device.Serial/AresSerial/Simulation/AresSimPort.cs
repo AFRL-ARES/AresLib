@@ -23,4 +23,9 @@ public abstract class AresSimPort : AresSerialPort
 
     IsOpen = true;
   }
+
+  protected internal override void CloseCore()
+  {
+    IsOpen = false;
+  }
 }
