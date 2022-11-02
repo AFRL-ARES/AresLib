@@ -3,7 +3,6 @@ using System.Reactive.Linq;
 using System.Text;
 using Ares.Device.Serial.Commands;
 using Ares.Device.Serial.Simulation;
-
 namespace Ares.Device.Serial.Tests;
 
 internal class SerialPortTests
@@ -145,13 +144,15 @@ internal class SerialPortTests
     const string stringToTest2 = "<-This Is A Test->";
     var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var responseObserver = port.GetTransactionStream<SomeResponse>();
-    port.PersistOutboundCommand(new SomeCommandWithResponse(stringToTest));
-    var test1ObservableFirstResponse = await responseObserver.Take(1);
-    _ = port.Send(new SomeCommandWithResponse(stringToTest2));
+    var getTest1FirstResponse = responseObserver.Take(1);
+    port.AttemptSendDistinct(new SomeCommandWithStreamedResponse(stringToTest));
+    var test1ObservableFirstResponse = await getTest1FirstResponse;
     var secondResponseWaiter = Task.Run(async () => {
       var test1ObservableSecondResponse = await responseObserver.Take(1);
       return test1ObservableSecondResponse;
     });
+    _ = port.Send(new SomeCommandWithResponse(stringToTest2));
+    
 
     var test2ObservableFirestResponse = await responseObserver.Take(1);
     var test1ObservableSecondResponse = await secondResponseWaiter;
@@ -174,11 +175,11 @@ internal class SerialPortTests
     var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var test1Observable = port.GetTransactionStream<SomeResponse>();
     var test2Observable = port.GetTransactionStream<SomeResponse>();
-    port.PersistOutboundCommand(new SomeCommandWithResponse(stringToTest2));
     var test1ObservableResponseWaiter = Task.Run(async () => {
       var test1ObservableSecondResponse = await test1Observable.Take(1);
       return test1ObservableSecondResponse;
     });
+    port.AttemptSendDistinct(new SomeCommandWithStreamedResponse(stringToTest2));
 
     var test2ObservableFirstResponse = await test2Observable.Take(1);
     var test1ObservableSecondResponse = await test1ObservableResponseWaiter;
@@ -289,6 +290,20 @@ internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
   protected override byte[] Serialize()
     => Encoding.ASCII.GetBytes(Message);
 }
+
+internal class SomeCommandWithStreamedResponse : SerialCommandWithStreamedResponse<SomeResponse>
+{
+  public SomeCommandWithStreamedResponse(string message) : base(new SomeResponseParser())
+  {
+    Message = message;
+  }
+
+  public string Message { get; }
+
+  protected override byte[] Serialize()
+    => Encoding.ASCII.GetBytes(Message);
+}
+
 internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse2>
 {
   public SomeCommandWithResponse2(string otherMessage) : base(new SomeResponse2Parser())

@@ -48,28 +48,32 @@ public abstract class AresSerialPort : IAresSerialPort
 
   public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
   {
+    var streamedResponseCommand = command as SerialCommandWithStreamedResponse<T>;
+    if (streamedResponseCommand != null)
+    {
+      throw new InvalidOperationException(
+        $"Attempted to send a command for a streamed response. Call AttemptSendDistinct instead");
+    }
     _singleResponseQueue.Add(command);
-    var blah = _responsePublisher
+    var response = _responsePublisher
       .Where(tuple => tuple.Item1 == command)
       .Take(1)
       .Select(transaction => (T)transaction.Item2).ToTask();
 
     SendOutboundMessage(command);
-    return blah;
+    return response;
   }
-
-  public void PersistOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
+  public void AttemptSendDistinct<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
-    // TODO create a way to clean up the multi response queue if nothing is subscribed
-    var existsInMultiQueue = _multiResponseQueue.OfType<SerialCommandWithResponse<T>>().Any();
+    var existsInMultiQueue = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().Any();
     if (existsInMultiQueue)
       throw new InvalidOperationException($"Command of type {command.GetType().Name} already persisting.");
 
     _multiResponseQueue.Add(command);
-
-    if (_singleResponseQueue.All(singleCommandWithResponse => singleCommandWithResponse.GetType() != command.GetType()))
-      SendOutboundMessage(command);
+    // if (_singleResponseQueue.All(singleCommandWithResponse => singleCommandWithResponse.GetType() != command.GetType()))
+    SendOutboundMessage(command);
   }
+
 
   public IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : SerialResponse
   {
@@ -122,7 +126,7 @@ public abstract class AresSerialPort : IAresSerialPort
     lock ( _bufferLock )
     {
       var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.GetType()).ToArray();
-      var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.GetType() != multiResponseCmd.GetType())).ToArray();
+      var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
       var considerableParsers = distinctResponseParsers.Concat(unparsedMultiParsers);
       var parsedResponses = considerableParsers.Select(cmd => {
         var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
@@ -132,7 +136,8 @@ public abstract class AresSerialPort : IAresSerialPort
         return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
       }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null).ToArray();
 
-      foreach (var arrSegment in parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset))
+      var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset).ToArray();
+      foreach (var arrSegment in orderedArraySegs)
       {
         currentData.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
         totalBytesRemoved += arrSegment.Value.Count;

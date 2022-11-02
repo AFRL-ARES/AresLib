@@ -10,7 +10,7 @@ public interface IAresSerialPort
   bool IsOpen { get; }
   void AttemptOpen(string portName);
   Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse;
-  void PersistOutboundCommand<T>(SerialCommandWithResponse<T> command) where T : SerialResponse;
+  void AttemptSendDistinct<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse;
   IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : SerialResponse;
   void Send(SerialCommand command);
   void Close();
