@@ -5,5 +5,5 @@ namespace Ares.Device.Serial.Commands;
 
 internal interface ISerialResponseParser
 {
-  bool TryParseResponse(IEnumerable<byte> buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove);
+  bool TryParseResponse(byte[] buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove);
 }

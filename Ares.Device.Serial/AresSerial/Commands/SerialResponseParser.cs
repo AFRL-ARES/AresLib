@@ -5,7 +5,7 @@ namespace Ares.Device.Serial.Commands;
 
 public abstract class SerialResponseParser<T> : ISerialResponseParser where T : SerialResponse
 {
-  public bool TryParseResponse(IEnumerable<byte> buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove)
+  public bool TryParseResponse(byte[] buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove)
   {
     var test = TryParseResponse(buffer, out T? typedResponse, out var toRemove);
     response = typedResponse;
@@ -13,5 +13,5 @@ public abstract class SerialResponseParser<T> : ISerialResponseParser where T : 
     return test;
   }
 
-  public abstract bool TryParseResponse(IEnumerable<byte> buffer, out T? response, out ArraySegment<byte>? dataToRemove);
+  public abstract bool TryParseResponse(byte[] buffer, out T? response, out ArraySegment<byte>? dataToRemove);
 }

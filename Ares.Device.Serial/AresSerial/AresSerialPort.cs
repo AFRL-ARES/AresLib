@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -114,10 +115,11 @@ public abstract class AresSerialPort : IAresSerialPort
 
   public abstract void SendOutboundMessage(SerialCommand command);
 
-  private void ProcessBufferCore(List<byte> currentData)
+  private void ProcessBufferCore(List<byte> currentDataList)
   {
-    if (!currentData.Any())
+    if (!currentDataList.Any())
       return;
+    var currentData = currentDataList.ToArray();
 
     var totalBytesRemoved = 0;
     lock ( _bufferLock )
@@ -136,7 +138,7 @@ public abstract class AresSerialPort : IAresSerialPort
       var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset).ToArray();
       foreach (var arrSegment in orderedArraySegs)
       {
-        currentData.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
+        currentDataList.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
         totalBytesRemoved += arrSegment.Value.Count;
       }
 
@@ -148,7 +150,7 @@ public abstract class AresSerialPort : IAresSerialPort
     }
 
     if (totalBytesRemoved > 0)
-      DataBufferStatePublisher.OnNext(currentData);
+      DataBufferStatePublisher.OnNext(currentDataList);
   }
 
   protected void AddDataReceived(byte[] dataReceived)

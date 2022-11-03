@@ -223,12 +223,11 @@ internal class SomeResponse2 : SerialResponse
 }
 internal class SomeResponseParser : SerialResponseParser<SomeResponse>
 {
-  public override bool TryParseResponse(IEnumerable<byte> buffer, out SomeResponse? response, out ArraySegment<byte>? dataToRemove)
+  public override bool TryParseResponse(byte[] bufferArr, out SomeResponse? response, out ArraySegment<byte>? dataToRemove)
   {
-    var bufferArr = buffer.ToArray();
     try
     {
-      var parsed = Encoding.ASCII.GetString(bufferArr.ToArray());
+      var parsed = Encoding.ASCII.GetString(bufferArr);
       var startIdx = parsed.IndexOf("<-", StringComparison.InvariantCultureIgnoreCase);
       var endIdx = startIdx >= 0 ? parsed.IndexOf("->", startIdx, StringComparison.InvariantCultureIgnoreCase) : -1;
       endIdx = endIdx > 0 ? endIdx + "->".Length : endIdx;
@@ -240,7 +239,7 @@ internal class SomeResponseParser : SerialResponseParser<SomeResponse>
       }
 
       response = new SomeResponse(parsed[startIdx..endIdx]);
-      dataToRemove = new ArraySegment<byte>(bufferArr.ToArray(), startIdx, endIdx - startIdx);
+      dataToRemove = new ArraySegment<byte>(bufferArr, startIdx, endIdx - startIdx);
       return true;
     }
     catch (Exception)
@@ -253,9 +252,8 @@ internal class SomeResponseParser : SerialResponseParser<SomeResponse>
 }
 internal class SomeResponse2Parser : SerialResponseParser<SomeResponse2>
 {
-  public override bool TryParseResponse(IEnumerable<byte> buffer, out SomeResponse2? response, out ArraySegment<byte>? dataToRemove)
+  public override bool TryParseResponse(byte[] bufferArr, out SomeResponse2? response, out ArraySegment<byte>? dataToRemove)
   {
-    var bufferArr = buffer.ToArray();
     try
     {
       var parsed = Encoding.ASCII.GetString(bufferArr.ToArray());
