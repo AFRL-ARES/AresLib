@@ -51,7 +51,7 @@ public abstract class AresSerialPort : IAresSerialPort
     var streamedResponseCommand = command as SerialCommandWithStreamedResponse<T>;
     if (streamedResponseCommand != null)
       throw new InvalidOperationException(
-        "Attempted to send a command for a streamed response. Call AttemptSendDistinct instead");
+        "Attempted to send a command for a streamed response. Call Send instead");
 
     _singleResponseQueue.Add(command);
     var response = _responsePublisher
@@ -63,14 +63,14 @@ public abstract class AresSerialPort : IAresSerialPort
     return response;
   }
 
-  public void AttemptSendDistinct<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
+  public void Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
-    var existsInMultiQueue = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().Any();
-    if (existsInMultiQueue)
-      throw new InvalidOperationException($"Command of type {command.GetType().Name} already persisting.");
-
+    var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
+    if (existingParser != null)
+    {
+      _multiResponseQueue.Remove(existingParser);
+    }
     _multiResponseQueue.Add(command);
-    // if (_singleResponseQueue.All(singleCommandWithResponse => singleCommandWithResponse.GetType() != command.GetType()))
     SendOutboundMessage(command);
   }
 

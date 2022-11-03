@@ -1,4 +1,5 @@
 ﻿using System;
+using Google.Protobuf;
 
 namespace Ares.Device.Serial.Commands;
 
