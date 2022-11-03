@@ -16,7 +16,7 @@ public abstract class AresSerialPort : IAresSerialPort
   private readonly ISubject<(ISerialCommandWithResponse, SerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, SerialResponse)>();
   private readonly IList<ISerialCommandWithResponse> _singleResponseQueue = new List<ISerialCommandWithResponse>();
 
-  protected AresSerialPort(SerialPortConnectionInfo connectionInfo)
+  protected internal AresSerialPort(SerialPortConnectionInfo connectionInfo)
   {
     ConnectionInfo = connectionInfo;
     DataBufferState = DataBufferStatePublisher.AsObservable();
@@ -33,9 +33,8 @@ public abstract class AresSerialPort : IAresSerialPort
     {
       Open(portName);
       if (!IsOpen)
-      {
         throw new InvalidOperationException($"Successfully executed Open on {portName}, but did not report IsOpen");
-      }
+
       Name = portName;
       Listen();
     }
@@ -50,10 +49,9 @@ public abstract class AresSerialPort : IAresSerialPort
   {
     var streamedResponseCommand = command as SerialCommandWithStreamedResponse<T>;
     if (streamedResponseCommand != null)
-    {
       throw new InvalidOperationException(
-        $"Attempted to send a command for a streamed response. Call AttemptSendDistinct instead");
-    }
+        "Attempted to send a command for a streamed response. Call AttemptSendDistinct instead");
+
     _singleResponseQueue.Add(command);
     var response = _responsePublisher
       .Where(tuple => tuple.Item1 == command)
@@ -63,6 +61,7 @@ public abstract class AresSerialPort : IAresSerialPort
     SendOutboundMessage(command);
     return response;
   }
+
   public void AttemptSendDistinct<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
     var existsInMultiQueue = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().Any();
@@ -89,20 +88,21 @@ public abstract class AresSerialPort : IAresSerialPort
     SendOutboundMessage(command);
   }
 
-  protected internal abstract void CloseCore();
 
-  
   public void Close()
   {
     StopListening();
     CloseCore();
     if (!IsOpen)
-    {
       return;
-    }
 
-    throw new InvalidOperationException($"Successfully executed Close, but did not report IsOpen as false");
+    throw new InvalidOperationException("Successfully executed Close, but did not report IsOpen as false");
   }
+
+  public string? Name { get; private set; }
+  public bool IsOpen { get; protected set; }
+
+  protected internal abstract void CloseCore();
 
   public virtual void Listen()
   {
@@ -111,9 +111,6 @@ public abstract class AresSerialPort : IAresSerialPort
   public virtual void StopListening()
   {
   }
-
-  public string? Name { get; private set; }
-  public bool IsOpen { get; protected set; }
 
   public abstract void SendOutboundMessage(SerialCommand command);
 
@@ -167,5 +164,4 @@ public abstract class AresSerialPort : IAresSerialPort
   }
 
   protected abstract void Open(string portName);
-
 }

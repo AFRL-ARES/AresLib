@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Text;
 using Ares.Device.Serial.Commands;
 using Ares.Device.Serial.Simulation;
+
 namespace Ares.Device.Serial.Tests;
 
 internal class SerialPortTests
@@ -151,8 +152,9 @@ internal class SerialPortTests
       var test1ObservableSecondResponse = await responseObserver.Take(1);
       return test1ObservableSecondResponse;
     });
+
     _ = port.Send(new SomeCommandWithResponse(stringToTest2));
-    
+
 
     var test2ObservableFirestResponse = await responseObserver.Take(1);
     var test1ObservableSecondResponse = await secondResponseWaiter;
@@ -179,6 +181,7 @@ internal class SerialPortTests
       var test1ObservableSecondResponse = await test1Observable.Take(1);
       return test1ObservableSecondResponse;
     });
+
     port.AttemptSendDistinct(new SomeCommandWithStreamedResponse(stringToTest2));
 
     var test2ObservableFirstResponse = await test2Observable.Take(1);
@@ -290,7 +293,6 @@ internal class SomeCommandWithResponse : SerialCommandWithResponse<SomeResponse>
   protected override byte[] Serialize()
     => Encoding.ASCII.GetBytes(Message);
 }
-
 internal class SomeCommandWithStreamedResponse : SerialCommandWithStreamedResponse<SomeResponse>
 {
   public SomeCommandWithStreamedResponse(string message) : base(new SomeResponseParser())
@@ -303,7 +305,6 @@ internal class SomeCommandWithStreamedResponse : SerialCommandWithStreamedRespon
   protected override byte[] Serialize()
     => Encoding.ASCII.GetBytes(Message);
 }
-
 internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse2>
 {
   public SomeCommandWithResponse2(string otherMessage) : base(new SomeResponse2Parser())
@@ -323,11 +324,11 @@ public class TestPort : AresSimPort
   {
   }
 
-  public override void SendOutboundMessage(SerialCommand command)
+  public override void SendInternally(byte[] bytes)
   {
     var random = new Random();
     Task.Delay(random.Next(100, 300)).ContinueWith(_ => {
-      AddDataReceived(command.SerializedData);
+      AddDataReceived(bytes);
     });
   }
 }
@@ -338,11 +339,11 @@ public class TestPort2 : AresSimPort
   {
   }
 
-  public override void SendOutboundMessage(SerialCommand command)
+  public override void SendInternally(byte[] bytes)
   {
-    var slice1 = command.SerializedData[..1];
-    var slice2 = command.SerializedData[1..2];
-    var slice3 = command.SerializedData[2..];
+    var slice1 = bytes[..1];
+    var slice2 = bytes[1..2];
+    var slice3 = bytes[2..];
     Task.Run(async () => {
       AddDataReceived(slice1);
       await Task.Delay(100);
