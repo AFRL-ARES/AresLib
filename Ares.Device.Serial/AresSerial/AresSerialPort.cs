@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -48,8 +47,7 @@ public abstract class AresSerialPort : IAresSerialPort
 
   public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
   {
-    var streamedResponseCommand = command as SerialCommandWithStreamedResponse<T>;
-    if (streamedResponseCommand != null)
+    if (command is SerialCommandWithStreamedResponse<T>)
       throw new InvalidOperationException(
         "Attempted to send a command for a streamed response. Call Send instead");
 
@@ -67,9 +65,8 @@ public abstract class AresSerialPort : IAresSerialPort
   {
     var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
     if (existingParser != null)
-    {
       _multiResponseQueue.Remove(existingParser);
-    }
+
     _multiResponseQueue.Add(command);
     SendOutboundMessage(command);
   }
@@ -119,12 +116,13 @@ public abstract class AresSerialPort : IAresSerialPort
   {
     if (!currentDataList.Any())
       return;
+
     var currentData = currentDataList.ToArray();
 
     var totalBytesRemoved = 0;
     lock ( _bufferLock )
     {
-      var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.GetType()).ToArray();
+      var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.ResponseParser.GetType()).ToArray();
       var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
       var considerableParsers = distinctResponseParsers.Concat(unparsedMultiParsers);
       var parsedResponses = considerableParsers.Select(cmd => {
@@ -133,7 +131,7 @@ public abstract class AresSerialPort : IAresSerialPort
           response.RequestId = cmd.Id;
 
         return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
-      }).Where(proxy => proxy.Parsed && proxy.Response is not null && proxy.DataToRemove is not null).ToArray();
+      }).Where(proxy => proxy.Parsed && proxy.DataToRemove is not null).ToArray();
 
       var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset).ToArray();
       foreach (var arrSegment in orderedArraySegs)
@@ -145,7 +143,8 @@ public abstract class AresSerialPort : IAresSerialPort
       foreach (var values in parsedResponses)
       {
         _singleResponseQueue.Remove(values.CommandToRemove);
-        _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
+        if (values.Response is not null)
+          _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
       }
     }
 
