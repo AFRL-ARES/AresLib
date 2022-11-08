@@ -1,8 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
 using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Ares.Core.Device;
 using Ares.Device;
@@ -33,8 +31,7 @@ public class DevicesService : AresDevices.AresDevicesBase
   {
     var aresDeviceMessages = _deviceCommandInterpreterRepo
       .Select(interpreter => interpreter.Device)
-      .Select(device => device.Name)
-      .Select(s => new AresDeviceInfo { Name = s });
+      .Select(device => new AresDeviceInfo { Name = device.Name, Type = device.GetType().FullName });
 
     var response = new ListAresDevicesResponse
     {

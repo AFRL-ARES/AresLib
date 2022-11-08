@@ -18,6 +18,7 @@ service AresDevices {
 
 message AresDeviceInfo {
 	string name = 1; // Name of the device
+	string type = 2; // Type of the device
 }
 
 message ListAresDevicesResponse
