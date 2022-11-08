@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading;
 using System.Threading.Tasks;
 using Ares.Device.Serial.Commands;
 
@@ -51,23 +53,31 @@ public abstract class AresSerialPort : IAresSerialPort
       throw new InvalidOperationException(
         "Attempted to send a command for a streamed response. Call Send instead");
 
-    _singleResponseQueue.Add(command);
-    var response = _responsePublisher
-      .Where(tuple => tuple.Item1 == command)
-      .Take(1)
-      .Select(transaction => (T)transaction.Item2).ToTask();
+    lock (_singleResponseQueue)
+    {
+      _singleResponseQueue.Add(command);
+    }
 
+    var getResponse = 
+      GetTransactionStream<T>()
+        .Where(transaction => transaction.Request == command)
+        .Take(1)
+        .Select(transaction => transaction.Response)
+        .ToTask();
     SendOutboundMessage(command);
-    return response;
+    return getResponse;
   }
 
   public void Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
-    var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
-    if (existingParser != null)
-      _multiResponseQueue.Remove(existingParser);
+    lock (_multiResponseQueue)
+    {
+      var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
+      if (existingParser != null)
+        _multiResponseQueue.Remove(existingParser);
 
-    _multiResponseQueue.Add(command);
+      _multiResponseQueue.Add(command);
+    }
     SendOutboundMessage(command);
   }
 
@@ -121,6 +131,8 @@ public abstract class AresSerialPort : IAresSerialPort
 
     var totalBytesRemoved = 0;
     lock ( _bufferLock )
+    lock(_singleResponseQueue)
+    lock(_multiResponseQueue)
     {
       var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.ResponseParser.GetType()).ToArray();
       var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
