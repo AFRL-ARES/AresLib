@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Ares.Messaging;
+using Ares.Messaging.Device;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core;
@@ -17,6 +18,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<CommandTemplate> CommandTemplates => Set<CommandTemplate>();
   public DbSet<PlannerTransaction> PlannerTransactions => Set<PlannerTransaction>();
   public DbSet<CampaignResult> CampaignResults => Set<CampaignResult>();
+  public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

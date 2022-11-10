@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Ares.Messaging.Device;
 
@@ -12,13 +10,14 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
   {
   }
 
-  public void Connect(TConnection serialPort, string portName)
+  public TConnection? Connection { get; private set; }
+
+  public Task Connect(TConnection serialPort, string portName)
   {
     // TODO: Are there edge cases... Maybe we already have a connection that we need to check?
     if (Connection != null)
-    {
       Disconnect();
-    }
+
     Connection = serialPort;
     try
     {
@@ -29,15 +28,15 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
       Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message };
       throw;
     }
-    OnConnected();
+
+    return OnConnected();
   }
 
   public void Disconnect()
   {
     if (Connection == null)
-    {
       return;
-    }
+
     Connection.Close();
     Status = new DeviceStatus { DeviceState = DeviceState.Inactive, Message = "Explicitly disconnected" };
     OnDisconnected();
@@ -47,6 +46,7 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
   {
     if (Connection is null)
       throw new Exception("Cannot activate serial device before providing connection.");
+
     if (!Connection.IsOpen)
     {
       var errorMessage = $"Established connection {Connection.Name} failed to report being open";
@@ -58,6 +58,7 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
 
       throw new Exception(errorMessage);
     }
+
     try
     {
       if (!await Validate())
@@ -77,17 +78,11 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
   }
 
 
-  protected virtual void OnConnected()
-  {
+  protected virtual Task OnConnected()
+    => Task.CompletedTask;
 
-  }
-
-  protected virtual void OnDisconnected()
-  {
-
-  }
+  protected virtual Task OnDisconnected()
+    => Task.CompletedTask;
 
   protected abstract Task<bool> Validate();
-
-  public TConnection? Connection { get; private set; }
 }

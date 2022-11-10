@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Reactive.Threading.Tasks;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
 using Ares.Device.Serial.Commands;
@@ -16,6 +14,7 @@ public abstract class AresSerialPort : IAresSerialPort
   private readonly object _bufferLock = new();
   private readonly IList<ISerialCommandWithResponse> _multiResponseQueue = new List<ISerialCommandWithResponse>();
   private readonly ISubject<(ISerialCommandWithResponse, SerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, SerialResponse)>();
+  private readonly SemaphoreSlim _sendLock = new(1);
   private readonly IList<ISerialCommandWithResponse> _singleResponseQueue = new List<ISerialCommandWithResponse>();
 
   protected internal AresSerialPort(SerialPortConnectionInfo connectionInfo)
@@ -47,30 +46,47 @@ public abstract class AresSerialPort : IAresSerialPort
     }
   }
 
-  public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
+  public async Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout) where T : SerialResponse
   {
     if (command is SerialCommandWithStreamedResponse<T>)
       throw new InvalidOperationException(
         "Attempted to send a command for a streamed response. Call Send instead");
 
-    lock (_singleResponseQueue)
+    lock ( _singleResponseQueue )
     {
       _singleResponseQueue.Add(command);
     }
 
-    var getResponse = 
+    var getResponseTask =
       GetTransactionStream<T>()
         .Where(transaction => transaction.Request == command)
         .Take(1)
         .Select(transaction => transaction.Response)
-        .ToTask();
+        .Timeout(timeout)
+        .Catch(Observable.Return<T?>(null));
+
+    await _sendLock.WaitAsync();
     SendOutboundMessage(command);
-    return getResponse;
+
+    var response = await getResponseTask;
+    _sendLock.Release();
+    lock ( _singleResponseQueue )
+    {
+      _singleResponseQueue.Remove(command);
+    }
+
+    if (response is null)
+      throw new TimeoutException($"Receiving message of type {typeof(T).Name} timed out");
+
+    return response;
   }
 
-  public void Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
+  public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
+    => Send(command, TimeSpan.FromDays(10));
+
+  public async Task Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
-    lock (_multiResponseQueue)
+    lock ( _multiResponseQueue )
     {
       var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
       if (existingParser != null)
@@ -78,7 +94,10 @@ public abstract class AresSerialPort : IAresSerialPort
 
       _multiResponseQueue.Add(command);
     }
+
+    await _sendLock.WaitAsync();
     SendOutboundMessage(command);
+    _sendLock.Release();
   }
 
 
@@ -91,11 +110,12 @@ public abstract class AresSerialPort : IAresSerialPort
     return observable;
   }
 
-  public void Send(SerialCommand command)
+  public async Task Send(SerialCommand command)
   {
+    await _sendLock.WaitAsync();
     SendOutboundMessage(command);
+    _sendLock.Release();
   }
-
 
   public void Close()
   {
@@ -131,8 +151,8 @@ public abstract class AresSerialPort : IAresSerialPort
 
     var totalBytesRemoved = 0;
     lock ( _bufferLock )
-    lock(_singleResponseQueue)
-    lock(_multiResponseQueue)
+    lock ( _singleResponseQueue )
+    lock ( _multiResponseQueue )
     {
       var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.ResponseParser.GetType()).ToArray();
       var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
@@ -145,7 +165,11 @@ public abstract class AresSerialPort : IAresSerialPort
         return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
       }).Where(proxy => proxy.Parsed && proxy.DataToRemove is not null).ToArray();
 
-      var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove).OrderBy(bytes => bytes!.Value.Offset).ToArray();
+      // TODO check for overlaping arrays maybe?
+      var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove)
+        .OrderBy(bytes => bytes!.Value.Offset)
+        .Distinct();
+
       foreach (var arrSegment in orderedArraySegs)
       {
         currentDataList.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
@@ -153,11 +177,8 @@ public abstract class AresSerialPort : IAresSerialPort
       }
 
       foreach (var values in parsedResponses)
-      {
-        _singleResponseQueue.Remove(values.CommandToRemove);
         if (values.Response is not null)
           _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
-      }
     }
 
     if (totalBytesRemoved > 0)

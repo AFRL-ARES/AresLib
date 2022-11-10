@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Ares.Device.Serial.Commands;
 
@@ -11,8 +10,9 @@ public interface IAresSerialPort
   bool IsOpen { get; }
   void AttemptOpen(string portName);
   Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse;
-  void Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse;
+  Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout) where T : SerialResponse;
+  Task Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse;
   IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : SerialResponse;
-  void Send(SerialCommand command);
+  Task Send(SerialCommand command);
   void Close();
 }
