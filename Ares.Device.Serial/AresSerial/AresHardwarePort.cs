@@ -49,6 +49,7 @@ public class AresHardwarePort : AresSerialPort
     );
 
     SystemPort.Close();
+    IsOpen = SystemPort.IsOpen;
     SystemPort = unopenedCopy;
   }
 
