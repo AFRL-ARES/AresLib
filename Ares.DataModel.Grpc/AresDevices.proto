@@ -7,6 +7,7 @@ import "Templates/CommandMetadata.proto";
 import "Templates/CommandTemplate.proto";
 import "DeviceCommandResult.proto";
 import "Device/DeviceStatus.proto";
+import "Device/DeviceConfig.proto";
 
 service AresDevices {
 	rpc ListAresDevices(google.protobuf.Empty) returns (ListAresDevicesResponse);
@@ -14,6 +15,9 @@ service AresDevices {
 	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
 	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
 	rpc ExecuteCommand(CommandTemplate) returns (DeviceCommandResult);
+	rpc AddDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
+	rpc UpdateDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
+	rpc RemoveDeviceConfig(.ares.messaging.device.RemoveDeviceConfigRequest) returns (google.protobuf.Empty);
 }
 
 message AresDeviceInfo {
@@ -42,4 +46,8 @@ message CommandMetadatasResponse {
 message DeviceStatusRequest
 {
 	string device_name = 1; // device name of the device for which the status needs to be known
+}
+
+message RemoveDeviceConfigRequest {
+	string config_id = 1; // id of the config to be removed
 }

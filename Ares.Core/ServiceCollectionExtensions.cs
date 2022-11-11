@@ -32,6 +32,7 @@ public static class ServiceCollectionExtensions
     services.AddTransient<ICampaignValidator, AllPlannersAssignedCampaignValidator>();
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
     services.AddTransient<ICampaignValidator, RequiredDeviceInterpretersValidator>();
+    services.AddTransient<IDeviceConfigSaver, DeviceConfigSaver>();
     services.AddSingleton<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
     services.BindComposers();
     services.BindStartConditions();
