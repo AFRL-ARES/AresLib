@@ -8,18 +8,21 @@ using Ares.Messaging;
 using Ares.Messaging.Device;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Grpc.Services;
 
 public class DevicesService : AresDevices.AresDevicesBase
 {
+  private readonly IDbContextFactory<CoreDatabaseContext> _contextFactory;
   private readonly IDeviceCommandInterpreterRepo _deviceCommandInterpreterRepo;
   private readonly IDeviceConfigSaver _deviceConfigSaver;
 
-  public DevicesService(IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo, IDeviceConfigSaver deviceConfigSaver)
+  public DevicesService(IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo, IDeviceConfigSaver deviceConfigSaver, IDbContextFactory<CoreDatabaseContext> contextFactory)
   {
     _deviceCommandInterpreterRepo = deviceCommandInterpreterRepo;
     _deviceConfigSaver = deviceConfigSaver;
+    _contextFactory = contextFactory;
   }
 
   public override Task<ListServerSerialPortsResponse> GetServerSerialPorts(Empty request, ServerCallContext context)
@@ -105,5 +108,18 @@ public class DevicesService : AresDevices.AresDevicesBase
   public override Task<Empty> UpdateDeviceConfig(DeviceConfig request, ServerCallContext context)
   {
     return _deviceConfigSaver.UpdateConfig(request).ContinueWith(_ => new Empty());
+  }
+
+  public override async Task<DeviceConfigResponse> GetAllDeviceConfigs(DeviceConfigRequest request, ServerCallContext context)
+  {
+    await using var dbContext = _contextFactory.CreateDbContext();
+    var configQuery = dbContext.DeviceConfigs.AsQueryable();
+    if (!string.IsNullOrEmpty(request.DeviceType))
+      configQuery = configQuery.Where(config => config.DeviceType == request.DeviceType);
+
+    var configs = await configQuery.ToArrayAsync();
+    var response = new DeviceConfigResponse();
+    response.Configs.AddRange(configs);
+    return response;
   }
 }

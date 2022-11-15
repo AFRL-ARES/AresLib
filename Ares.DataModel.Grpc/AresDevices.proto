@@ -15,6 +15,7 @@ service AresDevices {
 	rpc GetDeviceStatus(DeviceStatusRequest) returns (DeviceStatus);
 	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
 	rpc ExecuteCommand(CommandTemplate) returns (DeviceCommandResult);
+	rpc GetAllDeviceConfigs(DeviceConfigRequest) returns (DeviceConfigResponse);
 	rpc AddDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
 	rpc UpdateDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
 	rpc RemoveDeviceConfig(.ares.messaging.device.RemoveDeviceConfigRequest) returns (google.protobuf.Empty);
@@ -50,4 +51,12 @@ message DeviceStatusRequest
 
 message RemoveDeviceConfigRequest {
 	string config_id = 1; // id of the config to be removed
+}
+
+message DeviceConfigRequest {
+	string device_type = 1; // the full type name of the device for which to request the configs, if empty, then all will be returned
+}
+
+message DeviceConfigResponse {
+	repeated DeviceConfig configs = 1;
 }
