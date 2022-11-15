@@ -75,7 +75,7 @@ public class AresHardwarePort : AresSerialPort
   {
     if (!IsOpen || SystemPort is null)
       throw new InvalidOperationException("Cannot send message as the serial port is not open.");
-
-    SystemPort.Write(command.SerializedData, 0, command.SerializedData.Length);
+    var serializedData = command.SerializedData;
+    SystemPort.Write(serializedData, 0, serializedData.Length);
   }
 }
