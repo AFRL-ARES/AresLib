@@ -6,16 +6,11 @@ namespace Ares.Device.Serial;
 
 public class AresHardwarePort : AresSerialPort
 {
-  protected AresHardwarePort(SerialPortConnectionInfo connectionInfo) : base(connectionInfo)
+  protected AresHardwarePort(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
   {
   }
 
   private SerialPort? SystemPort { get; set; }
-
-  // protected override void ProcessBuffer(ref List<byte> currentData)
-  // {
-  //   throw new NotImplementedException();
-  // }
 
   protected override void Open(string portName)
   {
@@ -71,10 +66,11 @@ public class AresHardwarePort : AresSerialPort
     SystemPort.DataReceived -= ProcessReceivedData;
   }
 
-  public override void SendOutboundMessage(SerialCommand command)
+  protected override void SendOutboundMessage(SerialCommand command)
   {
     if (!IsOpen || SystemPort is null)
       throw new InvalidOperationException("Cannot send message as the serial port is not open.");
+
     var serializedData = command.SerializedData;
     SystemPort.Write(serializedData, 0, serializedData.Length);
   }

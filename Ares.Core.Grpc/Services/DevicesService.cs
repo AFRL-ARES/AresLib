@@ -48,9 +48,16 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   public override Task<DeviceStatus> GetDeviceStatus(DeviceStatusRequest request, ServerCallContext context)
   {
-    var aresDevice = GetAresDevice(request.DeviceName);
+    try
+    {
+      var aresDevice = GetAresDevice(request.DeviceName);
 
-    return Task.FromResult(aresDevice.Status);
+      return Task.FromResult(aresDevice.Status);
+    }
+    catch (InvalidOperationException e)
+    {
+      return Task.FromResult(new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message });
+    }
   }
 
   public override Task<CommandMetadatasResponse> GetCommandMetadatas(CommandMetadatasRequest request, ServerCallContext context)

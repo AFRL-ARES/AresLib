@@ -6,64 +6,35 @@ namespace Ares.Device.Serial;
 
 public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TConnection> where TConnection : IAresSerialPort
 {
-  protected SerialDevice(string name) : base(name)
+  protected SerialDevice(string name, TConnection connection) : base(name)
   {
+    Connection = connection;
   }
 
-  public TConnection? Connection { get; private set; }
+  protected TConnection Connection { get; }
 
-  public Task Connect(TConnection serialPort, string portName)
+  public override Task<bool> Activate()
+    => SerialActivate();
+
+  private async Task<bool> SerialActivate()
   {
-    // TODO: Are there edge cases... Maybe we already have a connection that we need to check?
-    if (Connection != null)
-      Disconnect();
-
-    Connection = serialPort;
-    try
-    {
-      Connection.AttemptOpen(portName);
-    }
-    catch (Exception e)
-    {
-      Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = e.Message };
-      throw;
-    }
-
-    return OnConnected();
-  }
-
-  public void Disconnect()
-  {
-    if (Connection == null)
-      return;
-
-    Connection.Close();
-    Status = new DeviceStatus { DeviceState = DeviceState.Inactive, Message = "Explicitly disconnected" };
-    OnDisconnected();
-  }
-
-  public override async Task<bool> Activate()
-  {
-    if (Connection is null)
-      throw new Exception("Cannot activate serial device before providing connection.");
-
     if (!Connection.IsOpen)
     {
+      Connection.AttemptOpen();
       var errorMessage = $"Established connection {Connection.Name} failed to report being open";
       Status = new DeviceStatus
       {
         DeviceState = DeviceState.Error,
         Message = errorMessage
       };
-
-      throw new Exception(errorMessage);
     }
 
     try
     {
-      if (!await Validate())
+      var validationResult = await Validate();
+      if (!validationResult.Success)
       {
-        Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation. Wrong target device?" };
+        Status = new DeviceStatus { DeviceState = DeviceState.Error, Message = $"{Name} connected but could not pass validation.{Environment.NewLine}{validationResult.Message}" };
         return false;
       }
     }
@@ -77,12 +48,5 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
     return true;
   }
 
-
-  protected virtual Task OnConnected()
-    => Task.CompletedTask;
-
-  protected virtual Task OnDisconnected()
-    => Task.CompletedTask;
-
-  protected abstract Task<bool> Validate();
+  protected abstract Task<DeviceValidationResult> Validate();
 }

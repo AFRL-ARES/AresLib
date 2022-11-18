@@ -1,9 +1,5 @@
-﻿using System;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Ares.Messaging.Device;
-using Grpc.Core;
 
 namespace Ares.Device;
 

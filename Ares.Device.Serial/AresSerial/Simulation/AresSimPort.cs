@@ -5,22 +5,22 @@ namespace Ares.Device.Serial.Simulation;
 
 public abstract class AresSimPort : AresSerialPort
 {
-  protected AresSimPort(SerialPortConnectionInfo connectionInfo) : base(connectionInfo)
+  protected AresSimPort(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
   {
   }
 
   protected override void Open(string portName)
   {
-    if (!portName.StartsWith("SIM"))
-      throw new InvalidOperationException(
-        $"Tried opening simulated port of type {GetType().Name} with port name {portName}. Simulated ports may only open on ports starting with SIM");
+    // if (!portName.StartsWith("SIM"))
+    //   throw new InvalidOperationException(
+    //     $"Tried opening simulated port of type {GetType().Name} with port name {portName}. Simulated ports may only open on ports starting with SIM");
 
     IsOpen = true;
   }
 
   public abstract void SendInternally(byte[] bytes);
 
-  public override void SendOutboundMessage(SerialCommand command)
+  protected override void SendOutboundMessage(SerialCommand command)
   {
     SendInternally(command.SerializedData);
   }
