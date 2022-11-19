@@ -4,7 +4,7 @@ using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
-public interface IAresSerialPort
+public interface IAresSerialConnection : IDisposable
 {
   string? Name { get; }
   bool IsOpen { get; }

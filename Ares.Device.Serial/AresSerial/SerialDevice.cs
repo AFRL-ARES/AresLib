@@ -4,14 +4,14 @@ using Ares.Messaging.Device;
 
 namespace Ares.Device.Serial;
 
-public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TConnection> where TConnection : IAresSerialPort
+public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TConnection> where TConnection : IAresSerialConnection
 {
   protected SerialDevice(string name, TConnection connection) : base(name)
   {
     Connection = connection;
   }
 
-  protected TConnection Connection { get; }
+  public TConnection Connection { get; }
 
   public override Task<bool> Activate()
     => SerialActivate();

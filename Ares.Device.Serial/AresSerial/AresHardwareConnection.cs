@@ -4,9 +4,9 @@ using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
-public class AresHardwarePort : AresSerialPort
+public class AresHardwareConnection : AresSerialConnection
 {
-  protected AresHardwarePort(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
+  protected AresHardwareConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
   {
   }
 
@@ -58,11 +58,17 @@ public class AresHardwarePort : AresSerialPort
 
   public override void Listen()
   {
+    if (SystemPort is null)
+      throw new InvalidOperationException("Cannot listen on the hardware connection without first creating a port.");
+
     SystemPort.DataReceived += ProcessReceivedData;
   }
 
   public override void StopListening()
   {
+    if (SystemPort is null)
+      throw new InvalidOperationException("Cannot stop listening on the hardware connection without first creating a port.");
+
     SystemPort.DataReceived -= ProcessReceivedData;
   }
 

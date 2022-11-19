@@ -13,7 +13,7 @@ internal class SerialPortTests
   public async Task AresSerialPort_Returns_Good_Response_From_Simple_Request()
   {
     const string stringToTest = "<-Oh Hello->";
-    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var response = await port.Send(new SomeCommandWithResponse(stringToTest));
     // Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     Assert.That(response, Is.Not.Null);
@@ -109,7 +109,7 @@ internal class SerialPortTests
     const string stringToTest2 = "!-Noice-!";
     const string stringToTest3 = "<-This Is A Test->";
     const string stringToTest4 = "!-More Tests-!";
-    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var test1 = port.Send(new SomeCommandWithResponse(stringToTest1));
     var test2 = port.Send(new SomeCommandWithResponse2(stringToTest2));
     var test3 = port.Send(new SomeCommandWithResponse(stringToTest3));
@@ -144,7 +144,7 @@ internal class SerialPortTests
   {
     const string stringToTest = "<-Oh Hello->";
     const string stringToTest2 = "<-This Is A Test->";
-    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var responseObserver = port.GetTransactionStream<SomeResponse>();
     var getTest1FirstResponse = responseObserver.Take(1);
     _ = port.Send(new SomeCommandWithStreamedResponse(stringToTest));
@@ -175,7 +175,7 @@ internal class SerialPortTests
   {
     const string stringToTest = "<-Oh Hello->";
     const string stringToTest2 = "<-This Is A Test->";
-    var port = new TestPort(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
+    var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var test1Observable = port.GetTransactionStream<SomeResponse>();
     var test2Observable = port.GetTransactionStream<SomeResponse>();
     var test1ObservableResponseWaiter = Task.Run(async () => {
@@ -316,11 +316,11 @@ internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse
   protected override byte[] Serialize()
     => Encoding.ASCII.GetBytes(OtherMessage);
 }
-public class TestPort : AresSimPort
+public class TestConnection : AresSimConnection
 {
   private bool _isProcessing;
 
-  public TestPort(SerialPortConnectionInfo connectionInfo) : base(connectionInfo, "SIM1")
+  public TestConnection(SerialPortConnectionInfo connectionInfo) : base(connectionInfo, "SIM1")
   {
   }
 
@@ -339,7 +339,7 @@ public class TestPort : AresSimPort
     });
   }
 }
-public class TestPort2 : AresSimPort
+public class TestPort2 : AresSimConnection
 {
 
   public TestPort2(SerialPortConnectionInfo connectionInfo) : base(connectionInfo, "SIM2")

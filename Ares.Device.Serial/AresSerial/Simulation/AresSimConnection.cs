@@ -3,9 +3,9 @@ using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial.Simulation;
 
-public abstract class AresSimPort : AresSerialPort
+public abstract class AresSimConnection : AresSerialConnection
 {
-  protected AresSimPort(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
+  protected AresSimConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
   {
   }
 
