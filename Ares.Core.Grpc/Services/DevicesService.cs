@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,8 +29,14 @@ public class DevicesService : AresDevices.AresDevicesBase
   public override Task<ListServerSerialPortsResponse> GetServerSerialPorts(Empty request, ServerCallContext context)
   {
     var availableSerialPorts = SerialPort.GetPortNames();
-    var response = new ListServerSerialPortsResponse { SerialPorts = { availableSerialPorts } };
+    var cleanPorts = CleanSerialPorts(availableSerialPorts);
+    var response = new ListServerSerialPortsResponse { SerialPorts = { cleanPorts } };
     return Task.FromResult(response);
+  }
+
+  private IEnumerable<string> CleanSerialPorts(IEnumerable<string> dirtyPortNames)
+  {
+    return dirtyPortNames.Select(s => s[..s.IndexOf('\0')]);
   }
 
   public override Task<ListAresDevicesResponse> ListAresDevices(Empty _, ServerCallContext context)

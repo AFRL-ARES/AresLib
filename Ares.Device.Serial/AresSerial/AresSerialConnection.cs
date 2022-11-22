@@ -43,19 +43,11 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
   public void AttemptOpen()
   {
-    try
-    {
-      Open(Name);
-      if (!IsOpen)
-        throw new InvalidOperationException($"Successfully executed Open on {Name}, but did not report IsOpen");
+    Open(Name);
+    if (!IsOpen)
+      throw new InvalidOperationException($"Successfully executed Open on {Name}, but did not report IsOpen");
 
-      Listen();
-    }
-    catch (Exception e)
-    {
-      Console.WriteLine(e);
-      throw;
-    }
+    Listen();
   }
 
   public async Task<T> Send<T>(SerialCommandWithResponse<T> command, TimeSpan timeout, Func<T, bool>? filter) where T : SerialResponse
@@ -78,16 +70,21 @@ public abstract class AresSerialConnection : IAresSerialConnection
         .Catch(Observable.Return<T?>(null));
 
     await _sendLock.WaitAsync();
-    SendOutboundMessage(command);
-
-    var response = await getResponseTask;
-    if (_sendBuffer > TimeSpan.Zero)
-      await Task.Delay(_sendBuffer);
-
-    _sendLock.Release();
-    lock ( _singleResponseQueue )
+    T? response;
+    try
     {
-      _singleResponseQueue.Remove(command);
+      SendOutboundMessage(command);
+      response = await getResponseTask;
+      if (_sendBuffer > TimeSpan.Zero)
+        await Task.Delay(_sendBuffer);
+    }
+    finally
+    {
+      _sendLock.Release();
+      lock ( _singleResponseQueue )
+      {
+        _singleResponseQueue.Remove(command);
+      }
     }
 
     if (response is null)
@@ -117,11 +114,16 @@ public abstract class AresSerialConnection : IAresSerialConnection
     }
 
     await _sendLock.WaitAsync();
-    SendOutboundMessage(command);
-    if (_sendBuffer > TimeSpan.Zero)
-      await Task.Delay(_sendBuffer);
-
-    _sendLock.Release();
+    try
+    {
+      SendOutboundMessage(command);
+      if (_sendBuffer > TimeSpan.Zero)
+        await Task.Delay(_sendBuffer);
+    }
+    finally
+    {
+      _sendLock.Release();
+    }
   }
 
 
@@ -138,11 +140,16 @@ public abstract class AresSerialConnection : IAresSerialConnection
   public async Task Send(SerialCommand command)
   {
     await _sendLock.WaitAsync();
-    SendOutboundMessage(command);
-    if (_sendBuffer > TimeSpan.Zero)
-      await Task.Delay(_sendBuffer);
-
-    _sendLock.Release();
+    try
+    {
+      SendOutboundMessage(command);
+      if (_sendBuffer > TimeSpan.Zero)
+        await Task.Delay(_sendBuffer);
+    }
+    finally
+    {
+      _sendLock.Release();
+    }
   }
 
   public void Close()
@@ -158,7 +165,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
   public string Name { get; }
   public bool IsOpen { get; protected set; }
 
-  public void Dispose()
+  public virtual void Dispose()
   {
     _listenerCancellationTokenSource.Cancel();
     Close();
@@ -175,7 +182,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
           while (!_listenerCancellationTokenSource.Token.IsCancellationRequested)
             ProcessBufferCore();
         }
-        // TODO mabe there's a cleaner way to do this
+        // TODO maybe there's a cleaner way to do this
         catch (ObjectDisposedException)
         {
         }
@@ -193,13 +200,6 @@ public abstract class AresSerialConnection : IAresSerialConnection
   public virtual void StopListening()
   {
   }
-
-  // private async Task SendAndBlock(SerialCommand command, TimeSpan timespan)
-  // {
-  //   SendOutboundMessage(command);
-  //   if (_sendBuffer > TimeSpan.Zero)
-  //     await Task.Delay(timespan);
-  // }
 
   protected abstract void SendOutboundMessage(SerialCommand command);
 
