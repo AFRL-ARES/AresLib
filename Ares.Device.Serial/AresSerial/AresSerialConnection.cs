@@ -170,8 +170,15 @@ public abstract class AresSerialConnection : IAresSerialConnection
   private void StartBufferProcessor()
   {
     Task.Factory.StartNew(_ => {
-        while (!_listenerCancellationTokenSource.Token.IsCancellationRequested)
-          ProcessBufferCore();
+        try
+        {
+          while (!_listenerCancellationTokenSource.Token.IsCancellationRequested)
+            ProcessBufferCore();
+        }
+        // TODO mabe there's a cleaner way to do this
+        catch (ObjectDisposedException)
+        {
+        }
       },
       _listenerCancellationTokenSource.Token,
       TaskCreationOptions.LongRunning);
@@ -198,7 +205,15 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
   private void ProcessBufferCore()
   {
-    _bufferEvent.Wait(_listenerCancellationTokenSource.Token);
+    try
+    {
+      _bufferEvent.Wait(_listenerCancellationTokenSource.Token);
+    }
+    catch (OperationCanceledException)
+    {
+      return;
+    }
+
     var totalBytesRemoved = 0;
     lock ( _bufferLock )
     lock ( _singleResponseQueue )
