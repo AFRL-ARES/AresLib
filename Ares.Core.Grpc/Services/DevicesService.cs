@@ -36,7 +36,7 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   private IEnumerable<string> CleanSerialPorts(IEnumerable<string> dirtyPortNames)
   {
-    return dirtyPortNames.Select(s => s[..s.IndexOf('\0')]);
+    return dirtyPortNames.Select(s => s.IndexOf('\0') > 0 ? s[..s.IndexOf('\0')] : s);
   }
 
   public override Task<ListAresDevicesResponse> ListAresDevices(Empty _, ServerCallContext context)
