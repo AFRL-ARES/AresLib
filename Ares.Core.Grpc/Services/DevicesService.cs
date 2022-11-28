@@ -39,6 +39,16 @@ public class DevicesService : AresDevices.AresDevicesBase
     return dirtyPortNames.Select(s => s.IndexOf('\0') > 0 ? s[..s.IndexOf('\0')] : s);
   }
 
+  public override async Task<Empty> Activate(DeviceActivateRequest request, ServerCallContext context)
+  {
+    var device = GetAresDevice(request.DeviceName);
+    if (device.Status.DeviceState == DeviceState.Active)
+      return new Empty();
+
+    await device.Activate();
+    return new Empty();
+  }
+
   public override Task<ListAresDevicesResponse> ListAresDevices(Empty _, ServerCallContext context)
   {
     var aresDeviceMessages = _deviceCommandInterpreterRepo

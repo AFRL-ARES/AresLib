@@ -19,6 +19,7 @@ service AresDevices {
 	rpc AddDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
 	rpc UpdateDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
 	rpc RemoveDeviceConfig(.ares.messaging.device.RemoveDeviceConfigRequest) returns (google.protobuf.Empty);
+	rpc Activate(DeviceActivateRequest) returns (google.protobuf.Empty);
 }
 
 message AresDeviceInfo {
@@ -47,6 +48,11 @@ message CommandMetadatasResponse {
 message DeviceStatusRequest
 {
 	string device_name = 1; // device name of the device for which the status needs to be known
+}
+
+message DeviceActivateRequest
+{
+	string device_name = 1; // name of the device to be activated/reactivated
 }
 
 message RemoveDeviceConfigRequest {

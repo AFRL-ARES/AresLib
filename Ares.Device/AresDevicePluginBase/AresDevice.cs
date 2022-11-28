@@ -14,5 +14,6 @@ public abstract class AresDevice : IAresDevice
 
   public string Name { get; }
   public DeviceStatus Status { get; protected set; }
+
   public abstract Task<bool> Activate();
 }
