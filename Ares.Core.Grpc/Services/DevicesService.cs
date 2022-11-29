@@ -17,12 +17,10 @@ public class DevicesService : AresDevices.AresDevicesBase
 {
   private readonly IDbContextFactory<CoreDatabaseContext> _contextFactory;
   private readonly IDeviceCommandInterpreterRepo _deviceCommandInterpreterRepo;
-  private readonly IDeviceConfigSaver _deviceConfigSaver;
 
-  public DevicesService(IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo, IDeviceConfigSaver deviceConfigSaver, IDbContextFactory<CoreDatabaseContext> contextFactory)
+  public DevicesService(IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo, IDbContextFactory<CoreDatabaseContext> contextFactory)
   {
     _deviceCommandInterpreterRepo = deviceCommandInterpreterRepo;
-    _deviceConfigSaver = deviceConfigSaver;
     _contextFactory = contextFactory;
   }
 
@@ -117,21 +115,6 @@ public class DevicesService : AresDevices.AresDevicesBase
       throw new InvalidOperationException($"Could not find ARES device: {name}");
 
     return aresDevice;
-  }
-
-  public override Task<Empty> AddDeviceConfig(DeviceConfig request, ServerCallContext context)
-  {
-    return _deviceConfigSaver.AddConfig(request).ContinueWith(_ => new Empty());
-  }
-
-  public override Task<Empty> RemoveDeviceConfig(RemoveDeviceConfigRequest request, ServerCallContext context)
-  {
-    return _deviceConfigSaver.RemoveConfig(Guid.Parse(request.ConfigId)).ContinueWith(_ => new Empty());
-  }
-
-  public override Task<Empty> UpdateDeviceConfig(DeviceConfig request, ServerCallContext context)
-  {
-    return _deviceConfigSaver.UpdateConfig(request).ContinueWith(_ => new Empty());
   }
 
   public override async Task<DeviceConfigResponse> GetAllDeviceConfigs(DeviceConfigRequest request, ServerCallContext context)
