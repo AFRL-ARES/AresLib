@@ -23,6 +23,14 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
       try
       {
         Connection.AttemptOpen();
+        if (!Connection.IsOpen)
+        {
+          Status = new DeviceStatus
+          {
+            DeviceState = DeviceState.Error,
+            Message = $"Successfully established connection {Connection.Name} but it failed to report as being open."
+          };
+        }
       }
       catch (Exception e)
       {
@@ -34,12 +42,6 @@ public abstract class SerialDevice<TConnection> : AresDevice, ISerialDevice<TCon
 
         return false;
       }
-
-      Status = new DeviceStatus
-      {
-        DeviceState = DeviceState.Error,
-        Message = $"Successfully established connection {Connection.Name} but it failed to report as being open."
-      };
     }
 
     try
