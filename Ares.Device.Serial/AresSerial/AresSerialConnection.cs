@@ -12,7 +12,7 @@ namespace Ares.Device.Serial;
 
 public abstract class AresSerialConnection : IAresSerialConnection
 {
-  private readonly List<byte> _buffer = new();
+  private readonly List<SerialBlock> _buffer = new();
   private readonly ManualResetEventSlim _bufferEvent = new();
   private readonly object _bufferLock = new();
   private readonly CancellationTokenSource _listenerCancellationTokenSource = new();
@@ -241,7 +241,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
             foreach (var arrSegment in orderedArraySegs)
             {
-              _buffer.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
+              _buffer.RemoveBytes(arrSegment!.Value);
               totalBytesRemoved += arrSegment.Value.Count;
             }
 
@@ -249,21 +249,30 @@ public abstract class AresSerialConnection : IAresSerialConnection
               if (Parsed)
                 _responsePublisher.OnNext((CommandToRemove, Response!));
           }
+
+          RemoveStaleBufferEntries();
         }
 
     if (totalBytesRemoved == 0)
       _bufferEvent.Reset();
   }
 
+  private void RemoveStaleBufferEntries()
+  {
+    _buffer.RemoveAll(block => DateTime.UtcNow - block.Timestamp > TimeSpan.FromSeconds(10));
+  }
+
   protected void AddDataReceived(byte[] dataReceived)
   {
     lock (_bufferLock)
     {
-      _buffer.AddRange(dataReceived);
+      _buffer.Add(new SerialBlock(dataReceived, DateTime.UtcNow));
     }
 
     _bufferEvent.Set();
   }
 
   protected abstract void Open(string portName);
+
+  internal bool BufferEmpty => _buffer.Count == 0;
 }

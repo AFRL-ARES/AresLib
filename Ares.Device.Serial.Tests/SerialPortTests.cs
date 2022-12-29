@@ -1,8 +1,8 @@
-﻿using System.IO.Ports;
+﻿using Ares.Device.Serial.Commands;
+using Ares.Device.Serial.Simulation;
+using System.IO.Ports;
 using System.Reactive.Linq;
 using System.Text;
-using Ares.Device.Serial.Commands;
-using Ares.Device.Serial.Simulation;
 
 namespace Ares.Device.Serial.Tests;
 
@@ -50,13 +50,15 @@ internal class SerialPortTests
     // Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test3 = await port.Send(new SomeCommandWithResponse(stringToTest3));
     // Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       Assert.That(test1, Is.Not.Null);
       Assert.That(test2, Is.Not.Null);
       Assert.That(test3, Is.Not.Null);
     });
 
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       StringAssert.AreEqualIgnoringCase(stringToTest, test1.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest2, test2.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest3, test3.Response);
@@ -82,14 +84,16 @@ internal class SerialPortTests
     // Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
     var test4 = await port.Send(new SomeCommandWithResponse2(stringToTest4));
     // Assert.That(await port.DataBufferState.FirstAsync(), Is.Empty);
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       Assert.That(test1, Is.Not.Null);
       Assert.That(test2, Is.Not.Null);
       Assert.That(test3, Is.Not.Null);
       Assert.That(test4, Is.Not.Null);
     });
 
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       StringAssert.AreEqualIgnoringCase(stringToTest, test1.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest2, test2.OtherResponse);
       StringAssert.AreEqualIgnoringCase(stringToTest3, test3.Response);
@@ -115,7 +119,8 @@ internal class SerialPortTests
     var test3 = port.Send(new SomeCommandWithResponse(stringToTest3));
     var test4 = port.Send(new SomeCommandWithResponse2(stringToTest4));
     await Task.WhenAll(test1, test2, test3, test4);
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       Assert.That(test1.Result, Is.Not.Null);
       Assert.That(test2.Result, Is.Not.Null);
       Assert.That(test3.Result, Is.Not.Null);
@@ -127,7 +132,8 @@ internal class SerialPortTests
     // ex.: two parsers expecting a "<- ->" type string are added to the queue
     // the first result coming from the port will be parsed with the first available parser
     // so the result may not match.
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       StringAssert.StartsWith("<-", test1.Result.Response);
       StringAssert.StartsWith("!-", test2.Result.OtherResponse);
       StringAssert.StartsWith("<-", test3.Result.Response);
@@ -149,7 +155,8 @@ internal class SerialPortTests
     var getTest1FirstResponse = responseObserver.Take(1);
     _ = port.Send(new SomeCommandWithStreamedResponse(stringToTest));
     var test1ObservableFirstResponse = await getTest1FirstResponse;
-    var secondResponseWaiter = Task.Run(async () => {
+    var secondResponseWaiter = Task.Run(async () =>
+    {
       var test1ObservableSecondResponse = await responseObserver.Take(1);
       return test1ObservableSecondResponse;
     });
@@ -159,7 +166,8 @@ internal class SerialPortTests
 
     var test2ObservableFirestResponse = await responseObserver.Take(1);
     var test1ObservableSecondResponse = await secondResponseWaiter;
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       StringAssert.AreEqualIgnoringCase(stringToTest, test1ObservableFirstResponse.Response.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest2, test2ObservableFirestResponse.Response.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest2, test1ObservableSecondResponse.Response.Response);
@@ -178,7 +186,8 @@ internal class SerialPortTests
     var port = new TestConnection(new SerialPortConnectionInfo(0, Parity.Even, 0, StopBits.None));
     var test1Observable = port.GetTransactionStream<SomeResponse>();
     var test2Observable = port.GetTransactionStream<SomeResponse>();
-    var test1ObservableResponseWaiter = Task.Run(async () => {
+    var test1ObservableResponseWaiter = Task.Run(async () =>
+    {
       var test1ObservableSecondResponse = await test1Observable.Take(1);
       return test1ObservableSecondResponse;
     });
@@ -187,21 +196,22 @@ internal class SerialPortTests
 
     var test2ObservableFirstResponse = await test2Observable.Take(1);
     var test1ObservableSecondResponse = await test1ObservableResponseWaiter;
-    var test1ObservableResponseWaiter2 = Task.Run(async () => {
+    var test1ObservableResponseWaiter2 = Task.Run(async () =>
+    {
       var test1ObservableSecondResponse2 = await test1Observable.Take(1);
       return test1ObservableSecondResponse2;
     });
 
     var test3Task = await port.Send(new SomeCommandWithResponse(stringToTest));
     var test1ObservableSecondResponse2 = await test1ObservableResponseWaiter2;
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       StringAssert.AreEqualIgnoringCase(stringToTest, test1ObservableSecondResponse2.Response.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest2, test2ObservableFirstResponse.Response.Response);
       StringAssert.AreEqualIgnoringCase(stringToTest2, test1ObservableSecondResponse.Response.Response);
     });
 
-    // var currentBuffer = await port.DataBufferState.FirstAsync();
-    // Assert.That(currentBuffer, Is.Empty);
+    Assert.That(port.BufferEmpty, Is.True);
   }
 }
 internal class SomeResponse : SerialResponse
@@ -333,7 +343,8 @@ public class TestConnection : AresSimConnection
 
     _isProcessing = true;
     var random = new Random();
-    Task.Delay(random.Next(100, 300)).ContinueWith(_ => {
+    Task.Delay(random.Next(100, 300)).ContinueWith(_ =>
+    {
       AddDataReceived(bytes);
       _isProcessing = false;
     });
@@ -351,7 +362,8 @@ public class TestPort2 : AresSimConnection
     var slice1 = bytes[..1];
     var slice2 = bytes[1..2];
     var slice3 = bytes[2..];
-    Task.Run(async () => {
+    Task.Run(async () =>
+    {
       AddDataReceived(slice1);
       await Task.Delay(100);
       AddDataReceived(slice2);
