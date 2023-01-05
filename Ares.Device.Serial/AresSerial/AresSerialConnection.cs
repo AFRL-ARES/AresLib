@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ares.Device.Serial.Commands;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
@@ -6,13 +7,12 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
-using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
 public abstract class AresSerialConnection : IAresSerialConnection
 {
-  private readonly List<byte> _buffer = new();
+  private readonly List<SerialBlock> _buffer = new();
   private readonly ManualResetEventSlim _bufferEvent = new();
   private readonly object _bufferLock = new();
   private readonly CancellationTokenSource _listenerCancellationTokenSource = new();
@@ -56,7 +56,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
       throw new InvalidOperationException(
         "Attempted to send a command for a streamed response. Call Send instead");
 
-    lock ( _singleResponseQueue )
+    lock (_singleResponseQueue)
     {
       _singleResponseQueue.Add(command);
     }
@@ -81,7 +81,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
     finally
     {
       _sendLock.Release();
-      lock ( _singleResponseQueue )
+      lock (_singleResponseQueue)
       {
         _singleResponseQueue.Remove(command);
       }
@@ -104,7 +104,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
   public async Task Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
-    lock ( _multiResponseQueue )
+    lock (_multiResponseQueue)
     {
       var existingParser = _multiResponseQueue.OfType<SerialCommandWithStreamedResponse<T>>().FirstOrDefault();
       if (existingParser != null)
@@ -176,17 +176,18 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
   private void StartBufferProcessor()
   {
-    Task.Factory.StartNew(_ => {
-        try
-        {
-          while (!_listenerCancellationTokenSource.Token.IsCancellationRequested)
-            ProcessBufferCore();
-        }
-        // TODO maybe there's a cleaner way to do this
-        catch (ObjectDisposedException)
-        {
-        }
-      },
+    Task.Factory.StartNew(_ =>
+    {
+      try
+      {
+        while (!_listenerCancellationTokenSource.Token.IsCancellationRequested)
+          ProcessBufferCore();
+      }
+      // TODO maybe there's a cleaner way to do this
+      catch (ObjectDisposedException)
+      {
+      }
+    },
       _listenerCancellationTokenSource.Token,
       TaskCreationOptions.LongRunning);
   }
@@ -215,53 +216,63 @@ public abstract class AresSerialConnection : IAresSerialConnection
     }
 
     var totalBytesRemoved = 0;
-    lock ( _bufferLock )
-    lock ( _singleResponseQueue )
-    lock ( _multiResponseQueue )
-    {
-      if (_buffer.Any())
-      {
-        var currentData = _buffer.ToArray();
-        var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => _singleResponseQueue.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
-        var considerableParsers = _singleResponseQueue.Concat(unparsedMultiParsers);
-        var parsedResponses = considerableParsers.Select(cmd => {
-          var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
-          if (parsed && response is not null)
-            response.RequestId = cmd.Id;
-
-          return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
-        }).Where(proxy => proxy.Parsed && proxy.DataToRemove is not null).ToArray();
-
-        // TODO check for overlapping arrays maybe?
-        var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove)
-          .OrderBy(bytes => bytes!.Value.Offset)
-          .Distinct();
-
-        foreach (var arrSegment in orderedArraySegs)
+    lock (_bufferLock)
+      lock (_singleResponseQueue)
+        lock (_multiResponseQueue)
         {
-          _buffer.RemoveRange(arrSegment!.Value.Offset - totalBytesRemoved, arrSegment.Value.Count);
-          totalBytesRemoved += arrSegment.Value.Count;
-        }
+          if (_buffer.Any())
+          {
+            var currentData = _buffer.ToArray();
+            var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => _singleResponseQueue.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
+            var considerableParsers = _singleResponseQueue.Concat(unparsedMultiParsers);
+            var parsedResponses = considerableParsers.Select(cmd =>
+            {
+              var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
+              if (parsed && response is not null)
+                response.RequestId = cmd.Id;
 
-        foreach (var values in parsedResponses)
-          if (values.Response is not null)
-            _responsePublisher.OnNext((values.CommandToRemove, values.Response!));
-      }
-    }
+              return (Parsed: parsed, Response: response, DataToRemove: dataToRemove, CommandToRemove: cmd);
+            }).Where(proxy => proxy.Parsed && proxy.DataToRemove is not null).ToArray();
+
+            // TODO check for overlapping arrays maybe?
+            var orderedArraySegs = parsedResponses.Select(tuple => tuple.DataToRemove)
+              .OrderBy(bytes => bytes!.Value.Offset)
+              .Distinct();
+
+            foreach (var arrSegment in orderedArraySegs)
+            {
+              _buffer.RemoveBytes(arrSegment!.Value);
+              totalBytesRemoved += arrSegment.Value.Count;
+            }
+
+            foreach (var (Parsed, Response, DataToRemove, CommandToRemove) in parsedResponses)
+              if (Parsed)
+                _responsePublisher.OnNext((CommandToRemove, Response!));
+          }
+
+          RemoveStaleBufferEntries();
+        }
 
     if (totalBytesRemoved == 0)
       _bufferEvent.Reset();
   }
 
+  private void RemoveStaleBufferEntries()
+  {
+    _buffer.RemoveAll(block => DateTime.UtcNow - block.Timestamp > TimeSpan.FromSeconds(10));
+  }
+
   protected void AddDataReceived(byte[] dataReceived)
   {
-    lock ( _bufferLock )
+    lock (_bufferLock)
     {
-      _buffer.AddRange(dataReceived);
+      _buffer.Add(new SerialBlock(dataReceived, DateTime.UtcNow));
     }
 
     _bufferEvent.Set();
   }
 
   protected abstract void Open(string portName);
+
+  internal bool BufferEmpty => _buffer.Count == 0;
 }
