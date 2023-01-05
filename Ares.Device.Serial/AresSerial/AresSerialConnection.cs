@@ -222,9 +222,8 @@ public abstract class AresSerialConnection : IAresSerialConnection
       if (_buffer.Any())
       {
         var currentData = _buffer.ToArray();
-        var distinctResponseParsers = _singleResponseQueue.DistinctBy(response => response.ResponseParser.GetType()).ToArray();
-        var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => distinctResponseParsers.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
-        var considerableParsers = distinctResponseParsers.Concat(unparsedMultiParsers);
+        var unparsedMultiParsers = _multiResponseQueue.Where(multiResponseCmd => _singleResponseQueue.All(singleResponseCmd => singleResponseCmd.ResponseParser.GetType() != multiResponseCmd.ResponseParser.GetType())).ToArray();
+        var considerableParsers = _singleResponseQueue.Concat(unparsedMultiParsers);
         var parsedResponses = considerableParsers.Select(cmd => {
           var parsed = cmd.ResponseParser.TryParseResponse(currentData, out var response, out var dataToRemove);
           if (parsed && response is not null)
