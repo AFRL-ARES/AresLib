@@ -38,7 +38,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ares.DataModel.dll" Version="2023.1.3.151838" />
+    <PackageReference Include="Ares.DataModel.dll" Version="2023.1.5.210310" />
     <PackageReference Include="System.Reactive" Version="5.0.0" />
   </ItemGroup>
 
