@@ -1,27 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Ports;
-using System.Linq;
-using System.Threading.Tasks;
-using Ares.Core.Device;
+﻿using Ares.Core.Device;
 using Ares.Device;
 using Ares.Messaging;
 using Ares.Messaging.Device;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
 
 public class DevicesService : AresDevices.AresDevicesBase
 {
-  private readonly IDbContextFactory<CoreDatabaseContext> _contextFactory;
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
   private readonly IDeviceCommandInterpreterRepo _deviceCommandInterpreterRepo;
 
   public DevicesService(IDeviceCommandInterpreterRepo deviceCommandInterpreterRepo, IDbContextFactory<CoreDatabaseContext> contextFactory)
   {
     _deviceCommandInterpreterRepo = deviceCommandInterpreterRepo;
-    _contextFactory = contextFactory;
+    _dbContextFactory = contextFactory;
   }
 
   public override Task<ListServerSerialPortsResponse> GetServerSerialPorts(Empty request, ServerCallContext context)
@@ -119,7 +119,7 @@ public class DevicesService : AresDevices.AresDevicesBase
 
   public override async Task<DeviceConfigResponse> GetAllDeviceConfigs(DeviceConfigRequest request, ServerCallContext context)
   {
-    await using var dbContext = _contextFactory.CreateDbContext();
+    await using var dbContext = _dbContextFactory.CreateDbContext();
     var configQuery = dbContext.DeviceConfigs.AsQueryable();
     if (!string.IsNullOrEmpty(request.DeviceType))
       configQuery = configQuery.Where(config => config.DeviceType == request.DeviceType);
@@ -128,5 +128,50 @@ public class DevicesService : AresDevices.AresDevicesBase
     var response = new DeviceConfigResponse();
     response.Configs.AddRange(configs);
     return response;
+  }
+
+  public override async Task<StateResponse> GetStateLogs(StateRequest request, ServerCallContext context)
+  {
+    var response = new StateResponse();
+    var states = await GetFilteredStates(request);
+    response.States.AddRange(states);
+    return response;
+  }
+
+  private async Task<IEnumerable<DeviceStateLog>> GetFilteredStates(StateRequest request)
+  {
+    var dbContext = _dbContextFactory.CreateDbContext();
+    var states = dbContext.DeviceStates.AsQueryable();
+    if (request.Start is not null)
+    {
+      states = states.Where(state => state.Timestamp >= request.Start);
+    }
+    if (request.End is not null)
+    {
+      states = states.Where(state => state.Timestamp <= request.End);
+    }
+    if (request.DeviceIds.Any())
+    {
+      states = states.Where(state => request.DeviceIds.Contains(state.DeviceId));
+    }
+    if (!string.IsNullOrEmpty(request.CompletedCampaignId))
+    {
+      var completedCampaign = await dbContext.CampaignResults.FirstOrDefaultAsync(result => result.CampaignId == request.CompletedCampaignId);
+      if (completedCampaign is not null)
+        states = states.Where(state => state.Timestamp >= completedCampaign.ExecutionInfo.TimeStarted && state.Timestamp <= completedCampaign.ExecutionInfo.TimeFinished);
+    }
+    if (!string.IsNullOrEmpty(request.CompletedExperimentId))
+    {
+      var completedExperiment = await dbContext.CampaignResults
+        .SelectMany(result => result.ExperimentResults)
+        .FirstOrDefaultAsync(result => result.CompletedExperiment.UniqueId == request.CompletedExperimentId);
+
+      if (completedExperiment is not null)
+        states = states.Where(state => state.Timestamp >= completedExperiment.ExecutionInfo.TimeStarted && state.Timestamp <= completedExperiment.ExecutionInfo.TimeFinished);
+    }
+
+    var requestedStates = await states.OrderBy(state => state.Timestamp).ToArrayAsync();
+
+    return requestedStates;
   }
 }

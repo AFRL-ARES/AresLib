@@ -1,14 +1,7 @@
-﻿using Ares.Core.Validation.Validators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core.Device;
-using Ares.Core.Execution.Extensions;
+﻿using Ares.Core.Device;
+using Ares.Device;
 using Ares.Messaging;
 using Ares.Messaging.Device;
-using Google.Protobuf;
 
 namespace Ares.Core.Validation.Campaign
 {
@@ -28,6 +21,7 @@ namespace Ares.Core.Validation.Campaign
 
       var availableInterpreters = requiredDeviceNames.Select(deviceName =>
           _deviceCommandInterpreterRepo.FirstOrDefault(interpreter => interpreter.Device.Name.Equals(deviceName)))
+        .OfType<IDeviceCommandInterpreter<IAresDevice>>()
         .ToArray();
 
       var missingDeviceNames = requiredDeviceNames

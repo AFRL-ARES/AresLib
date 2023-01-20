@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Ares.Core.Validation.Campaign;
+﻿using Ares.Core.Validation.Campaign;
 
 namespace Ares.Core.Execution.StartConditions
 {
@@ -19,8 +14,12 @@ namespace Ares.Core.Execution.StartConditions
     }
     public StartConditionResult? CanStart()
     {
+      var template = _activeCampaignTemplateStore.CampaignTemplate;
+      if (template is null)
+        return new StartConditionResult(false, "Campaign template not set");
+
       var validationResult =
-        _requiredDeviceCommandInterpretersValidator.Validate(_activeCampaignTemplateStore.CampaignTemplate);
+        _requiredDeviceCommandInterpretersValidator.Validate(template);
       var startConditionResult = new StartConditionResult(validationResult.Success, validationResult.Messages);
       return startConditionResult;
     }

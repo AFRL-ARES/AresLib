@@ -22,5 +22,5 @@ public class SerialPortConnectionInfo
   public Parity Parity { get; set; }
   public int DataBits { get; set; }
   public StopBits StopBits { get; set; }
-  public string EndOfInput { get; set; }
+  public string EndOfInput { get; set; } = string.Empty;
 }

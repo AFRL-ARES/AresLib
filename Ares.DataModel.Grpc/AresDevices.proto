@@ -3,11 +3,13 @@ syntax = "proto3";
 package ares.messaging.device;
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "Templates/CommandMetadata.proto";
 import "Templates/CommandTemplate.proto";
 import "DeviceCommandResult.proto";
 import "Device/DeviceStatus.proto";
 import "Device/DeviceConfig.proto";
+import "Device/DeviceStateLog.proto";
 
 service AresDevices {
 	rpc ListAresDevices(google.protobuf.Empty) returns (ListAresDevicesResponse);
@@ -20,6 +22,8 @@ service AresDevices {
 	// rpc UpdateDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
 	// rpc RemoveDeviceConfig(.ares.messaging.device.RemoveDeviceConfigRequest) returns (google.protobuf.Empty);
 	rpc Activate(DeviceActivateRequest) returns (google.protobuf.Empty);
+
+	rpc GetStateLogs(StateRequest) returns (StateResponse);
 }
 
 message AresDeviceInfo {
@@ -55,14 +59,22 @@ message DeviceActivateRequest
 	string device_name = 1; // name of the device to be activated/reactivated
 }
 
-//message RemoveDeviceConfigRequest {
-//	string config_id = 1; // id of the config to be removed
-//}
-
 message DeviceConfigRequest {
 	string device_type = 1; // the full type name of the device for which to request the configs, if empty, then all will be returned
 }
 
 message DeviceConfigResponse {
 	repeated DeviceConfig configs = 1;
+}
+
+message StateRequest {
+  google.protobuf.Timestamp start = 1;
+  google.protobuf.Timestamp end = 2;
+  string completed_experiment_id = 3;
+  string completed_campaign_id = 4;
+  repeated string device_ids = 5; // the ids/names of the requested devices
+}
+
+message StateResponse {
+	repeated DeviceStateLog states = 1;
 }
