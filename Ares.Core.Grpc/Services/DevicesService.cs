@@ -129,49 +129,4 @@ public class DevicesService : AresDevices.AresDevicesBase
     response.Configs.AddRange(configs);
     return response;
   }
-
-  public override async Task<StateResponse> GetStateLogs(StateRequest request, ServerCallContext context)
-  {
-    var response = new StateResponse();
-    var states = await GetFilteredStates(request);
-    response.States.AddRange(states);
-    return response;
-  }
-
-  private async Task<IEnumerable<DeviceStateLog>> GetFilteredStates(StateRequest request)
-  {
-    var dbContext = _dbContextFactory.CreateDbContext();
-    var states = dbContext.DeviceStates.AsQueryable();
-    if (request.Start is not null)
-    {
-      states = states.Where(state => state.Timestamp >= request.Start);
-    }
-    if (request.End is not null)
-    {
-      states = states.Where(state => state.Timestamp <= request.End);
-    }
-    if (request.DeviceIds.Any())
-    {
-      states = states.Where(state => request.DeviceIds.Contains(state.DeviceId));
-    }
-    if (!string.IsNullOrEmpty(request.CompletedCampaignId))
-    {
-      var completedCampaign = await dbContext.CampaignResults.FirstOrDefaultAsync(result => result.CampaignId == request.CompletedCampaignId);
-      if (completedCampaign is not null)
-        states = states.Where(state => state.Timestamp >= completedCampaign.ExecutionInfo.TimeStarted && state.Timestamp <= completedCampaign.ExecutionInfo.TimeFinished);
-    }
-    if (!string.IsNullOrEmpty(request.CompletedExperimentId))
-    {
-      var completedExperiment = await dbContext.CampaignResults
-        .SelectMany(result => result.ExperimentResults)
-        .FirstOrDefaultAsync(result => result.CompletedExperiment.UniqueId == request.CompletedExperimentId);
-
-      if (completedExperiment is not null)
-        states = states.Where(state => state.Timestamp >= completedExperiment.ExecutionInfo.TimeStarted && state.Timestamp <= completedExperiment.ExecutionInfo.TimeFinished);
-    }
-
-    var requestedStates = await states.OrderBy(state => state.Timestamp).ToArrayAsync();
-
-    return requestedStates;
-  }
 }

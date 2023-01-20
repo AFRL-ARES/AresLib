@@ -19,7 +19,6 @@ public class CoreDatabaseContext : DbContext
   public DbSet<PlannerTransaction> PlannerTransactions => Set<PlannerTransaction>();
   public DbSet<CampaignResult> CampaignResults => Set<CampaignResult>();
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
-  public DbSet<DeviceStateLog> DeviceStates => Set<DeviceStateLog>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
