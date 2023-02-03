@@ -4,12 +4,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Ares.Messaging;
 
-namespace Ares.Device;
-
-public interface IDeviceCommandInterpreter<out TQualifiedDevice>
-  where TQualifiedDevice : IAresDevice
+namespace Ares.Device
 {
-  TQualifiedDevice Device { get; }
-  Func<CancellationToken, Task<DeviceCommandResult>> TemplateToDeviceCommand(CommandTemplate commandTemplate);
-  IEnumerable<CommandMetadata> CommandsToIndexedMetadatas();
+  public interface IDeviceCommandInterpreter<out TQualifiedDevice>
+    where TQualifiedDevice : IAresDevice
+  {
+    TQualifiedDevice Device { get; }
+    Func<CancellationToken, Task<DeviceCommandResult>> TemplateToDeviceCommand(CommandTemplate commandTemplate);
+    IEnumerable<CommandMetadata> CommandsToIndexedMetadatas();
+  }
 }

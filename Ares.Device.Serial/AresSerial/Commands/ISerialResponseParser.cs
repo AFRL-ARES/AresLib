@@ -1,8 +1,9 @@
 ﻿using System;
 
-namespace Ares.Device.Serial.Commands;
-
-internal interface ISerialResponseParser
+namespace Ares.Device.Serial.Commands
 {
-  bool TryParseResponse(SerialBlock[] buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove);
+  internal interface ISerialResponseParser
+  {
+    bool TryParseResponse(SerialBlock[] buffer, out SerialResponse? response, out ArraySegment<byte>? dataToRemove);
+  }
 }

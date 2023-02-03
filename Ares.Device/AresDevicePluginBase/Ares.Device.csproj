@@ -14,11 +14,11 @@
 	<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
 	<LangVersion>default</LangVersion>
 	<Nullable>enable</Nullable>
-	<TargetFramework>net6.0</TargetFramework>
+	<TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
-    <Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+    <Exec Command="dotnet pack -p:PackageVersion=0.5.1 --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
   </Target>
   <ItemGroup>
     <!-- Make assembly visible to test assembly -->

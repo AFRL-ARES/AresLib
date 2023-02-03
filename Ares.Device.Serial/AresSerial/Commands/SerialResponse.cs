@@ -1,9 +1,10 @@
 ﻿using System;
 using Google.Protobuf;
 
-namespace Ares.Device.Serial.Commands;
-
-public abstract class SerialResponse
+namespace Ares.Device.Serial.Commands
 {
-  public Guid RequestId { get; internal set; }
+  public abstract class SerialResponse
+  {
+    public Guid RequestId { get; internal set; }
+  }
 }

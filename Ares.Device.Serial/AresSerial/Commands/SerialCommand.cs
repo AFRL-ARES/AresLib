@@ -1,12 +1,13 @@
 ﻿using System;
 
-namespace Ares.Device.Serial.Commands;
-
-public abstract class SerialCommand
+namespace Ares.Device.Serial.Commands
 {
-  public Guid Id { get; internal set; } = Guid.NewGuid();
+  public abstract class SerialCommand
+  {
+    public Guid Id { get; internal set; } = Guid.NewGuid();
 
-  internal byte[] SerializedData => Serialize();
+    internal byte[] SerializedData => Serialize();
 
-  protected abstract byte[] Serialize();
+    protected abstract byte[] Serialize();
+  }
 }

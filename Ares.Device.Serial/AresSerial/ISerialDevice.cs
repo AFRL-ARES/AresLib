@@ -1,6 +1,7 @@
-﻿namespace Ares.Device.Serial;
-
-public interface ISerialDevice<out TConnection> : IAresDevice where TConnection : IAresSerialConnection
+﻿namespace Ares.Device.Serial
 {
-  TConnection Connection { get; }
+  public interface ISerialDevice<out TConnection> : IAresDevice where TConnection : IAresSerialConnection
+  {
+    TConnection Connection { get; }
+  }
 }

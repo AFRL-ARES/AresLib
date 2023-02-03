@@ -1,32 +1,33 @@
 ﻿using System;
 using Ares.Device.Serial.Commands;
 
-namespace Ares.Device.Serial.Simulation;
-
-public abstract class AresSimConnection : AresSerialConnection
+namespace Ares.Device.Serial.Simulation
 {
-  protected AresSimConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
+  public abstract class AresSimConnection : AresSerialConnection
   {
-  }
+    protected AresSimConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
+    {
+    }
 
-  protected override void Open(string portName)
-  {
-    // if (!portName.StartsWith("SIM"))
-    //   throw new InvalidOperationException(
-    //     $"Tried opening simulated port of type {GetType().Name} with port name {portName}. Simulated ports may only open on ports starting with SIM");
+    protected override void Open(string portName)
+    {
+      // if (!portName.StartsWith("SIM"))
+      //   throw new InvalidOperationException(
+      //     $"Tried opening simulated port of type {GetType().Name} with port name {portName}. Simulated ports may only open on ports starting with SIM");
 
-    IsOpen = true;
-  }
+      IsOpen = true;
+    }
 
-  public abstract void SendInternally(byte[] bytes);
+    public abstract void SendInternally(byte[] bytes);
 
-  protected override void SendOutboundMessage(SerialCommand command)
-  {
-    SendInternally(command.SerializedData);
-  }
+    protected override void SendOutboundMessage(SerialCommand command)
+    {
+      SendInternally(command.SerializedData);
+    }
 
-  protected internal override void CloseCore()
-  {
-    IsOpen = false;
+    protected internal override void CloseCore()
+    {
+      IsOpen = false;
+    }
   }
 }
