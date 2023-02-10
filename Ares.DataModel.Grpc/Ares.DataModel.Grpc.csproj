@@ -19,25 +19,25 @@
     <DataModelProtoPath>$(PkgAres_DataModel_dll)\Proto\</DataModelProtoPath>
   </PropertyGroup>
   <ItemGroup>
-    <Protobuf Include="AresAutomation.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+    <Protobuf Include="AresAutomation.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
-      <Protobuf Include="AresDevices.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+      <Protobuf Include="AresDevices.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
-      <Protobuf Include="AresPlanning.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+      <Protobuf Include="AresPlanning.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
-      <Protobuf Include="AresServerInfo.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+      <Protobuf Include="AresServerInfo.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
-    <Protobuf Include="AresValidation.proto" GrpcServices="All" AdditionalImportDirs="$(DataModelProtoPath)">
+    <Protobuf Include="AresValidation.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
   </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ares.DataModel.dll" Version="2023.1.20.175605" GeneratePathProperty="True" />
+      <PackageReference Include="Ares.DataModel.dll" Version="2023.2.3.145353" GeneratePathProperty="True" />
       <PackageReference Include="Grpc.Tools" Version="2.50.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
