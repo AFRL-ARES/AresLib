@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Ares.Device.Serial.Commands;
+using System;
 using System.IO.Ports;
-using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
 public class AresHardwareConnection : AresSerialConnection
 {
-  protected AresHardwareConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
+  protected AresHardwareConnection(SerialPortConnectionInfo connectionInfo, string portName, SerialConnectionOptions? connectionOptions = null) : base(connectionInfo, portName, connectionOptions)
   {
   }
 

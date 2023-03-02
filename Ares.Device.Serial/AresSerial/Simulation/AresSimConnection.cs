@@ -1,11 +1,10 @@
-﻿using System;
-using Ares.Device.Serial.Commands;
+﻿using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial.Simulation;
 
 public abstract class AresSimConnection : AresSerialConnection
 {
-  protected AresSimConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null) : base(connectionInfo, portName, sendBuffer)
+  protected AresSimConnection(SerialPortConnectionInfo connectionInfo, string portName, SerialConnectionOptions? connectionOptions = null) : base(connectionInfo, portName, connectionOptions)
   {
   }
 

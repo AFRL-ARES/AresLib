@@ -19,6 +19,8 @@ public abstract class AresSerialConnection : IAresSerialConnection
   private readonly IList<ISerialCommandWithResponse> _multiResponseQueue = new List<ISerialCommandWithResponse>();
   private readonly ISubject<(ISerialCommandWithResponse, SerialResponse)> _responsePublisher = new Subject<(ISerialCommandWithResponse, SerialResponse)>();
   private readonly TimeSpan _sendBuffer;
+  private readonly TimeSpan _defaultTimeout;
+  private readonly TimeSpan _staleBufferEntryDuration;
   private readonly SemaphoreSlim _sendLock = new(1);
   private readonly IList<ISerialCommandWithResponse> _singleResponseQueue = new List<ISerialCommandWithResponse>();
 
@@ -31,9 +33,11 @@ public abstract class AresSerialConnection : IAresSerialConnection
   /// Can be set if there needs to be a buffer between each command send. Can be helpful
   /// if there are multiple devices on one connection and they get overwhelmed with commands from each other.
   /// </param>
-  protected internal AresSerialConnection(SerialPortConnectionInfo connectionInfo, string portName, TimeSpan? sendBuffer = null)
+  protected internal AresSerialConnection(SerialPortConnectionInfo connectionInfo, string portName, SerialConnectionOptions? options = null)
   {
-    _sendBuffer = sendBuffer ?? TimeSpan.Zero;
+    _sendBuffer = options?.SendBuffer ?? TimeSpan.Zero;
+    _defaultTimeout = options?.SendTimeout ?? TimeSpan.FromDays(10);
+    _staleBufferEntryDuration = options?.StaleBufferEntryDuration ?? TimeSpan.FromSeconds(10);
     ConnectionInfo = connectionInfo;
     Name = portName;
     StartBufferProcessor();
@@ -97,10 +101,10 @@ public abstract class AresSerialConnection : IAresSerialConnection
     => Send(command, timeout, null);
 
   public Task<T> Send<T>(SerialCommandWithResponse<T> command, Func<T, bool> filter) where T : SerialResponse
-    => Send(command, TimeSpan.FromDays(10), filter);
+    => Send(command, _defaultTimeout, filter);
 
   public Task<T> Send<T>(SerialCommandWithResponse<T> command) where T : SerialResponse
-    => Send(command, TimeSpan.FromDays(10));
+    => Send(command, _defaultTimeout);
 
   public async Task Send<T>(SerialCommandWithStreamedResponse<T> command) where T : SerialResponse
   {
@@ -259,7 +263,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
 
   private void RemoveStaleBufferEntries()
   {
-    _buffer.RemoveAll(block => DateTime.UtcNow - block.Timestamp > TimeSpan.FromSeconds(10));
+    _buffer.RemoveAll(block => DateTime.UtcNow - block.Timestamp > _staleBufferEntryDuration);
   }
 
   protected void AddDataReceived(byte[] dataReceived)
