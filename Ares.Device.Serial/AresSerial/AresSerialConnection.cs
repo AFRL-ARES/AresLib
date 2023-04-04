@@ -1,12 +1,13 @@
-﻿using Ares.Device.Serial.Commands;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
@@ -71,7 +72,8 @@ public abstract class AresSerialConnection : IAresSerialConnection
         .Take(1)
         .Select(transaction => transaction.Response)
         .Timeout(timeout)
-        .Catch(Observable.Return<T?>(null));
+        .Catch(Observable.Return<T?>(null))
+        .ToTask();
 
     await _sendLock.WaitAsync();
     T? response;
@@ -134,9 +136,9 @@ public abstract class AresSerialConnection : IAresSerialConnection
   public IObservable<SerialTransaction<T>> GetTransactionStream<T>() where T : SerialResponse
   {
     var observable = _responsePublisher
-      .ObserveOn(TaskPoolScheduler.Default)
       .Where(response => response.Item2.GetType() == typeof(T))
-      .Select(tuple => new SerialTransaction<T>((SerialCommandWithResponse<T>)tuple.Item1, (T)tuple.Item2));
+      .Select(tuple => new SerialTransaction<T>((SerialCommandWithResponse<T>)tuple.Item1, (T)tuple.Item2))
+      .ObserveOn(TaskPoolScheduler.Default);
 
     return observable;
   }
