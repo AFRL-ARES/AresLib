@@ -21,7 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Core.Tests", "Ares.Cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device.Tests", "Ares.Device.Tests\Ares.Device.Tests.csproj", "{E83E2BD5-1C66-4FA2-A361-080CAF340204}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ares.Device.Serial.Tests", "Ares.Device.Serial.Tests\Ares.Device.Serial.Tests.csproj", "{3AF37630-B19A-42DC-8F59-5788D956AC9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device.Serial.Tests", "Ares.Device.Serial.Tests\Ares.Device.Serial.Tests.csproj", "{3AF37630-B19A-42DC-8F59-5788D956AC9D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreDevice", "CoreDevice\CoreDevice.csproj", "{EE9A0280-0040-416D-A7D5-34A30D40641E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,6 +71,10 @@ Global
 		{3AF37630-B19A-42DC-8F59-5788D956AC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AF37630-B19A-42DC-8F59-5788D956AC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AF37630-B19A-42DC-8F59-5788D956AC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE9A0280-0040-416D-A7D5-34A30D40641E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE9A0280-0040-416D-A7D5-34A30D40641E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE9A0280-0040-416D-A7D5-34A30D40641E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE9A0280-0040-416D-A7D5-34A30D40641E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
