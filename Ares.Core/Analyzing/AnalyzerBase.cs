@@ -25,8 +25,21 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   public virtual bool InputSupported(string fullTypeName)
     => typeof(T).FullName == fullTypeName;
 
-  public Task<Analysis> Analyze(Any input, CancellationToken cancellationToken)
+  public Task<Analysis> Analyze(Any? input, CancellationToken cancellationToken)
   {
+    if (input is null)
+      return Task.FromResult(new Analysis
+      {
+        UniqueId = Guid.NewGuid().ToString(),
+        Analyzer = new AnalyzerInfo
+        {
+          Name = Name,
+          UniqueId = Guid.NewGuid().ToString(),
+          Version = Version.ToString()
+        },
+        Result = 0
+      });
+
     var unpackedMessage = input.Unpack<T>();
     return AnalyzeMessage(unpackedMessage, cancellationToken);
   }

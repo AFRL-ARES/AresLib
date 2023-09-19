@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.Device;
 using Ares.Core.Execution;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors;
@@ -32,7 +33,11 @@ internal class CampaignExecutorTests
     _planningHelper = new Mock<IPlanningHelper>().Object;
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
-    var stepComposer = new StepComposer(new[] { cmdInterpreter });
+    var repo = new DeviceCommandInterpreterRepo
+    {
+      cmdInterpreter
+    };
+    var stepComposer = new StepComposer(repo);
     var experimentComposer = new ExperimentComposer(stepComposer);
     _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, _planningHelper, _executionReporter);
   }

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using Ares.Core.Device;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Device;
@@ -9,7 +10,7 @@ namespace Ares.Core.Tests.Execution.Composers;
 
 internal class StepComposerTests
 {
-  private IDeviceCommandInterpreter<IAresDevice>[] _commandInterpreters;
+  private IDeviceCommandInterpreterRepo _commandInterpreters;
   private StepTemplate _stepTemplate;
 
   [SetUp]
@@ -44,7 +45,7 @@ internal class StepComposerTests
     };
 
     var stepTemplate = new StepTemplate
-      { Index = 0, UniqueId = Guid.NewGuid().ToString() };
+    { Index = 0, UniqueId = Guid.NewGuid().ToString() };
 
     stepTemplate.CommandTemplates.Add(commandTemplate3);
     stepTemplate.CommandTemplates.Add(commandTemplate1);
@@ -59,7 +60,10 @@ internal class StepComposerTests
   {
     var interpreterMock = new Mock<IDeviceCommandInterpreter<IAresDevice>>();
     interpreterMock.SetupGet(interpreter => interpreter.Device.Name).Returns("TestName");
-    _commandInterpreters = new[] { interpreterMock.Object };
+    _commandInterpreters = new DeviceCommandInterpreterRepo
+    {
+      interpreterMock.Object
+    };
   }
 
   [Test]

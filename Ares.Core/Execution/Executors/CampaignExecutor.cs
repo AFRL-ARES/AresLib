@@ -69,7 +69,8 @@ public class CampaignExecutor : ICampaignExecutor
         break;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
-      experimentExecutor.StatusObservable.Subscribe(experimentStatus => {
+      experimentExecutor.StatusObservable.Subscribe(experimentStatus =>
+      {
         _executionStatusSubject.OnNext(Status);
         _executionReporter.Report(experimentStatus);
         _executionReporter.Report(Status);

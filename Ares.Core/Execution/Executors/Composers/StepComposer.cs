@@ -1,15 +1,15 @@
-﻿using Ares.Device;
+﻿using Ares.Core.Device;
 using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors.Composers;
 
 public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
 {
-  private readonly IEnumerable<IDeviceCommandInterpreter<IAresDevice>> _availableDeviceCommandInterpreters;
+  private readonly IDeviceCommandInterpreterRepo _interpreterRepo;
 
-  public StepComposer(IEnumerable<IDeviceCommandInterpreter<IAresDevice>> aresDeviceCommandInterpreters)
+  public StepComposer(IDeviceCommandInterpreterRepo interpreterRepo)
   {
-    _availableDeviceCommandInterpreters = aresDeviceCommandInterpreters;
+    _interpreterRepo = interpreterRepo;
   }
 
   public StepExecutor Compose(StepTemplate template)
@@ -20,9 +20,10 @@ public class StepComposer : ICommandComposer<StepTemplate, StepExecutor>
         .OrderBy(t => t.Index)
         .Select
         (
-          commandTemplate => {
+          commandTemplate =>
+          {
             var commandInterpreter =
-              _availableDeviceCommandInterpreters
+              _interpreterRepo
                 .First(interpreter =>
                   interpreter
                     .Device

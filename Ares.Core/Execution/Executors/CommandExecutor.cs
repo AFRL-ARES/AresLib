@@ -53,11 +53,25 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
 
     var timeStarted = DateTime.UtcNow;
     var execInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
-    var result = await _command(token.CancellationToken);
+    var result = await InternalExecute(token.CancellationToken);
     execInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
     Status.State = ExecutionState.Succeeded;
     _stateSubject.OnNext(Status);
     _stateSubject.OnCompleted();
     return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
+  }
+
+  private async Task<DeviceCommandResult> InternalExecute(CancellationToken token)
+  {
+    try
+    {
+      var result = await _command(token);
+      return result;
+    }
+    catch (Exception e)
+    {
+      var result = new DeviceCommandResult() { Success = false, Error = e.Message };
+      return result;
+    }
   }
 }
