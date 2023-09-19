@@ -13,13 +13,13 @@
 		<Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
 	</Target>
   <ItemGroup>
-    <PackageReference Include="Ares.Core" Version="2023.9.19.113113" />
-    <PackageReference Include="Ares.DataModel.Grpc" Version="2023.9.19.113036" />
-    <PackageReference Include="DynamicData" Version="7.12.1" />
-    <PackageReference Include="Grpc.AspNetCore" Version="2.49.0" />
-    <PackageReference Include="Grpc.HealthCheck" Version="2.49.0" />
-    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="Ares.Core" Version="2023.9.19.155121" />
+    <PackageReference Include="Ares.DataModel.Grpc" Version="2023.9.19.142512" />
+    <PackageReference Include="DynamicData" Version="7.14.2" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.57.0" />
+    <PackageReference Include="System.IO.Ports" Version="7.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

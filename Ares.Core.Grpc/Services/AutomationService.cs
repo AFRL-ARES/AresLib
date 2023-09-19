@@ -133,7 +133,15 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await dbContext.SaveChangesAsync();
     dbContext.ChangeTracker.Clear();
     request.ConsolidatePlannedParameterMetadata();
-    dbContext.CampaignTemplates.Add(request);
+    try
+    {
+      dbContext.CampaignTemplates.Add(request);
+    }
+    catch (Exception ex)
+    {
+      dbContext.CampaignTemplates.Add(existingCampaign);
+      Console.WriteLine(ex.ToString());
+    }
     // existingCampaign.UpdateCampaignTemplate(request, dbContext);
     // await dbContext.SaveChangesAsync();
     // dbContext.ChangeTracker.Clear();

@@ -19,14 +19,12 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
         DeviceName = Device.Name,
         Name = AresCoreDeviceCommand.Sleep.ToString(),
         Description = "Sleep for a given amount of time.",
-        UniqueId = Guid.NewGuid().ToString(),
         ParameterMetadatas =
           {
             new ParameterMetadata
             {
               Name = AresCoreDeviceCommandParameter.Duration.ToString(),
               Index = 0,
-              UniqueId = Guid.NewGuid().ToString(),
               Unit = DurationUnit.Millisecond.ToString()
             }
           }

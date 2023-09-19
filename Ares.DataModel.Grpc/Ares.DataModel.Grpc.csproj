@@ -37,8 +37,8 @@
   </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ares.DataModel.dll" Version="2023.9.19.112816" GeneratePathProperty="True" />
-      <PackageReference Include="Grpc.Tools" Version="2.50.0">
+      <PackageReference Include="Ares.DataModel.dll" Version="2023.9.19.142419" GeneratePathProperty="True" />
+      <PackageReference Include="Grpc.Tools" Version="2.58.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>

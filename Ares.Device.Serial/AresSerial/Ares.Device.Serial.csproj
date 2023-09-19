@@ -34,8 +34,8 @@
   </PropertyGroup>
   
 	<ItemGroup>
-    <PackageReference Include="Ares.Device.dll" Version="2023.9.19.113007" />
-    <PackageReference Include="System.IO.Ports" Version="6.0.0" />
-    <PackageReference Include="System.Reactive" Version="5.0.0" />
+    <PackageReference Include="Ares.Device.dll" Version="2023.9.19.142515" />
+    <PackageReference Include="System.IO.Ports" Version="7.0.0" />
+    <PackageReference Include="System.Reactive" Version="6.0.0" />
   </ItemGroup>
 </Project>

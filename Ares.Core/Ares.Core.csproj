@@ -22,13 +22,13 @@
 
 
   <ItemGroup>
-	  <PackageReference Include="Ares.DataModel.dll" Version="2023.9.19.112816" />
-	  <PackageReference Include="Ares.Device.dll" Version="2023.9.19.113007" />
-	  <PackageReference Include="CoreDevice" Version="2023.9.19.113036" />
-	  <PackageReference Include="DynamicData" Version="7.12.1" />
+	  <PackageReference Include="Ares.DataModel.dll" Version="2023.9.19.142419" />
+	  <PackageReference Include="Ares.Device.dll" Version="2023.9.19.142515" />
+	  <PackageReference Include="CoreDevice" Version="2023.9.19.155107" />
+	  <PackageReference Include="DynamicData" Version="7.14.2" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.11" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
-	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.3" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
 	</ItemGroup>
 
 </Project>
