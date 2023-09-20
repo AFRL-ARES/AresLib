@@ -165,6 +165,13 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.Name == request.CampaignName);
   }
 
+  public override Task<CampaignResponse> GetCurrentlySelectedCampaign(Empty request, ServerCallContext context)
+  {
+    var template = _activeCampaignTemplateStore.CampaignTemplate;
+    var response = new CampaignResponse { HasValue = template is not null, Value = template };
+    return Task.FromResult(response);
+  }
+
   public override Task<Empty> StartExecution(Empty request, ServerCallContext context)
   {
     _executionManager.Start();

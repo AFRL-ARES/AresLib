@@ -14,7 +14,7 @@
 	</Target>
   <ItemGroup>
     <PackageReference Include="Ares.Core" Version="2023.9.19.181030" />
-    <PackageReference Include="Ares.DataModel.Grpc" Version="2023.9.19.142512" />
+    <PackageReference Include="Ares.DataModel.Grpc" Version="2023.9.19.194734" />
     <PackageReference Include="DynamicData" Version="7.14.2" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.57.0" />
