@@ -1,7 +1,6 @@
 ﻿using Ares.Core.Analyzing;
-using Ares.Core.Execution.StopConditions;
 
-namespace Ares.Core.Execution;
+namespace Ares.Core.Execution.StopConditions;
 internal class DesiredAnalysisResultFactory : IDesiredAnalysisResultFactory
 {
   readonly AnalysisRepo _analyses;

@@ -24,14 +24,17 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReportStore _executionReportStore;
   private readonly IEnumerable<IStartCondition> _startConditions;
+  readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
     IExecutionManager executionManager,
     IExecutionReportStore executionReportStore,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     IEnumerable<IStartCondition> startConditions,
-    IAnalyzerManager analyzerManager)
+    IAnalyzerManager analyzerManager,
+    IDesiredAnalysisResultFactory desiredAnalysisResultFactory)
   {
+    _desiredAnalysisResultFactory = desiredAnalysisResultFactory;
     _coreContextFactory = coreContextFactory;
     _executionManager = executionManager;
     _executionReportStore = executionReportStore;
@@ -250,22 +253,6 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(new Empty());
   }
 
-  public override Task<Empty> SetNumExperimentsStopCondition(NumExperimentsCondition request, ServerCallContext context)
-  {
-    var stopConditions = _executionManager.CampaignStopConditions;
-    if (stopConditions is null)
-      return Task.FromResult(new Empty());
-
-    var existingStopCondition = stopConditions.FirstOrDefault(condition => condition.GetType().Name.Equals(nameof(NumExperimentsCondition)));
-    if (existingStopCondition is not null)
-      stopConditions.Remove(existingStopCondition);
-
-    var newCondition = new NumExperimentsRun(_executionReportStore, request.NumExperiments);
-    stopConditions.Add(newCondition);
-
-    return Task.FromResult(new Empty());
-  }
-
   public override async Task<AvailableCampaignResultsResponse> GetAvailableCampaignResults(Empty request, ServerCallContext context)
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
@@ -304,5 +291,59 @@ public class AutomationService : AresAutomation.AresAutomationBase
     response.StartStopConditions.AddRange(conditions);
 
     return Task.FromResult(response);
+  }
+
+  public override Task<Empty> SetNumExperimentsStopCondition(NumExperimentsCondition request, ServerCallContext context)
+  {
+    var stopConditions = _executionManager.CampaignStopConditions;
+    if (stopConditions is null)
+      return Task.FromResult(new Empty());
+
+    //var existingStopCondition = stopConditions.FirstOrDefault(condition => condition.GetType().Name.Equals(nameof(NumExperimentsCondition)));
+    //if (existingStopCondition is not null)
+    //  stopConditions.Remove(existingStopCondition);
+
+    stopConditions.Clear();
+
+    var newCondition = new NumExperimentsRun(_executionReportStore, request.NumExperiments);
+    stopConditions.Add(newCondition);
+
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<Empty> SetAnalysisResultStopCondition(AnalysisResultCondition request, ServerCallContext context)
+  {
+    var stopConditions = _executionManager.CampaignStopConditions;
+    if (stopConditions is null)
+      return Task.FromResult(new Empty());
+
+    stopConditions.Clear();
+
+    var stopCondition = _desiredAnalysisResultFactory.Create(request.DesiredResult, request.Leeway);
+    stopConditions.Add(stopCondition);
+
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<ExperimentStopConditionResponse> GetActiveStopCondition(Empty request, ServerCallContext context)
+  {
+    var stopConditions = _executionManager.CampaignStopConditions;
+    if (stopConditions is null || !stopConditions.Any())
+    {
+      return Task.FromResult(
+        new ExperimentStopConditionResponse
+        {
+          ActiveCondition = "None",
+          Description = "No stop conditions assigned, experiment will run until manually stopped."
+        });
+    }
+
+    var condition = stopConditions.First();
+    return Task.FromResult(
+      new ExperimentStopConditionResponse
+      {
+        ActiveCondition = condition.GetType().Name,
+        Description = condition.Description
+      });
   }
 }

@@ -16,6 +16,8 @@ public class DesiredAnalysisResult : IStopCondition
 
   public string Message { get; private set; } = "";
 
+  public string Description => $"Will stop when analysis reaches {_desiredResult} ± {_leeway}";
+
   public bool ShouldStop()
   {
     var latestAnalysis = _analyses.LastOrDefault();

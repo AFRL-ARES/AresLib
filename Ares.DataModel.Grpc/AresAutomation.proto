@@ -43,6 +43,8 @@ service AresAutomation {
 	rpc GetFailedStartConditions(google.protobuf.Empty) returns (StartStopConditionsResponse);
 	rpc GetPreliminaryFailedStartConditions(CampaignTemplate) returns (StartStopConditionsResponse);
 	rpc SetNumExperimentsStopCondition(NumExperimentsCondition) returns (google.protobuf.Empty);
+	rpc SetAnalysisResultStopCondition(AnalysisResultCondition) returns (google.protobuf.Empty);
+	rpc GetActiveStopCondition(google.protobuf.Empty) returns (ExperimentStopConditionResponse);
 	rpc RemoveStopCondition(StartStopCondition) returns (google.protobuf.Empty);
 	// Gets a stream of experiment execution statuses that can be observed in real time as experiment is running
 	// Works best after grabbing all the execution statuses which then lets you know how many experiments have been run
@@ -102,6 +104,16 @@ message StartStopCondition {
 
 message NumExperimentsCondition {
 	uint32 num_experiments = 1;
+}
+
+message ExperimentStopConditionResponse {
+	string active_condition = 1;
+	string description = 2;
+}
+
+message AnalysisResultCondition {
+	double desired_result = 1;
+	double leeway = 2;
 }
 
 message AvailableCampaignResultsResponse {

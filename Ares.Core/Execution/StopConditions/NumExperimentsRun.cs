@@ -13,6 +13,8 @@ public class NumExperimentsRun : IStopCondition
 
   public string Message => $"Stopped because {_executionReportStore.CampaignExecutionStatus?.ExperimentExecutionStatuses.Count}/{_numExperiments} experiments have been run";
 
+  public string Description => $"Campaign will stop after {_numExperiments} runs.";
+
   public bool ShouldStop()
   {
     var currentExperiments = _executionReportStore.CampaignExecutionStatus?.ExperimentExecutionStatuses.Count;
