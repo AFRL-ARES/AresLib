@@ -59,6 +59,7 @@ public class CampaignExecutor : ICampaignExecutor
       State = ExecutionState.Waiting
     };
 
+    _analyzerManager.ClearAnalyses();
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
@@ -89,6 +90,7 @@ public class CampaignExecutor : ICampaignExecutor
 
         var analysis = await analyzer.Analyze(experimentResult.CompletedExperiment.Result, token.CancellationToken);
         analyses.Add(analysis);
+        _analyzerManager.StoreAnalysis(analysis);
       }
     }
 

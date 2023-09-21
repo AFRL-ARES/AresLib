@@ -6,11 +6,23 @@ namespace Ares.Core.Analyzing;
 public class AnalyzerManager : IAnalyzerManager
 {
   private readonly IList<IAnalyzer> _analyzerStore = new List<IAnalyzer>();
+  readonly AnalysisRepo _analyses;
 
-  public AnalyzerManager()
+  public AnalyzerManager(AnalysisRepo analyses)
   {
+    _analyses = analyses;
     var manualAnalyzer = new NoneAnalyzer();
     RegisterAnalyzer(manualAnalyzer);
+  }
+
+  public void StoreAnalysis(Analysis analysis)
+  {
+    _analyses.Add(analysis);
+  }
+
+  public void ClearAnalyses()
+  {
+    _analyses.Clear();
   }
 
   public T GetAnalyzer<T>(Version version) where T : IAnalyzer

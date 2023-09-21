@@ -26,7 +26,7 @@ internal class CampaignExecutorTests
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
-    _analyzerManager = new AnalyzerManager();
+    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
     _analyzerManager.RegisterAnalyzer(new TestReplyAnalyzer());
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);

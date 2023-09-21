@@ -6,12 +6,12 @@ namespace Ares.Core.Tests;
 
 internal class AnalyzerManagerTests
 {
-  private IAnalyzerManager _analyzerManager = new AnalyzerManager();
+  private IAnalyzerManager _analyzerManager = new AnalyzerManager(new AnalysisRepo());
 
   [SetUp]
   public void SetUp()
   {
-    _analyzerManager = new AnalyzerManager();
+    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
   }
 
   [Test]

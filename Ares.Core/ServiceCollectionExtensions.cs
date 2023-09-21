@@ -33,6 +33,10 @@ public static class ServiceCollectionExtensions
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
     services.AddTransient<ICampaignValidator, RequiredDeviceInterpretersValidator>();
     services.AddSingleton<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
+
+    services.AddSingleton<AnalysisRepo>();
+    services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
+
     services.BindComposers();
     services.BindStartConditions();
   }

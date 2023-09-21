@@ -28,20 +28,36 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   public Task<Analysis> Analyze(Any? input, CancellationToken cancellationToken)
   {
     if (input is null)
-      return Task.FromResult(new Analysis
-      {
-        UniqueId = Guid.NewGuid().ToString(),
-        Analyzer = new AnalyzerInfo
-        {
-          Name = Name,
-          UniqueId = Guid.NewGuid().ToString(),
-          Version = Version.ToString()
-        },
-        Result = 0
-      });
+      return Task.FromResult(GetDefaultResult());
 
-    var unpackedMessage = input.Unpack<T>();
+    var unpackedMessage = UnpackMessage(input);
+    if (unpackedMessage is null)
+      return Task.FromResult(GetDefaultResult());
+
     return AnalyzeMessage(unpackedMessage, cancellationToken);
+  }
+
+  private Analysis GetDefaultResult()
+  {
+    return new Analysis
+    {
+      UniqueId = Guid.NewGuid().ToString(),
+      Analyzer = new AnalyzerInfo { Name = Name, UniqueId = Guid.NewGuid().ToString(), Version = Version.ToString() },
+      Result = 0
+    };
+  }
+
+  private T? UnpackMessage(Any input)
+  {
+    try
+    {
+      var unpackedMessage = input.Unpack<T>();
+      return unpackedMessage;
+    }
+    catch (InvalidProtocolBufferException e)
+    {
+      return default;
+    }
   }
 
   protected abstract Task<Analysis> AnalyzeMessage(T input, CancellationToken cancellationToken);

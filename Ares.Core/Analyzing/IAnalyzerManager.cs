@@ -81,4 +81,10 @@ public interface IAnalyzerManager
   /// </summary>
   /// <param name="analyzer">The analyzer to register</param>
   void RegisterAnalyzer(IAnalyzer analyzer);
+
+
+  // TODO remove
+  void StoreAnalysis(Analysis analysis);
+
+  void ClearAnalyses();
 }

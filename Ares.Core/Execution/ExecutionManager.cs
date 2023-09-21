@@ -63,7 +63,7 @@ public class ExecutionManager : IExecutionManager
 
   private async Task PostExecution(CampaignResult result)
   {
-    await StoreCompletedCampaign(result);
+    //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
   }
