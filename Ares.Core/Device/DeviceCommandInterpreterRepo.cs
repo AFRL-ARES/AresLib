@@ -1,10 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using Ares.Device;
+﻿using Ares.Device;
 using CoreDevice;
+using System.Collections.ObjectModel;
 
 namespace Ares.Core.Device;
 
-internal class DeviceCommandInterpreterRepo : Collection<IDeviceCommandInterpreter<IAresDevice>>, IDeviceCommandInterpreterRepo
+public class DeviceCommandInterpreterRepo : Collection<IDeviceCommandInterpreter<IAresDevice>>, IDeviceCommandInterpreterRepo
 {
   public DeviceCommandInterpreterRepo()
   {
