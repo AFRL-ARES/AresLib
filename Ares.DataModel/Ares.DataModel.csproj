@@ -5,8 +5,8 @@
     <LangVersion>latest</LangVersion>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Infoscitex</Authors>
-    <Company>Infoscitex</Company>
+    <Authors>DCS</Authors>
+    <Company>DCS</Company>
     <Product>Ares.DataModel</Product>
     <PackageId>Ares.DataModel.dll</PackageId>
     <Description>ARES data model in the form of protobuf messages
