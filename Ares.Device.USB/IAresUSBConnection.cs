@@ -1,7 +1,7 @@
 ﻿using Ares.Device.USB.Commands;
 
 namespace Ares.Device.Serial;
-public interface IAresUSBConnection : IDisposable
+public interface IAresUSBConnection : IAresDeviceConnection
 {
   string? Name { get; }
   bool IsOpen { get; }
