@@ -4,11 +4,11 @@ namespace Ares.Device.Serial.Simulation;
 
 public abstract class AresSerialSimConnection : AresSerialConnection
 {
-  protected AresSerialSimConnection(SerialPortConnectionInfo connectionInfo, string portName, SerialConnectionOptions? connectionOptions = null) : base(connectionInfo, portName, connectionOptions)
+  protected AresSerialSimConnection(SerialPortConnectionInfo connectionInfo, string deviceName, SerialConnectionOptions? connectionOptions = null) : base(connectionInfo, deviceName, connectionOptions)
   {
   }
 
-  protected override void Open(string portName)
+  protected override void Open(string deviceName)
   {
     IsOpen = true;
   }
