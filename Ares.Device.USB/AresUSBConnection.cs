@@ -8,6 +8,11 @@ public abstract class AresUSBConnection : IAresUSBConnection
 
   public bool IsOpen { get; set; }
 
+  public void AttemptOpen()
+  {
+    throw new NotImplementedException();
+  }
+
   public void Dispose()
   {
     throw new NotImplementedException();
