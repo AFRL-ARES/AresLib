@@ -3,7 +3,7 @@
 namespace Ares.Device.USB.Simulation;
 public abstract class AresUSBSimConnection : AresUSBConnection
 {
-  protected AresUSBSimConnection(USBConnectionInfo connectionInfo)
+  protected AresUSBSimConnection(USBConnectionInfo connectionInfo, string name) : base(connectionInfo, name)
   {
   }
 
@@ -12,6 +12,11 @@ public abstract class AresUSBSimConnection : AresUSBConnection
   protected override void SendOutboundMessage(USBCommand command)
   {
     SendInternally(command);
+  }
+
+  protected override void Open(string deviceName)
+  {
+    IsOpen = true;
   }
 
 }

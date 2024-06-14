@@ -4,9 +4,19 @@ using Ares.Device.USB.Commands;
 namespace Ares.Device.USB;
 public abstract class AresUSBConnection : IAresUSBConnection
 {
+  protected internal AresUSBConnection(USBConnectionInfo connectionInfo, string name)
+  {
+    ConnectionInfo = connectionInfo;
+    Name = name;
+  }
+
   public string? Name { get; set; }
 
-  public bool IsOpen { get; set; }
+  public bool IsOpen { get; protected set; }
+
+  protected USBConnectionInfo ConnectionInfo { get; }
+
+  protected abstract void Open(string portName);
 
   public void AttemptOpen()
   {
