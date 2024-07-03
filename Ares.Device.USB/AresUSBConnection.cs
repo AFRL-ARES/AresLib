@@ -4,7 +4,7 @@ using Ares.Device.USB.Commands;
 namespace Ares.Device.USB;
 public abstract class AresUSBConnection : IAresUSBConnection
 {
-  protected internal AresUSBConnection(USBConnectionInfo connectionInfo, string name)
+  protected internal AresUSBConnection(string name, USBConnectionInfo connectionInfo)
   {
     ConnectionInfo = connectionInfo;
     Name = name;

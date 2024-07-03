@@ -3,7 +3,7 @@
 namespace Ares.Device.USB.Simulation;
 public abstract class AresUSBSimConnection : AresUSBConnection
 {
-  protected AresUSBSimConnection(USBConnectionInfo connectionInfo, string name) : base(connectionInfo, name)
+  protected AresUSBSimConnection(string name, USBConnectionInfo connectionInfo) : base(name, connectionInfo)
   {
   }
 
