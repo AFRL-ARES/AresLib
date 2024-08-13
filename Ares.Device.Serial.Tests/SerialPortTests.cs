@@ -326,7 +326,7 @@ internal class SomeCommandWithResponse2 : SerialCommandWithResponse<SomeResponse
   protected override byte[] Serialize()
     => Encoding.ASCII.GetBytes(OtherMessage);
 }
-public class TestConnection : AresSimConnection
+public class TestConnection : AresSerialSimConnection
 {
   private bool _isProcessing;
 
@@ -350,7 +350,7 @@ public class TestConnection : AresSimConnection
     });
   }
 }
-public class TestPort2 : AresSimConnection
+public class TestPort2 : AresSerialSimConnection
 {
 
   public TestPort2(SerialPortConnectionInfo connectionInfo) : base(connectionInfo, "SIM2")
