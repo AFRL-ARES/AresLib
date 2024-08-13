@@ -25,7 +25,7 @@ public abstract class AresUSBConnection : IAresUSBConnection
 
   public void Dispose()
   {
-    throw new NotImplementedException();
+    return;
   }
 
   public Task Send(USBCommand command)
