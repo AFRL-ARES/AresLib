@@ -4,8 +4,8 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Authors>Infoscitex</Authors>
-    <Company>Infoscitex</Company>
+    <Authors>DCS</Authors>
+    <Company>DCS</Company>
     <Description>Library containing the command compilation and execution logic for campaigns.</Description>
     <LangVersion>default</LangVersion>
   </PropertyGroup>
@@ -22,9 +22,9 @@
 
 
   <ItemGroup>
-	  <PackageReference Include="Ares.DataModel.dll" Version="2023.9.19.142419" />
-	  <PackageReference Include="Ares.Device.dll" Version="2023.9.19.142515" />
-	  <PackageReference Include="CoreDevice" Version="2024.4.3.111718" />
+	  <PackageReference Include="Ares.DataModel.dll" Version="2024.7.2.132610" />
+	  <PackageReference Include="Ares.Device.dll" Version="2024.7.2.132654" />
+	  <PackageReference Include="CoreDevice" Version="2024.7.2.132748" />
 	  <PackageReference Include="DynamicData" Version="7.14.2" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.11" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />

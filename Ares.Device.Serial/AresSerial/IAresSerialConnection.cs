@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Ares.Device.Serial.Commands;
+using System;
 using System.Threading.Tasks;
-using Ares.Device.Serial.Commands;
 
 namespace Ares.Device.Serial;
 
-public interface IAresSerialConnection : IDisposable
+public interface IAresSerialConnection : IAresDeviceConnection
 {
   string? Name { get; }
   bool IsOpen { get; }
