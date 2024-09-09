@@ -14,10 +14,5 @@ internal class AnalysisEntityConfiguration : AresEntityTypeBaseConfiguration<Ana
     builder.HasOne(t => t.CompletedExperiment)
       .WithOne()
       .HasForeignKey<Analysis>("CompletedExperimentId");
-
-    builder.HasOne(t => t.Analyzer)
-      .WithOne()
-      .HasForeignKey<AnalyzerInfo>("AnalysisId")
-      .OnDelete(DeleteBehavior.Cascade);
   }
 }

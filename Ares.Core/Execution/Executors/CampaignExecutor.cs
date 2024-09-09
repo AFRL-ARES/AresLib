@@ -1,6 +1,4 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Core.Analyzing;
+﻿using Ares.Core.Analyzing;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
@@ -8,6 +6,8 @@ using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -89,6 +89,7 @@ public class CampaignExecutor : ICampaignExecutor
           continue;
 
         var analysis = await analyzer.Analyze(experimentResult.CompletedExperiment.Result, token.CancellationToken);
+        analysis.CompletedExperiment = experimentResult.CompletedExperiment;
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
       }
