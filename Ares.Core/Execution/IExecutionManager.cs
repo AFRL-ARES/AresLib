@@ -7,7 +7,7 @@ public interface IExecutionManager
   /// <summary>
   /// A list of stop conditions for the current campaign (null if no campaign is loaded)
   /// </summary>
-  public IList<IStopCondition>? CampaignStopConditions { get; }
+  public IList<IStopCondition> CampaignStopConditions { get; }
 
   /// <summary>
   /// Indicates whether the currently loaded campaign has all the prerequisites in order to start and run

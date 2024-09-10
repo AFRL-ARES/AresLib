@@ -1,8 +1,8 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Core.Execution.ControlTokens;
+﻿using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -34,16 +34,16 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
   {
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
-    if (token.IsPaused)
+    if(token.IsPaused)
       try
       {
         token.WaitForResume(token.CancellationToken);
       }
-      catch (OperationCanceledException)
+      catch(OperationCanceledException)
       {
       }
 
-    if (token.IsCancelled)
+    if(token.IsCancelled)
     {
       Status.State = ExecutionState.Failed;
       _stateSubject.OnNext(Status);
@@ -55,9 +55,16 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
     var execInfo = new ExecutionInfo { TimeStarted = DateTime.UtcNow.ToTimestamp() };
     var result = await InternalExecute(token.CancellationToken);
     execInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
-    Status.State = ExecutionState.Succeeded;
+
+    if(result.Success)
+      Status.State = ExecutionState.Succeeded;
+
+    else
+      Status.State = ExecutionState.Failed;
+
     _stateSubject.OnNext(Status);
     _stateSubject.OnCompleted();
+
     return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
   }
 
@@ -68,7 +75,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
       var result = await _command(token);
       return result;
     }
-    catch (Exception e)
+    catch(Exception e)
     {
       var result = new DeviceCommandResult() { Success = false, Error = e.Message };
       return result;

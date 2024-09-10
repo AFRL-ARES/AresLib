@@ -63,10 +63,10 @@ public class CampaignExecutor : ICampaignExecutor
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
-    while (!ShouldStop() && !token.IsCancelled)
+    while(!ShouldStop() && !token.IsCancelled)
     {
       var experimentExecutor = await GenerateExperimentExecutor(analyses, token.CancellationToken);
-      if (experimentExecutor is null)
+      if(experimentExecutor is null)
         break;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
@@ -82,12 +82,11 @@ public class CampaignExecutor : ICampaignExecutor
 
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
-      if (!token.IsCancelled)
+      if(!token.IsCancelled)
       {
-        var analyzer = experimentExecutor.Template.Analyzer is null ? _analyzerManager.GetAnalyzer<NoneAnalyzer>() : _analyzerManager.GetAnalyzer(experimentExecutor.Template.Analyzer);
-        if (analyzer is null)
-          continue;
 
+        var noneAnalyzer = _analyzerManager.GetAnalyzer<NoneAnalyzer>();
+        var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager.GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
         var analysis = await analyzer.Analyze(experimentResult.CompletedExperiment.Result, token.CancellationToken);
         analysis.CompletedExperiment = experimentResult.CompletedExperiment;
         analyses.Add(analysis);
@@ -123,10 +122,10 @@ public class CampaignExecutor : ICampaignExecutor
   {
     // campaign template should have exactly one experiment template at this time
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
-    if (!experimentTemplate.IsResolved())
+    if(!experimentTemplate.IsResolved())
     {
       var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
-      if (!resolveSuccess)
+      if(!resolveSuccess)
         return null;
     }
 
