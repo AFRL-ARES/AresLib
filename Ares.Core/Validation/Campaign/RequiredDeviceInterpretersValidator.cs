@@ -20,7 +20,8 @@ namespace Ares.Core.Validation.Campaign
           stepTemp.CommandTemplates.Select(cmdTemp => cmdTemp.Metadata.DeviceName))).Distinct().ToArray();
 
       var availableInterpreters = requiredDeviceNames.Select(deviceName =>
-          _deviceCommandInterpreterRepo.FirstOrDefault(interpreter => interpreter.Device.Name.Equals(deviceName)))
+          _deviceCommandInterpreterRepo
+          .FirstOrDefault(interpreter => interpreter.Device.Name.Equals(deviceName)))
         .OfType<IDeviceCommandInterpreter<IAresDevice>>()
         .ToArray();
 
