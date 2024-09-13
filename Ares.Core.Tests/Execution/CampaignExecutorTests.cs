@@ -38,7 +38,7 @@ internal class CampaignExecutorTests
       cmdInterpreter
     };
     var stepComposer = new StepComposer(repo);
-    var experimentComposer = new ExperimentComposer(stepComposer);
+    var experimentComposer = new ExperimentComposer(stepComposer, _analyzerManager);
     _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, _planningHelper, _executionReporter);
   }
 

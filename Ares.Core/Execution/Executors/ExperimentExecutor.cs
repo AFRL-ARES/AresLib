@@ -1,6 +1,7 @@
-﻿using System.Reactive.Linq;
-using Ares.Core.Execution.ControlTokens;
+﻿using Ares.Core.Execution.ControlTokens;
+using Ares.Core.Execution.Extensions;
 using Ares.Messaging;
+using System.Reactive.Linq;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -19,8 +20,10 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
 
     Status.StepExecutionStatuses.AddRange(stepExecutors.Select(executor => executor.Status));
 
-    var stepExecutionObservation = stepExecutors.Select(executor => {
-      return executor.StatusObservable.Select(_ => {
+    var stepExecutionObservation = stepExecutors.Select(executor =>
+    {
+      return executor.StatusObservable.Select(_ =>
+      {
         var cmdResults = stepExecutors.Select(cmdExecutor => cmdExecutor.Status);
         Status.StepExecutionStatuses.Clear();
         Status.StepExecutionStatuses.AddRange(cmdResults);
@@ -43,9 +46,9 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
   {
     var startTime = DateTime.UtcNow;
     var stepResults = new List<StepResult>();
-    foreach (var executableStep in StepExecutors)
+    foreach(var executableStep in StepExecutors)
     {
-      if (token.IsCancelled)
+      if(token.IsCancelled)
         break;
 
       var stepResult = await executableStep.Execute(token);
@@ -57,7 +60,9 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
       Template = Template
     };
 
-    if (!string.IsNullOrEmpty(Template.OutputCommandId))
+    completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
+
+    if(!string.IsNullOrEmpty(Template.OutputCommandId))
     {
       var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).FirstOrDefault(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
       completedExperiment.Result = commandResult?.Result.Result;

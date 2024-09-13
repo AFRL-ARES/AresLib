@@ -10,5 +10,10 @@ public class AnalyzerInfoEntityConfiguration : AresEntityTypeBaseConfiguration<A
   {
     base.Configure(builder);
     builder.ToTable("Analyzers");
+
+    builder.HasMany<Analysis>()
+    .WithOne()
+    .HasForeignKey("AnalyzerId")
+    .OnDelete(DeleteBehavior.Cascade);
   }
 }
