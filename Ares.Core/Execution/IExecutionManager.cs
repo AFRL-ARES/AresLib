@@ -10,6 +10,11 @@ public interface IExecutionManager
   public IList<IStopCondition> CampaignStopConditions { get; }
 
   /// <summary>
+  /// A double value that determines how often a campaign will re-plan it's experiment, defaults to one
+  /// </summary>
+  public int ReplanRate { get; }
+
+  /// <summary>
   /// Indicates whether the currently loaded campaign has all the prerequisites in order to start and run
   /// </summary>
   public bool CanRun { get; }
@@ -40,4 +45,10 @@ public interface IExecutionManager
   /// Resumes the campaign execution if paused, does nothing otherwise.
   /// </summary>
   void Resume();
+
+  /// <summary>
+  /// Updates the replan rate of the campaign
+  /// </summary>
+  /// <param name="newRate"></param>
+  void UpdateReplanRate(int newRate);
 }

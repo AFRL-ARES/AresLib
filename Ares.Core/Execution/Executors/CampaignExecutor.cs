@@ -41,13 +41,6 @@ public class CampaignExecutor : ICampaignExecutor
     StatusObservable = _executionStatusSubject.AsObservable();
   }
 
-  public CampaignTemplate Template { get; }
-
-  public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
-
-  public IObservable<CampaignExecutionStatus> StatusObservable { get; }
-  public CampaignExecutionStatus Status { get; private set; }
-
   public async Task<CampaignResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
@@ -124,11 +117,35 @@ public class CampaignExecutor : ICampaignExecutor
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if(!experimentTemplate.IsResolved())
     {
-      var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
-      if(!resolveSuccess)
-        return null;
+      if(ShouldReplan(analyses))
+      {
+        var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
+        if(!resolveSuccess)
+          return null;
+      }
+
+      else
+        experimentTemplate = analyses.Last().CompletedExperiment.Template.CloneWithNewIds();
+
     }
 
     return _experimentComposer.Compose(experimentTemplate);
   }
+
+  private bool ShouldReplan(IEnumerable<Analysis> analyses)
+  {
+    var numberOfCompletedExperiments = analyses.Count();
+    return numberOfCompletedExperiments % ReplanRate == 0;
+  }
+
+  private void RecallPreviousExperiment(IEnumerable<Analysis> analyses, ExperimentTemplate currentTemplate)
+  {
+    var previousExperiment = analyses.LastOrDefault();
+  }
+
+  public CampaignTemplate Template { get; }
+  public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
+  public double ReplanRate { get; set; } = 1;
+  public IObservable<CampaignExecutionStatus> StatusObservable { get; }
+  public CampaignExecutionStatus Status { get; private set; }
 }

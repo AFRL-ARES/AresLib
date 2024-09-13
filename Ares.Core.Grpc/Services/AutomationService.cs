@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Threading.Tasks;
-using Ares.Core.Analyzing;
+﻿using Ares.Core.Analyzing;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
@@ -13,6 +7,12 @@ using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
 
@@ -67,7 +67,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await using var dbContext = _coreContextFactory.CreateDbContext();
     await dbContext.Database.OpenConnectionAsync();
     bool exists;
-    if (!string.IsNullOrEmpty(request.UniqueId))
+    if(!string.IsNullOrEmpty(request.UniqueId))
       exists = await dbContext.CampaignTemplates.AsNoTracking().AnyAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
     else
       exists = await dbContext.CampaignTemplates.AsNoTracking().AnyAsync(template => template.Name == request.CampaignName, context.CancellationToken);
@@ -140,7 +140,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     {
       dbContext.CampaignTemplates.Add(request);
     }
-    catch (Exception ex)
+    catch(Exception ex)
     {
       dbContext.CampaignTemplates.Add(existingCampaign);
       Console.WriteLine(ex.ToString());
@@ -162,7 +162,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private async Task<CampaignTemplate> GetCampaignTemplate(CampaignRequest request, ServerCallContext context)
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
-    if (!string.IsNullOrEmpty(request.UniqueId))
+    if(!string.IsNullOrEmpty(request.UniqueId))
       return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
 
     return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.Name == request.CampaignName);
@@ -243,11 +243,11 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<Empty> RemoveStopCondition(StartStopCondition request, ServerCallContext context)
   {
     var stopConditions = _executionManager.CampaignStopConditions;
-    if (stopConditions is null)
+    if(stopConditions is null)
       return Task.FromResult(new Empty());
 
     var condition = stopConditions.FirstOrDefault(condition => condition.GetType().Name.Equals(request.Name));
-    if (condition is not null)
+    if(condition is not null)
       stopConditions.Remove(condition);
 
     return Task.FromResult(new Empty());
@@ -296,12 +296,8 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<Empty> SetNumExperimentsStopCondition(NumExperimentsCondition request, ServerCallContext context)
   {
     var stopConditions = _executionManager.CampaignStopConditions;
-    if (stopConditions is null)
+    if(stopConditions is null)
       return Task.FromResult(new Empty());
-
-    //var existingStopCondition = stopConditions.FirstOrDefault(condition => condition.GetType().Name.Equals(nameof(NumExperimentsCondition)));
-    //if (existingStopCondition is not null)
-    //  stopConditions.Remove(existingStopCondition);
 
     stopConditions.Clear();
 
@@ -311,10 +307,21 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(new Empty());
   }
 
+  public override Task<Empty> SetReplanRate(ReplanRate request, ServerCallContext context)
+  {
+    _executionManager.UpdateReplanRate(request.ReplanRate_);
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<GetReplanRateResponse> GetReplanRate(Empty request, ServerCallContext context)
+  {
+    return Task.FromResult(new GetReplanRateResponse { ReplanRate = _executionManager.ReplanRate });
+  }
+
   public override Task<Empty> SetAnalysisResultStopCondition(AnalysisResultCondition request, ServerCallContext context)
   {
     var stopConditions = _executionManager.CampaignStopConditions;
-    if (stopConditions is null)
+    if(stopConditions is null)
       return Task.FromResult(new Empty());
 
     stopConditions.Clear();
@@ -328,7 +335,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<ExperimentStopConditionResponse> GetActiveStopCondition(Empty request, ServerCallContext context)
   {
     var stopConditions = _executionManager.CampaignStopConditions;
-    if (stopConditions is null || !stopConditions.Any())
+    if(stopConditions is null || !stopConditions.Any())
     {
       return Task.FromResult(
         new ExperimentStopConditionResponse

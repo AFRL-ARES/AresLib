@@ -40,9 +40,11 @@ service AresAutomation {
 	rpc PauseExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
 	rpc ResumeExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
 	rpc GetAssignedStopConditions(google.protobuf.Empty) returns (StartStopConditionsResponse);
+	rpc GetReplanRate(google.protobuf.Empty) returns (GetReplanRateResponse);
 	rpc GetFailedStartConditions(google.protobuf.Empty) returns (StartStopConditionsResponse);
 	rpc GetPreliminaryFailedStartConditions(CampaignTemplate) returns (StartStopConditionsResponse);
 	rpc SetNumExperimentsStopCondition(NumExperimentsCondition) returns (google.protobuf.Empty);
+	rpc SetReplanRate(ReplanRate) returns (google.protobuf.Empty);
 	rpc SetAnalysisResultStopCondition(AnalysisResultCondition) returns (google.protobuf.Empty);
 	rpc GetActiveStopCondition(google.protobuf.Empty) returns (ExperimentStopConditionResponse);
 	rpc RemoveStopCondition(StartStopCondition) returns (google.protobuf.Empty);
@@ -97,9 +99,17 @@ message StartStopConditionsResponse {
 	repeated StartStopCondition start_stop_conditions = 1;
 }
 
+message GetReplanRateResponse {
+	int32 ReplanRate = 1;
+}
+
 message StartStopCondition {
 	string name = 1;
 	string message = 2;
+}
+
+message ReplanRate {
+	int32 ReplanRate = 1;
 }
 
 message NumExperimentsCondition {

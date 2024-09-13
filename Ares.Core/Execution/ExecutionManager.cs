@@ -32,11 +32,14 @@ public class ExecutionManager : IExecutionManager
 
   public bool CanRun => _startConditions.All(condition => condition.CanStart()?.Success ?? true) && _activeCampaignTemplateStore.CampaignTemplate is not null;
 
+  public int ReplanRate { get; private set; } = 1;
+
   public async Task Start()
   {
     CheckCampaignStartPrerequisites();
     var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
     executor.StopConditions.Add(CampaignStopConditions);
+    executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
     var campaignResult = await executor.Execute(_executionControlTokenSource.Token);
     await PostExecution(campaignResult);
@@ -53,12 +56,17 @@ public class ExecutionManager : IExecutionManager
 
   private void CheckCampaignStartPrerequisites()
   {
-    if (_activeCampaignTemplateStore.CampaignTemplate is null)
+    if(_activeCampaignTemplateStore.CampaignTemplate is null)
       throw new InvalidOperationException("CampaignTemplate was not assigned to the active template store.");
 
     var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
-    if (startConditionResults.Any())
+    if(startConditionResults.Any())
       throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}");
+  }
+
+  public void UpdateReplanRate(int newRate)
+  {
+    ReplanRate = newRate;
   }
 
   private async Task PostExecution(CampaignResult result)
