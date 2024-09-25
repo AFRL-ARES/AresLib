@@ -163,9 +163,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
     if(!string.IsNullOrEmpty(request.UniqueId))
-      return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
+      return await dbContext.CampaignTemplates.FirstAsync(template => template.UniqueId == request.UniqueId, context.CancellationToken);
 
-    return await dbContext.CampaignTemplates.AsNoTracking().FirstAsync(template => template.Name == request.CampaignName);
+    return await dbContext.CampaignTemplates.FirstAsync(template => template.Name == request.CampaignName);
   }
 
   public override Task<CampaignResponse> GetCurrentlySelectedCampaign(Empty request, ServerCallContext context)
