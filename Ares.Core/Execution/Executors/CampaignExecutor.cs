@@ -79,7 +79,9 @@ public class CampaignExecutor : ICampaignExecutor
       {
 
         var noneAnalyzer = _analyzerManager.GetAnalyzer<NoneAnalyzer>();
-        var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager.GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
+        var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
+          .GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
+
         var analysis = await analyzer.Analyze(experimentResult.CompletedExperiment.Result, token.CancellationToken);
         analysis.CompletedExperiment = experimentResult.CompletedExperiment;
         analyses.Add(analysis);
