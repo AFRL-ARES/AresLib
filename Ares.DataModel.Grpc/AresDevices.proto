@@ -3,8 +3,6 @@ syntax = "proto3";
 package ares.messaging.device;
 
 import "google/protobuf/empty.proto";
-import "google/protobuf/timestamp.proto";
-import "google/protobuf/any.proto";
 import "Templates/CommandMetadata.proto";
 import "Templates/CommandTemplate.proto";
 import "DeviceCommandResult.proto";

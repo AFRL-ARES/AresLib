@@ -36,7 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <PackageReference Include="Ares.DataModel.dll" Version="2024.9.25.84012" />
+	  <PackageReference Include="Ares.DataModel.dll" Version="2024.10.4.90842" />
 	  <PackageReference Include="DynamicData" Version="7.14.2" />
 	  <PackageReference Include="UnitsNet" Version="5.33.0" />
   </ItemGroup>
