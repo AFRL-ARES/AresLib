@@ -16,16 +16,19 @@ public class ExecutionManager : IExecutionManager
   private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
+  private readonly IEnumerable<IResultHandler> _resultHandlers;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
     IDbContextFactory<CoreDatabaseContext> dbContext,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
-    ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer)
+    ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer,
+    IEnumerable<IResultHandler> resultHandlers)
   {
     _startConditions = startConditions;
     _dbContext = dbContext;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _campaignComposer = campaignComposer;
+    _resultHandlers = resultHandlers;
   }
 
   public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>();
@@ -42,6 +45,7 @@ public class ExecutionManager : IExecutionManager
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
     var campaignResult = await executor.Execute(_executionControlTokenSource.Token);
+    campaignResult.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
     await PostExecution(campaignResult);
   }
 
@@ -56,11 +60,11 @@ public class ExecutionManager : IExecutionManager
 
   private void CheckCampaignStartPrerequisites()
   {
-    if(_activeCampaignTemplateStore.CampaignTemplate is null)
+    if (_activeCampaignTemplateStore.CampaignTemplate is null)
       throw new InvalidOperationException("CampaignTemplate was not assigned to the active template store.");
 
     var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
-    if(startConditionResults.Any())
+    if (startConditionResults.Any())
       throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}");
   }
 
@@ -71,6 +75,11 @@ public class ExecutionManager : IExecutionManager
 
   private async Task PostExecution(CampaignResult result)
   {
+    foreach (var handler in _resultHandlers)
+    {
+      await handler.Handle(result);
+    }
+
     //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;

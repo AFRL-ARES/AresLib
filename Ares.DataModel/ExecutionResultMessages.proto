@@ -18,6 +18,7 @@ message CampaignResult {
   string campaign_id = 2;
   repeated ExperimentResult experiment_results = 3;
   ExecutionInfo execution_info = 4;
+  string campaign_name = 5;
 }
 
 message ExperimentResult {
