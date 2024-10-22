@@ -44,7 +44,7 @@ internal class ExecutionManagerTests
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());
-    var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _campaignComposer, new Mock<IEnumerable<IResultHandler>>().Object);
+    var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _campaignComposer);
     Assert.DoesNotThrowAsync(executionManager.Start);
   }
 
@@ -53,7 +53,7 @@ internal class ExecutionManagerTests
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns((CampaignTemplate)null);
-    var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _campaignComposer, new Mock<IEnumerable<IResultHandler>>().Object);
+    var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _campaignComposer);
     Assert.ThrowsAsync<InvalidOperationException>(executionManager.Start);
   }
 
@@ -64,7 +64,7 @@ internal class ExecutionManagerTests
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());
     var falseCondition = new Mock<IStartCondition>();
     falseCondition.Setup(condition => condition.CanStart()).Returns(new StartConditionResult(false));
-    var executionManager = new ExecutionManager(new[] { falseCondition.Object }, _contextFactory, mockTemplateStore.Object, _campaignComposer, new Mock<IEnumerable<IResultHandler>>().Object);
+    var executionManager = new ExecutionManager(new[] { falseCondition.Object }, _contextFactory, mockTemplateStore.Object, _campaignComposer);
     Assert.ThrowsAsync<InvalidOperationException>(executionManager.Start);
   }
 }

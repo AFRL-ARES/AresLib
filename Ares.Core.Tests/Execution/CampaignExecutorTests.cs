@@ -21,6 +21,7 @@ internal class CampaignExecutorTests
   private IExecutionReporter _executionReporter;
   private IExecutionReportStore _executionReportStore;
   private IPlanningHelper _planningHelper;
+  private IEnumerable<IResultHandler> _resultHandlers;
 
 
   [OneTimeSetUp]
@@ -31,6 +32,7 @@ internal class CampaignExecutorTests
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
+    _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
     var repo = new DeviceCommandInterpreterRepo
@@ -39,7 +41,7 @@ internal class CampaignExecutorTests
     };
     var stepComposer = new StepComposer(repo);
     var experimentComposer = new ExperimentComposer(stepComposer, _analyzerManager);
-    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, _planningHelper, _executionReporter);
+    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, _planningHelper, _executionReporter, _resultHandlers);
   }
 
   [SetUp]

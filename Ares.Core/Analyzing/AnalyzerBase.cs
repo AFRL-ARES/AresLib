@@ -1,8 +1,8 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Ares.Core.Analyzing;
 

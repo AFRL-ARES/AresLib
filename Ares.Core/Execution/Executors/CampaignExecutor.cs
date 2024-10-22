@@ -18,17 +18,20 @@ public class CampaignExecutor : ICampaignExecutor
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly IPlanningHelper _planningHelper;
+  private readonly IEnumerable<IResultHandler> _resultHandlers;
 
   public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
     IAnalyzerManager analyzerManager,
-    CampaignTemplate template)
+    CampaignTemplate template,
+    IEnumerable<IResultHandler> resultHandlers)
   {
     _experimentComposer = experimentComposer;
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
     _analyzerManager = analyzerManager;
+    _resultHandlers = resultHandlers;
     Template = template;
 
     Status = new CampaignExecutionStatus
@@ -56,10 +59,10 @@ public class CampaignExecutor : ICampaignExecutor
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
-    while(!ShouldStop() && !token.IsCancelled)
+    while (!ShouldStop() && !token.IsCancelled)
     {
       var experimentExecutor = await GenerateExperimentExecutor(analyses, token.CancellationToken);
-      if(experimentExecutor is null)
+      if (experimentExecutor is null)
         break;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
@@ -71,13 +74,11 @@ public class CampaignExecutor : ICampaignExecutor
       });
 
       var experimentResult = await experimentExecutor.Execute(token);
-      experimentResults.Add(experimentResult);
 
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
-      if(!token.IsCancelled)
+      if (!token.IsCancelled)
       {
-
         var noneAnalyzer = _analyzerManager.GetAnalyzer<NoneAnalyzer>();
         var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
           .GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
@@ -87,6 +88,9 @@ public class CampaignExecutor : ICampaignExecutor
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
       }
+
+      await PostExperimentExecution(experimentResult);
+      experimentResults.Add(experimentResult);
     }
 
     Status.State = ExecutionState.Succeeded;
@@ -117,12 +121,12 @@ public class CampaignExecutor : ICampaignExecutor
   {
     // campaign template should have exactly one experiment template at this time
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
-    if(!experimentTemplate.IsResolved())
+    if (!experimentTemplate.IsResolved())
     {
-      if(ShouldReplan(analyses))
+      if (ShouldReplan(analyses))
       {
         var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
-        if(!resolveSuccess)
+        if (!resolveSuccess)
           return null;
       }
 
@@ -130,6 +134,9 @@ public class CampaignExecutor : ICampaignExecutor
         experimentTemplate = analyses.Last().CompletedExperiment.Template.CloneWithNewIds();
 
     }
+
+    //Passing the campaigns name into the experiment template for file creation purposes post experiment
+    experimentTemplate.Name = Template.Name;
 
     return _experimentComposer.Compose(experimentTemplate);
   }
@@ -143,6 +150,14 @@ public class CampaignExecutor : ICampaignExecutor
   private void RecallPreviousExperiment(IEnumerable<Analysis> analyses, ExperimentTemplate currentTemplate)
   {
     var previousExperiment = analyses.LastOrDefault();
+  }
+
+  private async Task PostExperimentExecution(ExperimentResult result)
+  {
+    foreach (var handler in _resultHandlers)
+    {
+      await handler.Handle(result);
+    }
   }
 
   public CampaignTemplate Template { get; }

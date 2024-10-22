@@ -16,19 +16,16 @@ public class ExecutionManager : IExecutionManager
   private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
-  private readonly IEnumerable<IResultHandler> _resultHandlers;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
     IDbContextFactory<CoreDatabaseContext> dbContext,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
-    ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer,
-    IEnumerable<IResultHandler> resultHandlers)
+    ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer)
   {
     _startConditions = startConditions;
     _dbContext = dbContext;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _campaignComposer = campaignComposer;
-    _resultHandlers = resultHandlers;
   }
 
   public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>();
@@ -75,11 +72,6 @@ public class ExecutionManager : IExecutionManager
 
   private async Task PostExecution(CampaignResult result)
   {
-    foreach (var handler in _resultHandlers)
-    {
-      await handler.Handle(result);
-    }
-
     //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;

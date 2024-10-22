@@ -27,6 +27,7 @@ message ExperimentResult {
   repeated StepResult step_results = 3;
   ExecutionInfo execution_info = 4;
   CompletedExperiment completed_experiment = 5;
+  string parent_campaign_name = 6; 
 }
 
 message StepResult {
