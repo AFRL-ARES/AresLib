@@ -8,6 +8,11 @@ message CampaignExecutionStatus {
   repeated ExperimentExecutionStatus experiment_execution_statuses = 3;
 }
 
+message CampaignExecutionState {
+  string campaign_id = 1;
+  ExecutionState state = 2;
+}
+
 message ExperimentExecutionStatus {
   string experiment_id = 1;
   repeated StepExecutionStatus step_execution_statuses = 2;

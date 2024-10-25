@@ -53,6 +53,7 @@ service AresAutomation {
 	rpc GetExecutionStatusStream(google.protobuf.Empty) returns (stream ExperimentExecutionStatus);
 	// Gets the current status of a campaign execution assuming one is running
 	rpc GetCampaignExecutionStatus(google.protobuf.Empty) returns (CampaignExecutionStatusResponse);
+	rpc GetCampaignExecutionStateStream(google.protobuf.Empty) returns (stream CampaignExecutionState);
 
 	// Results
 	rpc GetAvailableCampaignResults(google.protobuf.Empty) returns (AvailableCampaignResultsResponse);
@@ -92,7 +93,7 @@ message ProjectsResponse {
 
 // separate response so that the status can be null
 message CampaignExecutionStatusResponse {
-	CampaignExecutionStatus Status = 1;
+	CampaignExecutionStatus status = 1;
 }
 
 message StartStopConditionsResponse {

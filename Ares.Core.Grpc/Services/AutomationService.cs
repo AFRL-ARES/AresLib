@@ -1,4 +1,10 @@
-﻿using Ares.Core.Analyzing;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
+using Ares.Core.Analyzing;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
@@ -7,12 +13,6 @@ using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
 
@@ -201,6 +201,16 @@ public class AutomationService : AresAutomation.AresAutomationBase
     {
       Status = status
     });
+  }
+
+  public override Task GetCampaignExecutionStateStream(Empty request, IServerStreamWriter<CampaignExecutionState> responseStream, ServerCallContext context)
+  {
+    var observable = _executionReportStore.CampaignStatusObservable;
+    return observable!
+      .OfType<CampaignExecutionStatus>()
+      .Select(status => new CampaignExecutionState { CampaignId = status.CampaignId, State = status.State })
+      .Do(state => responseStream.WriteAsync(state))
+      .ToTask(context.CancellationToken);
   }
 
   public override Task<Empty> StopExecution(Empty request, ServerCallContext context)

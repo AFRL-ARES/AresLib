@@ -1,4 +1,6 @@
-﻿using Ares.Core.Analyzing;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Ares.Core.Analyzing;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
@@ -6,8 +8,6 @@ using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -59,17 +59,18 @@ public class CampaignExecutor : ICampaignExecutor
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
-    while (!ShouldStop() && !token.IsCancelled)
+    while(!ShouldStop() && !token.IsCancelled)
     {
       var experimentExecutor = await GenerateExperimentExecutor(analyses, token.CancellationToken);
-      if (experimentExecutor is null)
+      if(experimentExecutor is null)
         break;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
       experimentExecutor.StatusObservable.Subscribe(experimentStatus =>
       {
-        _executionStatusSubject.OnNext(Status);
         _executionReporter.Report(experimentStatus);
+        Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+        _executionStatusSubject.OnNext(Status);
         _executionReporter.Report(Status);
       });
 
@@ -77,7 +78,7 @@ public class CampaignExecutor : ICampaignExecutor
 
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
-      if (!token.IsCancelled)
+      if(!token.IsCancelled)
       {
         var noneAnalyzer = _analyzerManager.GetAnalyzer<NoneAnalyzer>();
         var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
@@ -87,13 +88,17 @@ public class CampaignExecutor : ICampaignExecutor
         analysis.CompletedExperiment = experimentResult.CompletedExperiment;
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
+
+        Status.State = ExecutionState.Succeeded;
+      }
+      else
+      {
+        Status.State = ExecutionState.Failed;
       }
 
       await PostExperimentExecution(experimentResult);
       experimentResults.Add(experimentResult);
     }
-
-    Status.State = ExecutionState.Succeeded;
     _executionReporter.Report(Status);
 
     var campaignResult = new CampaignResult
@@ -121,12 +126,12 @@ public class CampaignExecutor : ICampaignExecutor
   {
     // campaign template should have exactly one experiment template at this time
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
-    if (!experimentTemplate.IsResolved())
+    if(!experimentTemplate.IsResolved())
     {
-      if (ShouldReplan(analyses))
+      if(ShouldReplan(analyses))
       {
         var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
-        if (!resolveSuccess)
+        if(!resolveSuccess)
           return null;
       }
 
@@ -154,7 +159,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   private async Task PostExperimentExecution(ExperimentResult result)
   {
-    foreach (var handler in _resultHandlers)
+    foreach(var handler in _resultHandlers)
     {
       await handler.Handle(result);
     }
