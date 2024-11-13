@@ -34,5 +34,5 @@ public interface IAnalyzer
   /// <param name="input">The experiment output to analyze in the form of the <see cref="Any" /> proto message</param>
   /// <param name="cancellationToken"></param>
   /// <returns><see cref="Analysis" /> which has the result as well as the metadata about the analyzer.</returns>
-  Task<Analysis> Analyze(Any input, CancellationToken cancellationToken);
+  Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken);
 }
