@@ -8,16 +8,16 @@ public abstract class AresEntityTypeBaseConfiguration<TAresCoreEntity> : IEntity
 {
   public virtual void Configure(EntityTypeBuilder<TAresCoreEntity> builder)
   {
-    const string dateGetterFunctionSql = "getdate()";
+    const string dateGetterFunctionSql = "NOW()";
 
-    // builder
-    //   .Property<string?>("UniqueId")
-    //   .HasConversion(s => string.IsNullOrEmpty(s) ? default : Guid.Parse(s), guid => guid.ToString())
-    //   .ValueGeneratedOnAdd();
+     builder
+       .Property<string?>("UniqueId")
+       .HasConversion(s => string.IsNullOrEmpty(s) ? default : Guid.Parse(s), guid => guid.ToString())
+       .ValueGeneratedOnAdd();
 
-    builder
-      .Property<string?>("UniqueId")
-      .HasDefaultValueSql("NEWID()");
+    //builder
+      //.Property<string?>("UniqueId")
+      //.HasDefaultValueSql("NEWID()");
 
     builder
       .Property<DateTime>("CreationTime")
