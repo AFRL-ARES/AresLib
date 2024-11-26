@@ -86,6 +86,7 @@ public class CampaignExecutor : ICampaignExecutor
 
         var analysis = await analyzer.Analyze(experimentResult, experimentResult.CompletedExperiment.Result, token.CancellationToken);
         analysis.CompletedExperiment = experimentResult.CompletedExperiment;
+        experimentResult.CompletedExperiment.AnalysisResult = analysis.Result;
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
 
@@ -96,6 +97,7 @@ public class CampaignExecutor : ICampaignExecutor
         Status.State = ExecutionState.Failed;
       }
 
+      
       await PostExperimentExecution(experimentResult);
       experimentResults.Add(experimentResult);
     }
@@ -170,5 +172,4 @@ public class CampaignExecutor : ICampaignExecutor
   public double ReplanRate { get; set; } = 1;
   public IObservable<CampaignExecutionStatus> StatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
-  public string ExperimentResultsPath { get; private set; }
 }
