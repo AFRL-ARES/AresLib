@@ -28,7 +28,7 @@ public class ExecutionManager : IExecutionManager
     _campaignComposer = campaignComposer;
   }
 
-  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>();
+  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() {};
 
   public bool CanRun => _startConditions.All(condition => condition.CanStart()?.Success ?? true) && _activeCampaignTemplateStore.CampaignTemplate is not null;
 
@@ -55,14 +55,19 @@ public class ExecutionManager : IExecutionManager
   public void Resume()
     => _executionControlTokenSource?.Resume();
 
-  private void CheckCampaignStartPrerequisites()
+  public string CheckCampaignStartPrerequisites()
   {
-    if (_activeCampaignTemplateStore.CampaignTemplate is null)
-      throw new InvalidOperationException("CampaignTemplate was not assigned to the active template store.");
+    if(_activeCampaignTemplateStore.CampaignTemplate is null)
+      return "CampaignTemplate was not assigned to the active template store.";
+
+    if(!CampaignStopConditions.Any())
+      return "The Campaign has no stop conditions, please set a stop condition before starting campaign.";
 
     var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
     if (startConditionResults.Any())
-      throw new InvalidOperationException($"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}");
+      return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}";
+
+    return String.Empty;
   }
 
   public void UpdateReplanRate(int newRate)

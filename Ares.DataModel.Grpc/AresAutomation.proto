@@ -19,6 +19,7 @@ service AresAutomation {
 	rpc CampaignExists(CampaignRequest) returns (google.protobuf.BoolValue);
 	rpc AddCampaign(CampaignTemplate) returns (google.protobuf.Empty);
 	rpc UpdateCampaign(CampaignTemplate) returns (CampaignTemplate);
+	rpc CheckExecutionEligibility(google.protobuf.Empty) returns (CheckExecutionEligibilityResponse);
 
 	// Projects
 	rpc GetAllProjects(google.protobuf.Empty) returns (ProjectsResponse); 
@@ -143,4 +144,9 @@ message CampaignResultRequest {
 
 message GetAllAnalyzersResponse {
 	repeated AnalyzerInfo analyzers = 1;
+}
+
+message CheckExecutionEligibilityResponse {
+	bool is_eligible = 1;
+	string error = 2;
 }

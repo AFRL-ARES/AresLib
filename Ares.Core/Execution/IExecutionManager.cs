@@ -51,4 +51,10 @@ public interface IExecutionManager
   /// </summary>
   /// <param name="newRate"></param>
   void UpdateReplanRate(int newRate);
+
+  /// <summary>
+  /// Checks whether the prerequisites to execution have been met
+  /// </summary>
+  /// <returns> An error string if the campaign is not executable, an empty string otherwise </returns>
+  string CheckCampaignStartPrerequisites();
 }

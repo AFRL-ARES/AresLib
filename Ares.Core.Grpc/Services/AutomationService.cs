@@ -363,4 +363,15 @@ public class AutomationService : AresAutomation.AresAutomationBase
         Description = condition.Description
       });
   }
+
+  public override Task<CheckExecutionEligibilityResponse> CheckExecutionEligibility(Empty request, ServerCallContext context) 
+  {
+    var eligbilityError = _executionManager.CheckCampaignStartPrerequisites();
+
+    if(String.IsNullOrEmpty(eligbilityError))
+      return Task.FromResult(new CheckExecutionEligibilityResponse { Error = "", IsEligible = true });
+
+    else
+      return Task.FromResult(new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false });
+  }
 }
