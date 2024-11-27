@@ -42,6 +42,10 @@ internal static class ExecutorResultHelpers
     return stepResult;
   }
 
+  public static StepResult CreateEmptyStepResult(string stepId, DateTime startTime, DateTime endTime) 
+  {
+    return new StepResult { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
+  }
   public static CommandResult CreateCommandResult(string commandId,
     DeviceCommandResult? deviceResult,
     DateTime startTime,

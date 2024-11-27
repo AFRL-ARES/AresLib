@@ -19,7 +19,12 @@ public class SequentialStepExecutor : StepExecutor
         break;
 
       var commandResult = await command.Execute(token);
-      commandResults.Add(commandResult);
+
+      if(commandResult.Result.Success)
+        commandResults.Add(commandResult);
+
+      else
+        return ExecutorResultHelpers.CreateEmptyStepResult(Template.UniqueId, startTime, DateTime.UtcNow);
     }
 
     return ExecutorResultHelpers.CreateStepResult(Template.UniqueId, startTime, DateTime.UtcNow, commandResults);

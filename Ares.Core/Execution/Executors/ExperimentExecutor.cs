@@ -52,6 +52,10 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
         break;
 
       var stepResult = await executableStep.Execute(token);
+
+      if(!stepResult.CommandResults.Any())
+        break;
+
       stepResults.Add(stepResult);
     }
 

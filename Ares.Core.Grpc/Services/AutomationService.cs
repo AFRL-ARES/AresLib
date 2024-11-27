@@ -130,14 +130,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<CampaignTemplate> UpdateCampaign(CampaignTemplate request, ServerCallContext context)
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
-
     var existingCampaign = await dbContext.CampaignTemplates.FirstAsync(template => template.UniqueId == request.UniqueId);
-    dbContext.CampaignTemplates.Remove(existingCampaign);
-    await dbContext.SaveChangesAsync();
-    dbContext.ChangeTracker.Clear();
-    request.ConsolidatePlannedParameterMetadata();
+
     try
     {
+      dbContext.CampaignTemplates.Remove(existingCampaign);
+      await dbContext.SaveChangesAsync();
+      dbContext.ChangeTracker.Clear();
+      request.ConsolidatePlannedParameterMetadata();
       dbContext.CampaignTemplates.Add(request);
     }
     catch(Exception ex)
