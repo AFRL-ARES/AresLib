@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Ares.AutomationBuilding": {
+      "commandName": "Project"
+    },
+    "FC2Service": {
+      "commandName": "Executable",
+      "executablePath": "C:\\ARES\\FC2\\FC2Service\\bin\\Debug\\net6.0\\FC2Service.exe",
+      "workingDirectory": "C:\\ARES\\FC2\\FC2Service\\bin\\Debug\\net6.0"
+    }
+  }
+}

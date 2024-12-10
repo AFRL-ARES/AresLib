@@ -38,11 +38,11 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
 
   public TQualifiedDevice Device { get; }
 
-  // NOTE: The intent of this command is to prevent protobuf message exposure to extensions. 
-  // We want this abstract class to handle as much conversion/routing of protobuf/db to
-  // lib representations as possible, making it easier/obvious for extensions to "know what to do".
-  // couldn't think of something better to say, but its a comment that will get deleted anyway.
-  protected abstract Task<DeviceCommandResult> ParseAndPerformDeviceAction(TDeviceCommandEnum deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken);
+	// NOTE: The intent of this command is to prevent protobuf message exposure to extensions. 
+	// We want this abstract class to handle as much conversion/routing of protobuf/db to
+	// lib representations as possible, making it easier/obvious for extensions to "know what to do".
+	// couldn't think of something better to say, but its a comment that will get deleted anyway.
+	protected abstract Task<DeviceCommandResult> ParseAndPerformDeviceAction(TDeviceCommandEnum deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken);
 
   private Task<DeviceCommandResult> RouteDeviceAction(CommandTemplate commandTemplate, CancellationToken cancellationToken)
   {

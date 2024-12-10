@@ -1,5 +1,6 @@
 ﻿using Ares.Device;
 using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
 using UnitsNet;
 using UnitsNet.Units;
 
@@ -39,7 +40,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
     {
       case AresCoreDeviceCommand.Sleep:
         var durationParam = parameters[0];
-        var duration = Duration.FromMilliseconds(durationParam.Value.Value);
+        var duration = UnitsNet.Duration.FromMilliseconds(durationParam.Value.Value.Unpack<FloatValue>().Value);
         await Device.Sleep(duration.ToTimeSpan());
         result.Success = true;
         return result;
