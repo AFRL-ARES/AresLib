@@ -8,9 +8,10 @@ namespace Ares.Core.Execution.Executors;
 public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutionStatus>
 {
 
-  public ExperimentExecutor(ExperimentTemplate template, IExecutor<StepResult, StepExecutionStatus>[] stepExecutors)
+  public ExperimentExecutor(ExperimentTemplate template, 
+    IExecutor<StepResult, StepExecutionStatus>[] experimentStepExecutors)
   {
-    StepExecutors = stepExecutors;
+    ExperimentStepExecutors = experimentStepExecutors;
     Template = template;
 
     Status = new ExperimentExecutionStatus
@@ -18,35 +19,36 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
       ExperimentId = template.UniqueId
     };
 
-    Status.StepExecutionStatuses.AddRange(stepExecutors.Select(executor => executor.Status));
+    Status.StepExecutionStatuses.AddRange(experimentStepExecutors.Select(executor => executor.Status));
 
-    var stepExecutionObservation = stepExecutors.Select(executor =>
+    var experimentStepExecutionObservation = experimentStepExecutors.Select(executor =>
     {
-      return executor.StatusObservable.Select(_ =>
+      return executor.ExperimentStatusObservable.Select(_ => 
       {
-        var cmdResults = stepExecutors.Select(cmdExecutor => cmdExecutor.Status);
+        var cmdResults = experimentStepExecutors.Select(cmdExecutor => cmdExecutor.Status);
         Status.StepExecutionStatuses.Clear();
         Status.StepExecutionStatuses.AddRange(cmdResults);
         return Status;
       });
     }).Concat();
 
-    StatusObservable = stepExecutionObservation;
+    ExperimentStatusObservable = experimentStepExecutionObservation;
   }
 
 
-  public IExecutor<StepResult, StepExecutionStatus>[] StepExecutors { get; }
+  public IExecutor<StepResult, StepExecutionStatus>[] ExperimentStepExecutors { get; }
 
   public ExperimentTemplate Template { get; set; }
 
-  public IObservable<ExperimentExecutionStatus> StatusObservable { get; }
+  public IObservable<ExperimentExecutionStatus> ExperimentStatusObservable { get; }
+
   public ExperimentExecutionStatus Status { get; }
 
   public async Task<ExperimentResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
     var stepResults = new List<StepResult>();
-    foreach (var executableStep in StepExecutors)
+    foreach (var executableStep in ExperimentStepExecutors)
     {
       if (token.IsCancelled)
         break;

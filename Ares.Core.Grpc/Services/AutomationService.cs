@@ -194,6 +194,18 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return observable.Where(status => status is not null).Do(status => responseStream.WriteAsync(status!)).ToTask(context.CancellationToken);
   }
 
+  public override Task GetStartupExecutionStatusStream(Empty request, IServerStreamWriter<CampaignStartupStatus> responseStream, ServerCallContext context)
+  {
+    var observable = _executionReportStore.CampaignStartupStatusObservable;
+    return observable.Where(status => status is not null).Do(status => responseStream.WriteAsync(status!)).ToTask(context.CancellationToken);
+  }
+
+  public override Task GetCloseoutExecutionStatusStream(Empty request, IServerStreamWriter<CampaignCloseoutStatus> responseStream, ServerCallContext context)
+  {
+    var observable = _executionReportStore.CampaignCloseoutStatusObservable;
+    return observable.Where(status => status is not null).Do(status => responseStream.WriteAsync(status!)).ToTask(context.CancellationToken);
+  }
+
   public override Task<CampaignExecutionStatusResponse> GetCampaignExecutionStatus(Empty request, ServerCallContext context)
   {
     var status = _executionReportStore.CampaignExecutionStatus;

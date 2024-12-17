@@ -1,4 +1,5 @@
-﻿using Google.Protobuf;
+﻿using Ares.Messaging;
+using Google.Protobuf;
 
 namespace Ares.Core.Execution.Executors.Composers;
 

@@ -52,9 +52,12 @@ service AresAutomation {
 	// Gets a stream of experiment execution statuses that can be observed in real time as experiment is running
 	// Works best after grabbing all the execution statuses which then lets you know how many experiments have been run
 	rpc GetExecutionStatusStream(google.protobuf.Empty) returns (stream ExperimentExecutionStatus);
+	rpc GetStartupExecutionStatusStream(google.protobuf.Empty) returns (stream CampaignStartupStatus);
+	rpc GetCloseoutExecutionStatusStream(google.protobuf.Empty) returns (stream CampaignCloseoutStatus);
 	// Gets the current status of a campaign execution assuming one is running
 	rpc GetCampaignExecutionStatus(google.protobuf.Empty) returns (CampaignExecutionStatusResponse);
 	rpc GetCampaignExecutionStateStream(google.protobuf.Empty) returns (stream CampaignExecutionState);
+	
 
 	// Results
 	rpc GetAvailableCampaignResults(google.protobuf.Empty) returns (AvailableCampaignResultsResponse);

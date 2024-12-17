@@ -40,7 +40,7 @@ internal class ExperimentComposerTests
     var analyzerManagerMock = new Mock<IAnalyzerManager>();
     var experimentComposer = new ExperimentComposer(stepComposerMock.Object, analyzerManagerMock.Object);
     var experimentExecutor = experimentComposer.Compose(experimentTemplate);
-    var templates = experimentExecutor.StepExecutors.Select(executor => typeof(StepExecutor).GetProperty("Template", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(executor)).OfType<StepTemplate>();
+    var templates = experimentExecutor.ExperimentStepExecutors.Select(executor => typeof(StepExecutor).GetProperty("Template", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(executor)).OfType<StepTemplate>();
 
     Assert.That(templates.Select((template, i) => template.Index == i), Is.All.True);
   }

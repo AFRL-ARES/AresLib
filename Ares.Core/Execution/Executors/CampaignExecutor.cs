@@ -17,10 +17,14 @@ public class CampaignExecutor : ICampaignExecutor
   private readonly IExecutionReporter _executionReporter;
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
+  private readonly ICommandComposer<ExperimentTemplate, StartupScriptExecutor> _startupScriptComposer;
+  private readonly ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> _closeoutScriptComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IEnumerable<IResultHandler> _resultHandlers;
 
   public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
+    ICommandComposer<ExperimentTemplate, StartupScriptExecutor> startupScriptComposer,
+    ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> closeoutScriptComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
     IAnalyzerManager analyzerManager,
@@ -28,6 +32,8 @@ public class CampaignExecutor : ICampaignExecutor
     IEnumerable<IResultHandler> resultHandlers)
   {
     _experimentComposer = experimentComposer;
+    _startupScriptComposer = startupScriptComposer;
+    _closeoutScriptComposer = closeoutScriptComposer;
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
     _analyzerManager = analyzerManager;
@@ -41,7 +47,7 @@ public class CampaignExecutor : ICampaignExecutor
     };
 
     _executionStatusSubject = new BehaviorSubject<CampaignExecutionStatus>(Status);
-    StatusObservable = _executionStatusSubject.AsObservable();
+    ExperimentStatusObservable = _executionStatusSubject.AsObservable();
   }
 
   public async Task<CampaignResult> Execute(ExecutionControlToken token)
@@ -59,14 +65,18 @@ public class CampaignExecutor : ICampaignExecutor
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
-    while (!ShouldStop() && !token.IsCancelled)
+    var startupExecutor = GenerateStartupScriptExecutor(token.CancellationToken);
+    await HandleExperimentStartup(token, startupExecutor);
+    bool executionSuccess = true;
+
+    while(!ShouldStop() && !token.IsCancelled)
     {
       var experimentExecutor = await GenerateExperimentExecutor(analyses, token.CancellationToken);
       if (experimentExecutor is null)
         break;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
-      experimentExecutor.StatusObservable.Subscribe(experimentStatus =>
+      experimentExecutor.ExperimentStatusObservable.Subscribe(experimentStatus =>
       {
         _executionReporter.Report(experimentStatus);
         Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
@@ -89,18 +99,25 @@ public class CampaignExecutor : ICampaignExecutor
         experimentResult.CompletedExperiment.AnalysisResult = analysis.Result;
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
-
-        Status.State = ExecutionState.Succeeded;
       }
       else
       {
-        Status.State = ExecutionState.Failed;
+        executionSuccess = false;
       }
 
-      
       await PostExperimentExecution(experimentResult);
       experimentResults.Add(experimentResult);
     }
+
+    var closeoutExecutor = GenerateCloseoutScriptExecutor(token.CancellationToken);
+    await HandleExperimentCloseout(token, closeoutExecutor);
+
+    if(executionSuccess)
+      Status.State = ExecutionState.Succeeded;
+
+    else
+      Status.State = ExecutionState.Failed;
+
     _executionReporter.Report(Status);
 
     var campaignResult = new CampaignResult
@@ -139,13 +156,32 @@ public class CampaignExecutor : ICampaignExecutor
 
       else
         experimentTemplate = analyses.Last().CompletedExperiment.Template.CloneWithNewIds();
-
     }
 
     //Passing the campaigns name into the experiment template for file creation purposes post experiment
     experimentTemplate.Name = Template.Name;
 
     return _experimentComposer.Compose(experimentTemplate);
+  }
+
+  private StartupScriptExecutor? GenerateStartupScriptExecutor(CancellationToken cancellationToken)
+  {
+    var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
+
+    //Passing the campaigns name into the experiment template for file creation purposes post experiment
+    experimentTemplate.Name = Template.Name;
+
+    return _startupScriptComposer.Compose(experimentTemplate);
+  }
+
+  private CloseoutScriptExecutor? GenerateCloseoutScriptExecutor(CancellationToken cancellationToken)
+  {
+    var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
+
+    //Passing the campaigns name into the experiment template for file creation purposes post experiment
+    experimentTemplate.Name = Template.Name;
+
+    return _closeoutScriptComposer.Compose(experimentTemplate);
   }
 
   private bool ShouldReplan(IEnumerable<Analysis> analyses)
@@ -159,6 +195,38 @@ public class CampaignExecutor : ICampaignExecutor
     var previousExperiment = analyses.LastOrDefault();
   }
 
+  public async Task HandleExperimentStartup(ExecutionControlToken token, StartupScriptExecutor? startupExecutor)
+  {
+    if(startupExecutor is null)
+      throw new InvalidOperationException("Startup Executor returned null, cannot execute experiment!");
+
+    startupExecutor.ExperimentStatusObservable.Subscribe(startupStatus =>
+    {
+      _executionReporter.Report(startupStatus);
+      Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+      _executionStatusSubject.OnNext(Status);
+      _executionReporter.Report(Status);
+    });
+
+    await startupExecutor.Execute(token);
+  }
+
+  public async Task HandleExperimentCloseout(ExecutionControlToken token, CloseoutScriptExecutor? closeoutExecutor)
+  {
+    if(closeoutExecutor is null)
+      throw new InvalidOperationException("Closeout Executor returned null, cannot execute closeout script!");
+
+    closeoutExecutor.ExperimentStatusObservable.Subscribe(closeoutStatus =>
+    {
+      _executionReporter.Report(closeoutStatus);
+      Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+      _executionStatusSubject.OnNext(Status);
+      _executionReporter.Report(Status);
+    });
+
+    await closeoutExecutor.Execute(token);
+  }
+
   private async Task PostExperimentExecution(ExperimentResult result)
   {
     foreach (var handler in _resultHandlers)
@@ -170,6 +238,6 @@ public class CampaignExecutor : ICampaignExecutor
   public CampaignTemplate Template { get; }
   public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
   public double ReplanRate { get; set; } = 1;
-  public IObservable<CampaignExecutionStatus> StatusObservable { get; }
+  public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
 }

@@ -18,9 +18,20 @@ message ExperimentExecutionStatus {
   repeated StepExecutionStatus step_execution_statuses = 2;
 }
 
+message CampaignStartupStatus {
+  string campaign_id = 1;
+  repeated StepExecutionStatus startup_execution_statuses = 2;
+}
+
+message CampaignCloseoutStatus {
+  string campaign_id = 1;
+  repeated StepExecutionStatus closeout_execution_statuses = 2;
+}
+
 message StepExecutionStatus {
   string step_id = 1;
-  repeated CommandExecutionStatus command_execution_statuses = 2;
+  string step_name = 2;
+  repeated CommandExecutionStatus command_execution_statuses = 3;
 }
 
 message CommandExecutionStatus {
