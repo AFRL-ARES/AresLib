@@ -18,7 +18,7 @@ public class PlanningHelper : IPlanningHelper
   {
     var parameterArray = parameters.ToArray();
     var plannerToMetadataMaps = new List<(IPlanner Planner, ParameterMetadata Metadata)>();
-    foreach (var plannerAllocation in plannerAllocations)
+    foreach(var plannerAllocation in plannerAllocations)
     {
       var hasVersion = Version.TryParse(plannerAllocation.Planner.Version, out var version);
       var planner = hasVersion
@@ -30,17 +30,21 @@ public class PlanningHelper : IPlanningHelper
 
     var planGroup = plannerToMetadataMaps.GroupBy(pair => pair.Planner);
     var seedAnalysesArr = seedAnalyses.ToArray();
-    foreach (var grouping in planGroup)
+    foreach(var grouping in planGroup)
     {
       var planner = grouping.Key;
       var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedAnalysesArr, cancellationToken);
       var results = resultsEnumerable.ToArray();
-      if (!results.Any())
+      if(!results.Any())
         return false;
 
-      foreach (var result in results)
+      foreach(var result in results)
       {
-        var parameterPlanTarget = parameterArray.First(parameter => parameter.PlanningMetadata.UniqueId == result.Metadata.UniqueId);
+        var parameterPlanTarget = parameterArray.FirstOrDefault(parameter => parameter.PlanningMetadata.UniqueId == result.Metadata.UniqueId);
+
+        if(parameterPlanTarget is null)
+          continue;
+
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
