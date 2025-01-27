@@ -71,9 +71,11 @@ public class CampaignExecutor : ICampaignExecutor
 
     while(!ShouldStop() && !token.IsCancelled)
     {
-      var experimentExecutor = await GenerateExperimentExecutor(analyses, token.CancellationToken);
-      if(experimentExecutor is null)
+      var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
+      if(experimentExecutorResult.ErrorString is not null)
         break;
+
+      var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
       experimentExecutor.ExperimentStatusObservable.Subscribe(experimentStatus =>
@@ -141,8 +143,11 @@ public class CampaignExecutor : ICampaignExecutor
     return StopConditions.Any(condition => condition.ShouldStop());
   }
 
-  private async Task<ExperimentExecutor?> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
+
+  private async Task<ExperimentExecutorResult> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
   {
+    var result = new ExperimentExecutorResult();
+
     // campaign template should have exactly one experiment template at this time
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if(!experimentTemplate.IsResolved())
@@ -151,7 +156,10 @@ public class CampaignExecutor : ICampaignExecutor
       {
         var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
         if(!resolveSuccess)
-          return null;
+        {
+          result.ErrorString = "Failed to plan! Experiment will be terminated!";
+          return result;
+        }
       }
 
       else
@@ -161,7 +169,8 @@ public class CampaignExecutor : ICampaignExecutor
     //Passing the campaigns name into the experiment template for file creation purposes post experiment
     experimentTemplate.Name = Template.Name;
 
-    return _experimentComposer.Compose(experimentTemplate);
+    result.ExperimentExecutor = _experimentComposer.Compose(experimentTemplate);
+    return result;
   }
 
   private StartupScriptExecutor? GenerateStartupScriptExecutor(CancellationToken cancellationToken)

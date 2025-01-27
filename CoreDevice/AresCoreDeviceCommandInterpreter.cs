@@ -25,7 +25,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
             {
               Name = AresCoreDeviceCommandParameter.Duration.ToString(),
               Index = 0,
-              Unit = DurationUnit.Millisecond.ToString()
+              Unit = $"{DurationUnit.Millisecond}s"
             }
           }
       }
@@ -35,7 +35,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
   protected override async Task<DeviceCommandResult> ParseAndPerformDeviceAction(AresCoreDeviceCommand deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken)
   {
     var result = new DeviceCommandResult();
-    switch (deviceCommandEnum)
+    switch(deviceCommandEnum)
     {
       case AresCoreDeviceCommand.Sleep:
         var durationParam = parameters[0];
