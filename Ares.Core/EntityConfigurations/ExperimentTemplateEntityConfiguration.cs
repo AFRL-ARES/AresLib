@@ -16,11 +16,11 @@ internal class ExperimentTemplateEntityConfiguration : AresEntityTypeBaseConfigu
 
     builder.HasMany(experimentTemplate => experimentTemplate.StartupStepTemplates)
       .WithOne()
-      .OnDelete(DeleteBehavior.Cascade);
+      .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.HasMany(experimentTemplate => experimentTemplate.CloseoutStepTemplates)
       .WithOne()
-      .OnDelete(DeleteBehavior.Cascade);
+      .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.HasOne(experimentTemplate => experimentTemplate.Analyzer)
       .WithOne()
