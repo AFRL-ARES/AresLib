@@ -3,5 +3,5 @@
 namespace Ares.Core.Execution;
 public interface IResultHandler
 {
-  Task Handle(ExperimentResult result);
+  Task Handle(ExperimentResult result, DateTime campaignStartTime);
 }

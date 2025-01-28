@@ -25,16 +25,16 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   public virtual bool InputSupported(string fullTypeName)
     => typeof(T).FullName == fullTypeName;
 
-  public Task<Analysis> Analyze(ExperimentResult results, Any? input, CancellationToken cancellationToken)
+  public Task<Analysis> Analyze(ExperimentResult results, Any? input, CancellationToken cancellationToken, DateTime startTime)
   {
-    if (input is null)
+    if(input is null)
       return Task.FromResult(GetDefaultResult());
 
     var unpackedMessage = UnpackMessage(input);
-    if (unpackedMessage is null)
+    if(unpackedMessage is null)
       return Task.FromResult(GetDefaultResult());
 
-    return AnalyzeMessage(results, unpackedMessage, cancellationToken);
+    return AnalyzeMessage(results, unpackedMessage, cancellationToken, startTime);
   }
 
   private Analysis GetDefaultResult()
@@ -54,11 +54,11 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
       var unpackedMessage = input.Unpack<T>();
       return unpackedMessage;
     }
-    catch (InvalidProtocolBufferException e)
+    catch(InvalidProtocolBufferException e)
     {
       return default;
     }
   }
 
-  protected abstract Task<Analysis> AnalyzeMessage(ExperimentResult result, T input, CancellationToken cancellationToken);
+  protected abstract Task<Analysis> AnalyzeMessage(ExperimentResult result, T input, CancellationToken cancellationToken, DateTime startTime);
 }

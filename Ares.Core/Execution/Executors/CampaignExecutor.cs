@@ -52,7 +52,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   public async Task<CampaignResult> Execute(ExecutionControlToken token)
   {
-    var startTime = DateTime.UtcNow;
+    StartTime = DateTime.UtcNow;
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
@@ -96,7 +96,7 @@ public class CampaignExecutor : ICampaignExecutor
         var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
           .GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
 
-        var analysis = await analyzer.Analyze(experimentResult, experimentResult.CompletedExperiment.Result, token.CancellationToken);
+        var analysis = await analyzer.Analyze(experimentResult, experimentResult.CompletedExperiment.Result, token.CancellationToken, StartTime);
         analysis.CompletedExperiment = experimentResult.CompletedExperiment;
         experimentResult.CompletedExperiment.AnalysisResult = analysis.Result;
         analyses.Add(analysis);
@@ -129,7 +129,7 @@ public class CampaignExecutor : ICampaignExecutor
       ExecutionInfo = new ExecutionInfo
       {
         TimeFinished = DateTime.UtcNow.ToTimestamp(),
-        TimeStarted = startTime.ToTimestamp()
+        TimeStarted = StartTime.ToTimestamp()
       }
     };
 
@@ -240,7 +240,7 @@ public class CampaignExecutor : ICampaignExecutor
   {
     foreach(var handler in _resultHandlers)
     {
-      await handler.Handle(result);
+      await handler.Handle(result, StartTime);
     }
   }
 
@@ -249,4 +249,5 @@ public class CampaignExecutor : ICampaignExecutor
   public double ReplanRate { get; set; } = 1;
   public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
+  public DateTime StartTime { get; set; }
 }

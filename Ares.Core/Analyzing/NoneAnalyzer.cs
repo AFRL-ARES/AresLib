@@ -14,7 +14,7 @@ internal class NoneAnalyzer : AnalyzerBase<Any>
   {
   }
 
-  protected override Task<Analysis> AnalyzeMessage(ExperimentResult _, Any __, CancellationToken ___)
+  protected override Task<Analysis> AnalyzeMessage(ExperimentResult _, Any __, CancellationToken ___, DateTime ____)
   {
     var analysis = new Analysis
     {
