@@ -8,7 +8,7 @@ namespace Ares.Core.Execution.Executors;
 public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutionStatus>
 {
 
-  public ExperimentExecutor(ExperimentTemplate template, 
+  public ExperimentExecutor(ExperimentTemplate template,
     IExecutor<StepResult, StepExecutionStatus>[] experimentStepExecutors)
   {
     ExperimentStepExecutors = experimentStepExecutors;
@@ -23,7 +23,7 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
 
     var experimentStepExecutionObservation = experimentStepExecutors.Select(executor =>
     {
-      return executor.ExperimentStatusObservable.Select(_ => 
+      return executor.ExperimentStatusObservable.Select(_ =>
       {
         var cmdResults = experimentStepExecutors.Select(cmdExecutor => cmdExecutor.Status);
         Status.StepExecutionStatuses.Clear();
@@ -48,9 +48,9 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
   {
     var startTime = DateTime.UtcNow;
     var stepResults = new List<StepResult>();
-    foreach (var executableStep in ExperimentStepExecutors)
+    foreach(var executableStep in ExperimentStepExecutors)
     {
-      if (token.IsCancelled)
+      if(token.IsCancelled)
         break;
 
       var stepResult = await executableStep.Execute(token);
@@ -68,12 +68,12 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
 
     completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
 
-    if (!string.IsNullOrEmpty(Template.OutputCommandId))
+    if(!string.IsNullOrEmpty(Template.OutputCommandId))
     {
       var commandResult = stepResults.SelectMany(stepResult => stepResult.CommandResults).FirstOrDefault(cmdResult => cmdResult.CommandId == Template.OutputCommandId);
       completedExperiment.Result = commandResult?.Result.Result;
     }
 
-    return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, Template.Name, completedExperiment, startTime, DateTime.UtcNow, stepResults);
+    return ExecutorResultHelpers.CreateExperimentResult(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepResults);
   }
 }

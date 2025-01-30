@@ -6,7 +6,6 @@ namespace Ares.Core.Execution.Executors;
 internal static class ExecutorResultHelpers
 {
   public static ExperimentResult CreateExperimentResult(string experimentId,
-    string experimentName,
     CompletedExperiment completedExperiment,
     DateTime startTime,
     DateTime endTime,
@@ -18,7 +17,6 @@ internal static class ExecutorResultHelpers
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
       ExperimentId = experimentId,
       CompletedExperiment = completedExperiment,
-      ParentCampaignName = experimentName
     };
 
     experimentResult.StepResults.AddRange(stepResults);
@@ -42,7 +40,7 @@ internal static class ExecutorResultHelpers
     return stepResult;
   }
 
-  public static StepResult CreateEmptyStepResult(string stepId, DateTime startTime, DateTime endTime) 
+  public static StepResult CreateEmptyStepResult(string stepId, DateTime startTime, DateTime endTime)
   {
     return new StepResult { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
   }
