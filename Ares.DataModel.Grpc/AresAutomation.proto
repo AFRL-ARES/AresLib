@@ -68,7 +68,6 @@ service AresAutomation {
 
 message AddOrUpdateCampaignRequest {
 	CampaignTemplate template = 1;
-	string file_path = 2;
 }
 
 message RequestById {
@@ -81,7 +80,6 @@ message CampaignRequest {
 		string campaign_name = 1; // name of the requested campaign template
 		string unique_id = 2; // id of the requested template
 	}
-	string file_path = 3;
 }
 
 message GetAllCampaignsRequest {
