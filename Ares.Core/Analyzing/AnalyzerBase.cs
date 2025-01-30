@@ -25,7 +25,7 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   public virtual bool InputSupported(string fullTypeName)
     => typeof(T).FullName == fullTypeName;
 
-  public Task<Analysis> Analyze(ExperimentResult results, Any? input, CancellationToken cancellationToken, DateTime startTime)
+  public Task<Analysis> Analyze(ExperimentResult results, Any? input, CancellationToken cancellationToken)
   {
     if(input is null)
       return Task.FromResult(GetDefaultResult());
@@ -34,7 +34,7 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
     if(unpackedMessage is null)
       return Task.FromResult(GetDefaultResult());
 
-    return AnalyzeMessage(results, unpackedMessage, cancellationToken, startTime);
+    return AnalyzeMessage(results, unpackedMessage, cancellationToken);
   }
 
   private Analysis GetDefaultResult()
@@ -60,5 +60,5 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
     }
   }
 
-  protected abstract Task<Analysis> AnalyzeMessage(ExperimentResult result, T input, CancellationToken cancellationToken, DateTime startTime);
+  protected abstract Task<Analysis> AnalyzeMessage(ExperimentResult result, T input, CancellationToken cancellationToken);
 }

@@ -10,7 +10,7 @@ public class TestReplyAnalyzer : AnalyzerBase<TestReply>
   {
   }
 
-  protected override Task<Analysis> AnalyzeMessage(ExperimentResult result, TestReply input, CancellationToken cancellationToken, DateTime startTime)
+  protected override Task<Analysis> AnalyzeMessage(ExperimentResult result, TestReply input, CancellationToken cancellationToken)
   {
     var analysis = new Analysis
     {

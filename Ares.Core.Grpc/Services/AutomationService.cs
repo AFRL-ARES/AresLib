@@ -58,9 +58,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
   {
     var campaignResponse = new CampaignsResponse();
 
-    foreach(var file in Directory.EnumerateFiles(request.FilePath, "*.json"))
+    foreach(var file in Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json"))
     {
-      var contents = File.ReadAllText(file);
+      var contents = await File.ReadAllTextAsync(file);
       var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents);
 
       if(campaignTemplate is not null)
@@ -70,18 +70,18 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return campaignResponse;
   }
 
-  public override async Task<BoolValue> CampaignExists(CampaignRequest request, ServerCallContext context)
+  public override Task<BoolValue> CampaignExists(CampaignRequest request, ServerCallContext context)
   {
     if(request.HasUniqueId)
-      return FindCampaignById(request);
+      return Task.FromResult(FindCampaignById(request));
 
     else
-      return FindCampaignByName(request);
+      return Task.FromResult(FindCampaignByName(request));
   }
 
   private BoolValue FindCampaignById(CampaignRequest request)
   {
-    var directoryFiles = Directory.EnumerateFiles(request.FilePath, "*.json");
+    var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
 
     if(directoryFiles.Any(file => file.Contains(request.UniqueId)))
       return new BoolValue { Value = true };
@@ -91,11 +91,11 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   private BoolValue FindCampaignByName(CampaignRequest request)
   {
-    var directoryFiles = Directory.EnumerateFiles(request.FilePath, "*.json");
+    var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
 
     foreach(var file in directoryFiles)
     {
-      var jsonString = File.ReadAllText(Path.Combine(request.FilePath, file));
+      var jsonString = File.ReadAllText(Path.Combine(AresConfig.TemplatePath, file));
       var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString);
       if(templateObject is not null && templateObject.Name == request.CampaignName)
         return new BoolValue { Value = true };
@@ -107,14 +107,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<CampaignTemplate?> GetSingleCampaign(CampaignRequest request, ServerCallContext context)
   => GetCampaignTemplate(request, context);
 
-  public override async Task<Empty> RemoveCampaign(CampaignRequest request, ServerCallContext context)
+  public override Task<Empty> RemoveCampaign(CampaignRequest request, ServerCallContext context)
   {
-    var desiredCampaign = Directory.EnumerateFiles(request.FilePath, "*.json").FirstOrDefault(campaign => campaign.Contains(request.UniqueId));
+    var desiredCampaign = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json").FirstOrDefault(campaign => campaign.Contains(request.UniqueId));
 
     if(desiredCampaign is not null)
-      File.Delete(Path.Combine(request.FilePath, desiredCampaign));
+      File.Delete(Path.Combine(AresConfig.TemplatePath, desiredCampaign));
 
-    return new Empty();
+    return Task.FromResult(new Empty());
   }
 
   public override async Task<Project> GetProject(ProjectRequest request, ServerCallContext context)
@@ -148,39 +148,39 @@ public class AutomationService : AresAutomation.AresAutomationBase
   /// </param>
   /// <param name="context"></param>
   /// <returns></returns>
-  public override async Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
+  public override Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
-    var directoryFiles = Directory.EnumerateFiles(request.FilePath, "*.json");
+    var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
     var jsonString = JsonConvert.SerializeObject(request.Template, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-    var fullFilePath = Path.Combine(request.FilePath, $"{request.Template.UniqueId}.json");
+    var fullFilePath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
 
     File.WriteAllText(fullFilePath, jsonString);
-    return new Empty();
+    return Task.FromResult(new Empty());
   }
 
-  public override async Task<CampaignTemplate> UpdateCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
+  public override Task<CampaignTemplate> UpdateCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
-    var directoryFiles = Directory.EnumerateFiles(request.FilePath, "*.json");
+    var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
     var campaignToUpdate = directoryFiles.FirstOrDefault(file => file.Contains(request.Template.UniqueId));
 
     if(campaignToUpdate is null)
       throw new InvalidOperationException("Tried to update a campaign template that didn't exist!");
 
     var jsonString = JsonConvert.SerializeObject(request.Template, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
-    var fullPath = Path.Combine(request.FilePath, $"{request.Template.UniqueId}.json");
+    var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
     File.WriteAllText(fullPath, jsonString);
 
-    return request.Template;
+    return Task.FromResult(request.Template);
   }
 
   private async Task<CampaignTemplate?> GetCampaignTemplate(CampaignRequest request, ServerCallContext context)
   {
-    var directoryFiles = Directory.EnumerateFiles(request.FilePath, "*.json");
+    var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
     var campaignFile = directoryFiles.FirstOrDefault(file => file.Contains(request.UniqueId));
 
     if(campaignFile is not null)
     {
-      var jsonString = File.ReadAllText(Path.Combine(request.FilePath, campaignFile));
+      var jsonString = await File.ReadAllTextAsync(Path.Combine(AresConfig.TemplatePath, campaignFile));
       var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString);
 
       if(campaignObject is not null)

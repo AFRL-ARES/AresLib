@@ -45,7 +45,7 @@ internal class AnalyzerManagerTests
     public bool InputSupported(string fullTypeName)
       => throw new NotImplementedException();
 
-    public Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken, DateTime startTime)
+    public Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
 }

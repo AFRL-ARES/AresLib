@@ -52,7 +52,8 @@ public class CampaignExecutor : ICampaignExecutor
 
   public async Task<CampaignResult> Execute(ExecutionControlToken token)
   {
-    StartTime = DateTime.UtcNow;
+    var startTime = DateTime.Now;
+    var campaignPath = CreateCampaignResultsFolder(startTime);
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
@@ -76,6 +77,7 @@ public class CampaignExecutor : ICampaignExecutor
         break;
 
       var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
+      var experimentPath = CreateExperimentSubFolder(campaignPath, experimentExecutor.Template.UniqueId);
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
       experimentExecutor.ExperimentStatusObservable.Subscribe(experimentStatus =>
@@ -87,6 +89,7 @@ public class CampaignExecutor : ICampaignExecutor
       });
 
       var experimentResult = await experimentExecutor.Execute(token);
+      experimentResult.ResultOutputPath = experimentPath;
 
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
@@ -96,7 +99,7 @@ public class CampaignExecutor : ICampaignExecutor
         var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
           .GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
 
-        var analysis = await analyzer.Analyze(experimentResult, experimentResult.CompletedExperiment.Result, token.CancellationToken, StartTime);
+        var analysis = await analyzer.Analyze(experimentResult, experimentResult.CompletedExperiment.Result, token.CancellationToken);
         analysis.CompletedExperiment = experimentResult.CompletedExperiment;
         experimentResult.CompletedExperiment.AnalysisResult = analysis.Result;
         analyses.Add(analysis);
@@ -129,7 +132,7 @@ public class CampaignExecutor : ICampaignExecutor
       ExecutionInfo = new ExecutionInfo
       {
         TimeFinished = DateTime.UtcNow.ToTimestamp(),
-        TimeStarted = StartTime.ToTimestamp()
+        TimeStarted = startTime.ToTimestamp()
       }
     };
 
@@ -141,6 +144,21 @@ public class CampaignExecutor : ICampaignExecutor
   private bool ShouldStop()
   {
     return StopConditions.Any(condition => condition.ShouldStop());
+  }
+
+  private string CreateCampaignResultsFolder(DateTime startTime)
+  {
+    var newFolderName = $"{Template.Name}_{startTime.ToString("h-mm_M-dd")}";
+    var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);
+    Directory.CreateDirectory(fullPath);
+    return fullPath;
+  }
+
+  private string CreateExperimentSubFolder(string camapignPath, string folderName)
+  {
+    var experimentPath = Path.Combine(camapignPath, folderName);
+    Directory.CreateDirectory(experimentPath);
+    return experimentPath;
   }
 
 
@@ -240,7 +258,7 @@ public class CampaignExecutor : ICampaignExecutor
   {
     foreach(var handler in _resultHandlers)
     {
-      await handler.Handle(result, StartTime);
+      await handler.Handle(result);
     }
   }
 
@@ -249,5 +267,4 @@ public class CampaignExecutor : ICampaignExecutor
   public double ReplanRate { get; set; } = 1;
   public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
-  public DateTime StartTime { get; set; }
 }
