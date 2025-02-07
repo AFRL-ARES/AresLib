@@ -13,7 +13,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
 
   protected override Task<DeviceCommandResult> ParseAndPerformDeviceAction(TestDeviceCommand deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken)
   {
-    switch (deviceCommandEnum)
+    switch(deviceCommandEnum)
     {
       case TestDeviceCommand.Record:
       case TestDeviceCommand.Record2:
@@ -22,7 +22,17 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
         var reply = new TestReply();
         var param = parameters.First(parameter => parameter.Metadata.Name == TestDeviceCommandParameter.ReplyParameter.ToString());
         reply.Message = $"Device received {param.Value.Value}";
-        reply.Number = param.Value.Value;
+
+        var parsed = float.TryParse(param.Value.Value, out var floatValue);
+
+        if(!parsed)
+        {
+          result.Error = "Test device failed to parse number!";
+          result.Success = false;
+          return Task.FromResult(result);
+        }
+
+        reply.Number = floatValue;
         result.Result = Any.Pack(reply);
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();

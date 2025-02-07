@@ -37,7 +37,7 @@ internal class DeviceLibraryTests
     parameter.Value = new ParameterValue
     {
       UniqueId = Guid.NewGuid().ToString(),
-      Value = 12345
+      Value = "12345"
     };
 
     command.Parameters.Add(parameter);
@@ -57,7 +57,8 @@ internal class DeviceLibraryTests
   {
     var device = new TestDevice();
     var interpreter = new Mock<TestDeviceInterpreter>(device);
-    interpreter.Protected().Setup<CommandMetadata[]>("CommandsToMetadatas").Returns(() => {
+    interpreter.Protected().Setup<CommandMetadata[]>("CommandsToMetadatas").Returns(() =>
+    {
       var meta = new CommandMetadata
       {
         DeviceName = device.Name,
@@ -93,7 +94,8 @@ internal class DeviceLibraryTests
     var parameter1Name = "Test1";
     var parameter2Name = "Test2";
     var parameter3Name = "Test3";
-    interpreter.Protected().Setup<CommandMetadata[]>("CommandsToMetadatas").Returns(() => {
+    interpreter.Protected().Setup<CommandMetadata[]>("CommandsToMetadatas").Returns(() =>
+    {
       var meta = new CommandMetadata
       {
         DeviceName = device.Name,
@@ -129,7 +131,8 @@ internal class DeviceLibraryTests
     var parameterMetadata1 = commandMetadata.ParameterMetadatas.First(metadata => metadata.Index == 0);
     var parameterMetadata2 = commandMetadata.ParameterMetadatas.First(metadata => metadata.Index == 1);
     var parameterMetadata3 = commandMetadata.ParameterMetadatas.First(metadata => metadata.Index == 2);
-    Assert.Multiple(() => {
+    Assert.Multiple(() =>
+    {
       Assert.That(parameterMetadata1.Name, Is.EqualTo(parameter1Name));
       Assert.That(parameterMetadata2.Name, Is.EqualTo(parameter2Name));
       Assert.That(parameterMetadata3.Name, Is.EqualTo(parameter3Name));

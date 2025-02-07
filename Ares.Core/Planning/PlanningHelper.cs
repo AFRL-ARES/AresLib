@@ -48,7 +48,7 @@ public class PlanningHelper : IPlanningHelper
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
-          Value = Convert.ToSingle(result.Value)
+          Value = result.Value
         };
 
         parameterPlanTarget.Value = val;

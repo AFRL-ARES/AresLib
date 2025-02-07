@@ -15,7 +15,7 @@ message ManualPlannerSet {
 
 message ParameterNameValuePair {
 	string name = 1; // name of the parameter
-	double value = 2; // value for the parameter
+	string value = 2; // value for the parameter
 }
 
 message ManualPlannerFileLines {

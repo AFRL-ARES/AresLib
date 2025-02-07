@@ -39,7 +39,17 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
     {
       case AresCoreDeviceCommand.Sleep:
         var durationParam = parameters[0];
-        var duration = Duration.FromMilliseconds(durationParam.Value.Value);
+
+        var parsed = Double.TryParse(durationParam.Value.Value, out var doubleValue);
+
+        if(!parsed)
+        {
+          result.Error = "Failed to parse paramter for sleep command into double value!";
+          result.Success = false;
+          return result;
+        }
+
+        var duration = Duration.FromMilliseconds(doubleValue);
         await Device.Sleep(duration.ToTimeSpan());
         result.Success = true;
         return result;

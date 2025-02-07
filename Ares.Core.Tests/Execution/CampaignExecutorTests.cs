@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.AresEnvironment;
 using Ares.Core.Device;
 using Ares.Core.Execution;
 using Ares.Core.Execution.ControlTokens;
@@ -22,7 +23,7 @@ internal class CampaignExecutorTests
   private IExecutionReportStore _executionReportStore;
   private IPlanningHelper _planningHelper;
   private IEnumerable<IResultHandler> _resultHandlers;
-
+  private AresVariableManager _variableManager;
 
   [OneTimeSetUp]
   public void OneTimeSetUp()
@@ -33,6 +34,8 @@ internal class CampaignExecutorTests
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
     _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
+    _variableManager = new Mock<AresVariableManager>().Object;
+
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
     var repo = new DeviceCommandInterpreterRepo
@@ -44,7 +47,7 @@ internal class CampaignExecutorTests
     var startupScriptComposer = new StartupComposer(stepComposer);
     var closeoutScriptComposer = new CloseoutComposer(stepComposer);
 
-    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers);
+    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _variableManager);
   }
 
   [SetUp]

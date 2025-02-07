@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Ares.Messaging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Ares.Messaging;
 
 namespace Ares.Device;
 
@@ -20,7 +20,7 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
   public IEnumerable<CommandMetadata> CommandsToIndexedMetadatas()
   {
     var commandMetadatas = CommandsToMetadatas();
-    foreach (var commandMetadata in commandMetadatas)
+    foreach(var commandMetadata in commandMetadatas)
       OrderCommandMetadata(commandMetadata);
 
     return commandMetadatas;
@@ -57,13 +57,14 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
   {
     var parameterMetadatasAscending = commandMetadata.ParameterMetadatas.ToArray();
 
-    if (parameterMetadatasAscending.Length > 1)
+    if(parameterMetadatasAscending.Length > 1)
     {
-      if (parameterMetadatasAscending.All(parameterMetadata => parameterMetadata.Index == default))
+      if(parameterMetadatasAscending.All(parameterMetadata => parameterMetadata.Index == default))
       {
         parameterMetadatasAscending = parameterMetadatasAscending.Select
           (
-            (parameter, index) => {
+            (parameter, index) =>
+            {
               parameter.Index = index;
               return parameter;
             }
@@ -79,7 +80,7 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
             .Distinct()
             .ToArray();
 
-        if (distinctParameterIndexes.Length != parameterMetadatasAscending.Length)
+        if(distinctParameterIndexes.Length != parameterMetadatasAscending.Length)
           throw new Exception($"{GetType().Name} error parsing {commandMetadata.Name} parameters, parameter Indexes are not distinct");
       }
     }

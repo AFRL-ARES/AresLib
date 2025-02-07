@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.AresEnvironment;
 using Ares.Core.Planning;
 using Ares.Messaging;
 
@@ -13,6 +14,7 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   private readonly ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> _closeoutScriptComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IEnumerable<IResultHandler> _resultHandlers;
+  private readonly AresVariableManager _variableManager;
 
   public CampaignComposer(IAnalyzerManager analyzerManager,
     ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
@@ -20,8 +22,10 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> closeoutScriptComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
-    IEnumerable<IResultHandler> resultHandlers)
+    IEnumerable<IResultHandler> resultHandlers,
+    AresVariableManager variableManager)
   {
+    _variableManager = variableManager;
     _analyzerManager = analyzerManager;
     _experimentComposer = experimentComposer;
     _startupScriptComposer = startupScriptComposer;
@@ -31,6 +35,6 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     _resultHandlers = resultHandlers;
   }
 
-  public ICampaignExecutor Compose(CampaignTemplate template) 
-    => new CampaignExecutor(_experimentComposer, _startupScriptComposer, _closeoutScriptComposer, _planningHelper, _executionReporter, _analyzerManager, template, _resultHandlers);
+  public ICampaignExecutor Compose(CampaignTemplate template)
+    => new CampaignExecutor(_experimentComposer, _startupScriptComposer, _closeoutScriptComposer, _planningHelper, _executionReporter, _analyzerManager, template, _resultHandlers, _variableManager);
 }

@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.AresEnvironment;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
@@ -21,6 +22,7 @@ public class CampaignExecutor : ICampaignExecutor
   private readonly ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> _closeoutScriptComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IEnumerable<IResultHandler> _resultHandlers;
+  private readonly AresVariableManager _variableManager;
 
   public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     ICommandComposer<ExperimentTemplate, StartupScriptExecutor> startupScriptComposer,
@@ -29,8 +31,10 @@ public class CampaignExecutor : ICampaignExecutor
     IExecutionReporter executionReporter,
     IAnalyzerManager analyzerManager,
     CampaignTemplate template,
-    IEnumerable<IResultHandler> resultHandlers)
+    IEnumerable<IResultHandler> resultHandlers,
+    AresVariableManager variableManager)
   {
+    _variableManager = variableManager;
     _experimentComposer = experimentComposer;
     _startupScriptComposer = startupScriptComposer;
     _closeoutScriptComposer = closeoutScriptComposer;
@@ -54,6 +58,7 @@ public class CampaignExecutor : ICampaignExecutor
   {
     var startTime = DateTime.Now;
     var campaignPath = CreateCampaignResultsFolder(startTime);
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignResultPath, campaignPath);
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
@@ -69,15 +74,19 @@ public class CampaignExecutor : ICampaignExecutor
     var startupExecutor = GenerateStartupScriptExecutor(token.CancellationToken);
     await HandleExperimentStartup(token, startupExecutor);
     bool executionSuccess = true;
+    var experiment_count = 0;
 
     while(!ShouldStop() && !token.IsCancelled)
     {
+      var experimentFolder = $"Experiment_{experiment_count++}";
+      var experimentPath = CreateExperimentSubFolder(campaignPath, experimentFolder);
+      AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.ExperimentResultPath, experimentPath);
+
       var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
       if(experimentExecutorResult.ErrorString is not null)
         break;
 
       var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
-      var experimentPath = CreateExperimentSubFolder(campaignPath, experimentExecutor.Template.UniqueId);
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
       experimentExecutor.ExperimentStatusObservable.Subscribe(experimentStatus =>
@@ -182,6 +191,14 @@ public class CampaignExecutor : ICampaignExecutor
 
       else
         experimentTemplate = analyses.Last().CompletedExperiment.Template.CloneWithNewIds();
+
+      var resolveVarsSuccess = _variableManager.TryResolveVariable(experimentTemplate.GetAllParameters());
+
+      if(!resolveVarsSuccess)
+      {
+        result.ErrorString = "Failed to assign environment variables! Experiment will be terminated!";
+        return result;
+      }
     }
 
     //Passing the campaigns name into the experiment template for file creation purposes post experiment
@@ -197,6 +214,8 @@ public class CampaignExecutor : ICampaignExecutor
 
     //Passing the campaigns name into the experiment template for file creation purposes post experiment
     experimentTemplate.Name = Template.Name;
+
+    var resolveVarsSuccess = _variableManager.TryResolveVariable(experimentTemplate.GetAllStartupParameters());
 
     return _startupScriptComposer.Compose(experimentTemplate);
   }
