@@ -191,10 +191,13 @@ public class CampaignExecutor : ICampaignExecutor
 
       else
         experimentTemplate = analyses.Last().CompletedExperiment.Template.CloneWithNewIds();
+    }
 
+    if(!experimentTemplate.IsEnvironmentResolved())
+    {
       var resolveVarsSuccess = _variableManager.TryResolveVariable(experimentTemplate.GetAllParameters());
 
-      if(!resolveVarsSuccess)
+      if (!resolveVarsSuccess)
       {
         result.ErrorString = "Failed to assign environment variables! Experiment will be terminated!";
         return result;

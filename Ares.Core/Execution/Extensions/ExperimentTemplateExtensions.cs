@@ -42,6 +42,15 @@ internal static class ExperimentTemplateExtensions
     => template.GetAllParameters().All(parameter => parameter.Value is not null);
 
   /// <summary>
+  /// Checks whether or not every <see cref="Parameter" /> within an experiment has a value. If so then
+  /// that means the template is resolved and can be sent to execution.
+  /// </summary>
+  /// <param name="template">The template to check if resolved</param>
+  /// <returns>True if resolved, false otherwise</returns>
+  public static bool IsEnvironmentResolved(this ExperimentTemplate template)
+    => template.GetAllParameters().All(parameter => parameter.Value.Value is not "");
+
+  /// <summary>
   /// Given an experiment template, creates a new experiment template with a new unique id
   /// as well as a new id for any nested templates.
   /// </summary>
