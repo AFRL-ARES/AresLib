@@ -14,6 +14,18 @@ namespace Ares.Core.AresEnvironment
       return AresEnvironmentVariables.GetValueOrDefault(variableType);
     }
 
+    public static void SetInternalVariable(InternalVariableType variableType, string value)
+    {
+      AresInternalVariables[variableType] = value;
+    }
+
+    public static string? GetInternalVariable(InternalVariableType variableType)
+    {
+      return AresInternalVariables.GetValueOrDefault(variableType);
+    }
+
     private static Dictionary<VariableType, string> AresEnvironmentVariables { get; } = new();
+
+    private static Dictionary<InternalVariableType, string> AresInternalVariables { get; } = new();
   }
 }

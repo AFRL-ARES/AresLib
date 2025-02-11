@@ -15,5 +15,6 @@ message Parameter {
 	bool environment_based = 5; //Indicated whether or not the parameter needs environment information
 	ParameterMetadata planning_metadata = 6; // metadata containing the info needed for planning
 	VariableType variable_type = 7; // variable type to match given ARES environment variables
-	int64 index = 8; // Index of the collection in which executed this template
+	string variable_argument = 8; // optional argument to be populated with the environment variable
+	int64 index = 9; // Index of the collection in which executed this template
 }

@@ -57,8 +57,19 @@ public class CampaignExecutor : ICampaignExecutor
   public async Task<CampaignResult> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.Now;
+
+    //Create Campaign Path
     var campaignPath = CreateCampaignResultsFolder(startTime);
     AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignResultPath, campaignPath);
+
+    //Create Miscellaneous Folder
+    var miscFolderPath = CreateCampaignMiscellaneousFolder(campaignPath);
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignMiscFolder, miscFolderPath);
+
+    //Set Internal Variables related to Campaign
+    AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, Template.UniqueId);
+    AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, Template.Name);
+
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
@@ -78,9 +89,12 @@ public class CampaignExecutor : ICampaignExecutor
 
     while(!ShouldStop() && !token.IsCancelled)
     {
-      var experimentFolder = $"Experiment_{experiment_count++}";
+      var experimentFolder = $"Experiment_{++experiment_count}";
       var experimentPath = CreateExperimentSubFolder(campaignPath, experimentFolder);
       AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.ExperimentResultPath, experimentPath);
+
+      //Populate Internal Variables Related to Experiment
+      AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentExperimentNumber, experiment_count.ToString());
 
       var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
       if(experimentExecutorResult.ErrorString is not null)
@@ -163,13 +177,19 @@ public class CampaignExecutor : ICampaignExecutor
     return fullPath;
   }
 
+  private string CreateCampaignMiscellaneousFolder(string campaignPath)
+  {
+    var newFolderPath = Path.Combine(campaignPath, "Miscellaneous");
+    Directory.CreateDirectory(newFolderPath);
+    return newFolderPath;
+  }
+
   private string CreateExperimentSubFolder(string camapignPath, string folderName)
   {
     var experimentPath = Path.Combine(camapignPath, folderName);
     Directory.CreateDirectory(experimentPath);
     return experimentPath;
   }
-
 
   private async Task<ExperimentExecutorResult> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
   {
@@ -197,7 +217,7 @@ public class CampaignExecutor : ICampaignExecutor
     {
       var resolveVarsSuccess = _variableManager.TryResolveVariable(experimentTemplate.GetAllParameters());
 
-      if (!resolveVarsSuccess)
+      if(!resolveVarsSuccess)
       {
         result.ErrorString = "Failed to assign environment variables! Experiment will be terminated!";
         return result;
