@@ -66,6 +66,10 @@ public class CampaignExecutor : ICampaignExecutor
     var miscFolderPath = CreateCampaignMiscellaneousFolder(campaignPath);
     AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignMiscFolder, miscFolderPath);
 
+    //Create Startup Folder
+    var startupFolder = CreateStartupSubFolder(campaignPath, "Startup");
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignStartupFolder, startupFolder);
+
     //Set Internal Variables related to Campaign
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, Template.UniqueId);
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, Template.Name);
@@ -189,6 +193,13 @@ public class CampaignExecutor : ICampaignExecutor
     var experimentPath = Path.Combine(camapignPath, folderName);
     Directory.CreateDirectory(experimentPath);
     return experimentPath;
+  }
+
+  private string CreateStartupSubFolder(string campaignPath, string folderName)
+  {
+    var startupPath = Path.Combine(campaignPath, folderName);
+    Directory.CreateDirectory(startupPath);
+    return startupPath;
   }
 
   private async Task<ExperimentExecutorResult> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
