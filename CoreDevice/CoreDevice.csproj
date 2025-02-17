@@ -11,7 +11,7 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Ares.Device.dll" Version="2025.2.12.144215" />
+    <PackageReference Include="Ares.Device.dll" Version="2025.2.17.134818" />
     <PackageReference Include="UnitsNet" Version="5.33.0" />
   </ItemGroup>
 </Project>
