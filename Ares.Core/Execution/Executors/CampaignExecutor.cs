@@ -1,4 +1,6 @@
-﻿using Ares.Core.Analyzing;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Ares.Core.Analyzing;
 using Ares.Core.AresEnvironment;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
@@ -7,8 +9,6 @@ using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -54,12 +54,12 @@ public class CampaignExecutor : ICampaignExecutor
     ExperimentStatusObservable = _executionStatusSubject.AsObservable();
   }
 
-  public async Task<CampaignResult> Execute(ExecutionControlToken token)
+  public async Task<CampaignExecutionSummary> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.Now;
 
     //Create Campaign Path
-    var campaignPath = CreateCampaignResultsFolder(startTime);
+    var campaignPath = CreateCampaignExecutionSummariesFolder(startTime);
     AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignResultPath, campaignPath);
 
     //Create Miscellaneous Folder
@@ -74,7 +74,7 @@ public class CampaignExecutor : ICampaignExecutor
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, Template.UniqueId);
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, Template.Name);
 
-    var experimentResults = new List<ExperimentResult>();
+    var ExperimentSummaries = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
     {
@@ -115,8 +115,8 @@ public class CampaignExecutor : ICampaignExecutor
         _executionReporter.Report(Status);
       });
 
-      var experimentResult = await experimentExecutor.Execute(token);
-      experimentResult.ResultOutputPath = experimentPath;
+      var experimentSummary = await experimentExecutor.Execute(token);
+      experimentSummary.ResultOutputPath = experimentPath;
 
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
@@ -126,9 +126,9 @@ public class CampaignExecutor : ICampaignExecutor
         var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
           .GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
 
-        var analysis = await analyzer.Analyze(experimentResult, experimentResult.CompletedExperiment.Result, token.CancellationToken);
-        analysis.CompletedExperiment = experimentResult.CompletedExperiment;
-        experimentResult.CompletedExperiment.AnalysisResult = analysis.Result;
+        var analysis = await analyzer.Analyze(experimentSummary, experimentSummary.CompletedExperiment.Result, token.CancellationToken);
+        analysis.CompletedExperiment = experimentSummary.CompletedExperiment;
+        experimentSummary.CompletedExperiment.AnalysisResult = analysis.Result;
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
       }
@@ -137,8 +137,8 @@ public class CampaignExecutor : ICampaignExecutor
         executionSuccess = false;
       }
 
-      await PostExperimentExecution(experimentResult);
-      experimentResults.Add(experimentResult);
+      await PostExperimentExecution(experimentSummary);
+      ExperimentSummaries.Add(experimentSummary);
     }
 
     var closeoutExecutor = GenerateCloseoutScriptExecutor(token.CancellationToken);
@@ -152,7 +152,7 @@ public class CampaignExecutor : ICampaignExecutor
 
     _executionReporter.Report(Status);
 
-    var campaignResult = new CampaignResult
+    var CampaignExecutionSummary = new CampaignExecutionSummary
     {
       UniqueId = Guid.NewGuid().ToString(),
       CampaignId = Template.UniqueId,
@@ -163,9 +163,9 @@ public class CampaignExecutor : ICampaignExecutor
       }
     };
 
-    campaignResult.ExperimentResults.AddRange(experimentResults);
+    CampaignExecutionSummary.ExperimentSummaries.AddRange(ExperimentSummaries);
 
-    return campaignResult;
+    return CampaignExecutionSummary;
   }
 
   private bool ShouldStop()
@@ -173,7 +173,7 @@ public class CampaignExecutor : ICampaignExecutor
     return StopConditions.Any(condition => condition.ShouldStop());
   }
 
-  private string CreateCampaignResultsFolder(DateTime startTime)
+  private string CreateCampaignExecutionSummariesFolder(DateTime startTime)
   {
     var newFolderName = $"{Template.Name}_{startTime.ToString("h-mm_M-dd")}";
     var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);

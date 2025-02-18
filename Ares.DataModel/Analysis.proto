@@ -12,3 +12,9 @@ message Analysis {
 	float result = 3; // Result of the process performed on the completed experiment's output
 	AnalyzerInfo analyzer = 4; // Name of the analyzer providing the process result
 }
+
+message RequestedAnalysisData {
+	string key = 1;
+	google.protobuf.StringValue type = 2;
+	bool optional = 3;
+}

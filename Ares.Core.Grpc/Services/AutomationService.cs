@@ -1,4 +1,11 @@
-﻿using Ares.Core.Analyzing;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
+using System.Threading.Tasks;
+using Ares.Core.Analyzing;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
@@ -7,13 +14,6 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reactive.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
 
@@ -297,7 +297,8 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(new Empty());
   }
 
-  public override async Task<AvailableCampaignResultsResponse> GetAvailableCampaignResults(Empty request, ServerCallContext context)
+
+  public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummariesAsync(Empty request, ServerCallContext context)
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
     var results = dbContext.CampaignResults.Select(result => new CampaignResultMetadata
@@ -312,7 +313,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return response;
   }
 
-  public override async Task<CampaignResult> GetCampaignResult(CampaignResultRequest request, ServerCallContext context)
+  public override async Task<CampaignExecutionSummary> GetCampaignExecutionSummary(CampaignExecutionSummaryRequest request, ServerCallContext context)
   {
     await using var dbContext = _coreContextFactory.CreateDbContext();
     var result = dbContext.CampaignResults.First(campaignResult => campaignResult.UniqueId == request.ResultId);

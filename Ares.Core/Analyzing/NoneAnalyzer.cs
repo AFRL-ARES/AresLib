@@ -33,4 +33,9 @@ internal class NoneAnalyzer : AnalyzerBase<Any>
 
   public override bool InputSupported(string fullTypeName)
     => true;
+
+  public override Task<RequestedAnalysisData[]> GetSupportedInputs()
+  {
+    return Task.FromResult(Array.Empty<RequestedAnalysisData>());
+  }
 }

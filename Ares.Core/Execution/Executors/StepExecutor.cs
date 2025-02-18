@@ -4,9 +4,9 @@ using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
 
-public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
+public abstract class StepExecutor : IExecutor<StepExecutionSummary, StepExecutionStatus>
 {
-  public StepExecutor(StepTemplate template, IExecutor<CommandResult, CommandExecutionStatus>[] commandExecutors)
+  public StepExecutor(StepTemplate template, IExecutor<CommandExecutionSummary, CommandExecutionStatus>[] commandExecutors)
   {
     Template = template;
     CommandExecutors = commandExecutors;
@@ -30,11 +30,11 @@ public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
     ExperimentStatusObservable = commandExecutionObservation;
   }
 
-  public IExecutor<CommandResult, CommandExecutionStatus>[] CommandExecutors { get; }
+  public IExecutor<CommandExecutionSummary, CommandExecutionStatus>[] CommandExecutors { get; }
   protected StepTemplate Template { get; }
   public IObservable<StepExecutionStatus> ExperimentStatusObservable { get; }
   public StepExecutionStatus Status { get; }
   public IObservable<StepExecutionStatus>? StartupStatusObservable { get; }
   public IObservable<StepExecutionStatus>? CloseoutStatusObservable { get; }
-  public abstract Task<StepResult> Execute(ExecutionControlToken token);
+  public abstract Task<StepExecutionSummary> Execute(ExecutionControlToken token);
 }

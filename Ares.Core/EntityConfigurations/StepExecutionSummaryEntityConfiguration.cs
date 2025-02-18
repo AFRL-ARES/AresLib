@@ -4,19 +4,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EntityConfigurations;
 
-internal class StepResultEntityConfiguration : AresEntityTypeBaseConfiguration<StepResult>
+internal class StepExecutionSummaryEntityConfiguration : AresEntityTypeBaseConfiguration<StepExecutionSummary>
 {
-  public override void Configure(EntityTypeBuilder<StepResult> builder)
+  public override void Configure(EntityTypeBuilder<StepExecutionSummary> builder)
   {
     base.Configure(builder);
-    builder.ToTable("StepResults");
-    builder.HasMany(result => result.CommandResults)
+    builder.ToTable("StepExecutionSummaries");
+    builder.HasMany(result => result.CommandSummaries)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
-      .HasForeignKey<ExecutionInfo>("StepResultId")
+      .HasForeignKey<ExecutionInfo>("StepExecutionSummaryId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.HasOne<StepTemplate>()
@@ -24,7 +24,7 @@ internal class StepResultEntityConfiguration : AresEntityTypeBaseConfiguration<S
       .HasForeignKey(result => result.StepId)
       .OnDelete(DeleteBehavior.ClientCascade);
 
-    builder.Navigation(result => result.CommandResults).AutoInclude();
+    builder.Navigation(result => result.CommandSummaries).AutoInclude();
     builder.Navigation(result => result.ExecutionInfo).AutoInclude();
   }
 }

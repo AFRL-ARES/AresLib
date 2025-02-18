@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EntityConfigurations;
 
-internal class ExperimentResultEntityConfiguration : AresEntityTypeBaseConfiguration<ExperimentResult>
+internal class ExperimentExecutionSummaryEntityConfiguration : AresEntityTypeBaseConfiguration<ExperimentExecutionSummary>
 {
-  public override void Configure(EntityTypeBuilder<ExperimentResult> builder)
+  public override void Configure(EntityTypeBuilder<ExperimentExecutionSummary> builder)
   {
     base.Configure(builder);
-    builder.ToTable("ExperimentResults");
-    builder.HasMany(result => result.StepResults)
+    builder.ToTable("ExperimentExecutionSummaries");
+    builder.HasMany(result => result.StepSummaries)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
@@ -29,7 +29,7 @@ internal class ExperimentResultEntityConfiguration : AresEntityTypeBaseConfigura
     builder.Navigation(result => result.ExecutionInfo)
       .AutoInclude();
 
-    builder.Navigation(result => result.StepResults)
+    builder.Navigation(result => result.StepSummaries)
       .AutoInclude();
   }
 }

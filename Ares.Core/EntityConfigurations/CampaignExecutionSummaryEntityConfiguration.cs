@@ -4,19 +4,19 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EntityConfigurations;
 
-internal class CampaignResultEntityConfiguration : AresEntityTypeBaseConfiguration<CampaignResult>
+internal class CampaignExecutionSummaryEntityConfiguration : AresEntityTypeBaseConfiguration<CampaignExecutionSummary>
 {
-  public override void Configure(EntityTypeBuilder<CampaignResult> builder)
+  public override void Configure(EntityTypeBuilder<CampaignExecutionSummary> builder)
   {
     base.Configure(builder);
-    builder.ToTable("CampaignResults");
-    builder.HasMany(result => result.ExperimentResults)
+    builder.ToTable("CampaignExecutionSummaries");
+    builder.HasMany(result => result.ExperimentSummaries)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
 
     builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
-      .HasForeignKey<ExecutionInfo>("CampaignResultId")
+      .HasForeignKey<ExecutionInfo>("CampaignExecutionSummaryId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
     //builder.HasOne<CampaignTemplate>()
@@ -27,7 +27,7 @@ internal class CampaignResultEntityConfiguration : AresEntityTypeBaseConfigurati
     builder.Navigation(result => result.ExecutionInfo)
       .AutoInclude();
 
-    builder.Navigation(result => result.ExperimentResults)
+    builder.Navigation(result => result.ExperimentSummaries)
       .AutoInclude();
   }
 }

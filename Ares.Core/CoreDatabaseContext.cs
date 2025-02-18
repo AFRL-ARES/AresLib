@@ -1,7 +1,7 @@
-﻿using Ares.Messaging;
+﻿using System.Reflection;
+using Ares.Messaging;
 using Ares.Messaging.Device;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace Ares.Core;
 
@@ -17,13 +17,14 @@ public class CoreDatabaseContext : DbContext
   public DbSet<ExperimentTemplate> ExperimentTemplates => Set<ExperimentTemplate>();
   public DbSet<CommandTemplate> CommandTemplates => Set<CommandTemplate>();
   public DbSet<PlannerTransaction> PlannerTransactions => Set<PlannerTransaction>();
-  public DbSet<CampaignResult> CampaignResults => Set<CampaignResult>();
+  public DbSet<CampaignExecutionSummary> CampaignExecutionSummaries => Set<CampaignExecutionSummary>();
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
+  public DbSet<AresNotification> Notifications => Set<AresNotification>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     var assembly = Assembly.GetAssembly(typeof(CoreDatabaseContext));
-    if (assembly is null)
+    if(assembly is null)
       return;
 
     modelBuilder.ApplyConfigurationsFromAssembly(assembly);

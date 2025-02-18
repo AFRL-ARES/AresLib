@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.AutomationBuilding", "Ares.AutomationBuilding\Ares.AutomationBuilding.csproj", "{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device", "Ares.Device\AresDevicePluginBase\Ares.Device.csproj", "{EEA53524-EF87-43CE-A509-52CE8990DA43}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ares.Device.Serial", "Ares.Device.Serial\AresSerial\Ares.Device.Serial.csproj", "{ED748563-40DE-47D7-860D-C40A4411521A}"
@@ -33,10 +31,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7EEBF1E0-6127-4811-B65A-B6D0D1DF2AFE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EEA53524-EF87-43CE-A509-52CE8990DA43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EEA53524-EF87-43CE-A509-52CE8990DA43}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EEA53524-EF87-43CE-A509-52CE8990DA43}.Release|Any CPU.ActiveCfg = Release|Any CPU

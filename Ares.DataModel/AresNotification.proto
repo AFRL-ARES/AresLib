@@ -1,0 +1,24 @@
+﻿syntax = "proto3";
+
+package ares.messaging;
+import "google/protobuf/timestamp.proto";
+
+message AresNotification {
+  string unique_id = 1; // Unique identifier for the notification
+  AresNotificationSeverity severity = 2; // Severity level of the notification
+  string title = 3; // Short, descriptive title
+  string message = 4; // Detailed message content
+  google.protobuf.Timestamp timestamp = 5; // Time the notification was generated (UTC)
+  string source = 6; // Origin of the notification (e.g., service name)
+  repeated string recipients = 7; // Optional: List of recipients in case the notification is not global
+  bool is_acknowledged = 8; // Optional: Flag indicating if the notification has been acknowledged
+  string type = 9; // Optional: Type of notification (e.g., "new_message", "system_update")
+}
+
+enum AresNotificationSeverity {
+	UNDEFINED = 0;
+	INFO = 1;
+	WARNING = 2;
+	ERROR = 3;
+	CRITICAL = 4;
+}

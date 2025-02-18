@@ -22,22 +22,28 @@
     <Protobuf Include="AresAutomation.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
       <Generator>MSBuild:Compile</Generator>
     </Protobuf>
-      <Protobuf Include="AresDevices.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
-        <Generator>MSBuild:Compile</Generator>
-      </Protobuf>
-      <Protobuf Include="AresPlanning.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
-        <Generator>MSBuild:Compile</Generator>
-      </Protobuf>
-      <Protobuf Include="AresServerInfo.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
-        <Generator>MSBuild:Compile</Generator>
-      </Protobuf>
+    <Protobuf Include="AresDevices.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
+    <Protobuf Include="AresPlanning.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
+    <Protobuf Include="AresServerInfo.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
     <Protobuf Include="AresValidation.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
-        <Generator>MSBuild:Compile</Generator>
-      </Protobuf>
+      <Generator>MSBuild:Compile</Generator>
+    </Protobuf>
+		<Protobuf Include="AresEvent.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+			<Generator>MSBuild:Compile</Generator>
+		</Protobuf>
+		<Protobuf Include="AresAnalysis.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+			<Generator>MSBuild:Compile</Generator>
+		</Protobuf>
   </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ares.DataModel.dll" Version="2025.2.17.134554" GeneratePathProperty="True" />
+      <PackageReference Include="Ares.DataModel.dll" Version="2025.2.18.180829" GeneratePathProperty="True" />
       <PackageReference Include="Grpc.Tools" Version="2.58.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

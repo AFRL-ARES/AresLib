@@ -41,9 +41,9 @@ public class ExecutionManager : IExecutionManager
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
-    var campaignResult = await executor.Execute(_executionControlTokenSource.Token);
-    campaignResult.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
-    await PostExecution(campaignResult);
+    var CampaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
+    CampaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
+    await PostExecution(CampaignExecutionSummary);
   }
 
   public void Stop()
@@ -75,17 +75,17 @@ public class ExecutionManager : IExecutionManager
     ReplanRate = newRate;
   }
 
-  private async Task PostExecution(CampaignResult result)
+  private async Task PostExecution(CampaignExecutionSummary result)
   {
     //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
   }
 
-  private async Task StoreCompletedCampaign(CampaignResult result)
+  private async Task StoreCompletedCampaign(CampaignExecutionSummary result)
   {
     await using var context = await _dbContext.CreateDbContextAsync();
-    context.CampaignResults.Add(result);
+    context.CampaignExecutionSummaries.Add(result);
     await context.SaveChangesAsync();
   }
 }

@@ -1,8 +1,8 @@
-﻿using Ares.Messaging;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Ares.Messaging;
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Analyzing;
 
@@ -61,4 +61,6 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   }
 
   protected abstract Task<Analysis> AnalyzeMessage(ExperimentResult result, T input, CancellationToken cancellationToken);
+
+  public abstract Task<RequestedAnalysisData[]> GetSupportedInputs();
 }

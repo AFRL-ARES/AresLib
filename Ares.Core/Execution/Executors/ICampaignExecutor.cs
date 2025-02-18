@@ -5,7 +5,7 @@ using Grpc.Core;
 
 namespace Ares.Core.Execution.Executors;
 
-public interface ICampaignExecutor : IExecutor<CampaignResult, CampaignExecutionStatus>
+public interface ICampaignExecutor : IExecutor<CampaignExecutionSummary, CampaignExecutionStatus>
 {
   IList<IStopCondition> StopConditions { get; }
   double ReplanRate { get; set; }

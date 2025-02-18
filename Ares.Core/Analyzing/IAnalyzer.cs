@@ -28,6 +28,8 @@ public interface IAnalyzer
 
   bool InputSupported(string fullTypeName);
 
+  Task<RequestedAnalysisData[]> GetSupportedInputs();
+
   /// <summary>
   /// Returns the values for the given parameter metadata
   /// </summary>

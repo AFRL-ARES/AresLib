@@ -1,12 +1,12 @@
-﻿using Ares.Core.Execution.ControlTokens;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Execution.Executors;
 
-public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
+public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecutionStatus>
 {
   private readonly Func<CancellationToken, Task<DeviceCommandResult>> _command;
   private readonly BehaviorSubject<CommandExecutionStatus> _stateSubject;
@@ -32,7 +32,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
   public IObservable<CommandExecutionStatus> StartupStatusObservable { get; }
   public IObservable<CommandExecutionStatus> CloseoutStatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
-  public async Task<CommandResult> Execute(ExecutionControlToken token)
+  public async Task<CommandExecutionSummary> Execute(ExecutionControlToken token)
   {
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
@@ -50,7 +50,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
       Status.State = ExecutionState.Failed;
       _stateSubject.OnNext(Status);
       _stateSubject.OnCompleted();
-      return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, null, DateTime.UtcNow, DateTime.UtcNow);
+      return ExecutorSummaryHelpers.CreateCommandExecutionSummary(Template.UniqueId, null, DateTime.UtcNow, DateTime.UtcNow);
     }
 
     var timeStarted = DateTime.UtcNow;
@@ -67,7 +67,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
     _stateSubject.OnNext(Status);
     _stateSubject.OnCompleted();
 
-    return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
+    return ExecutorSummaryHelpers.CreateCommandExecutionSummary(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
   }
 
   private async Task<DeviceCommandResult> InternalExecute(CancellationToken token)

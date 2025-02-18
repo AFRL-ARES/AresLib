@@ -4,20 +4,20 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EntityConfigurations;
 
-internal class CommandResultEntityConfiguration : AresEntityTypeBaseConfiguration<CommandResult>
+internal class CommandExecutionSummaryEntityConfiguration : AresEntityTypeBaseConfiguration<CommandExecutionSummary>
 {
-  public override void Configure(EntityTypeBuilder<CommandResult> builder)
+  public override void Configure(EntityTypeBuilder<CommandExecutionSummary> builder)
   {
     base.Configure(builder);
-    builder.ToTable("CommandResults");
+    builder.ToTable("CommandExecutionSummaries");
     builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
-      .HasForeignKey<ExecutionInfo>("CommandResultId")
+      .HasForeignKey<ExecutionInfo>("CommandExecutionSummaryId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.HasOne(result => result.Result)
       .WithOne()
-      .HasForeignKey<DeviceCommandResult>("CommandResultId")
+      .HasForeignKey<DeviceCommandResult>("CommandExecutionSummaryId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.HasOne<CommandTemplate>()

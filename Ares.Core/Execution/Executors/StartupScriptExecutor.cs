@@ -8,7 +8,7 @@ namespace Ares.Core.Execution.Executors
   public class StartupScriptExecutor : IExecutor<Empty, CampaignStartupStatus>
   {
     public StartupScriptExecutor(ExperimentTemplate template,
-    IExecutor<StepResult, StepExecutionStatus>[] startupStepExecutors)
+    IExecutor<StepExecutionSummary, StepExecutionStatus>[] startupStepExecutors)
     {
       StartupStepExecutors = startupStepExecutors;
       Template = template;
@@ -32,7 +32,7 @@ namespace Ares.Core.Execution.Executors
 
     public IObservable<CampaignStartupStatus> ExperimentStatusObservable { get; }
     public CampaignStartupStatus Status { get; }
-    public IExecutor<StepResult, StepExecutionStatus>[] StartupStepExecutors { get; }
+    public IExecutor<StepExecutionSummary, StepExecutionStatus>[] StartupStepExecutors { get; }
     public ExperimentTemplate Template { get; set; }
 
     public async Task<Empty> Execute(ExecutionControlToken executionToken)
@@ -45,7 +45,7 @@ namespace Ares.Core.Execution.Executors
 
         var stepResult = await startupStep.Execute(executionToken);
 
-        if(!stepResult.CommandResults.Any())
+        if(!stepResult.CommandSummaries.Any())
           break;
       }
 

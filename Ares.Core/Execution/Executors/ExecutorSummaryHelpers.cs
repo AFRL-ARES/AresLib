@@ -3,15 +3,15 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Executors;
 
-internal static class ExecutorResultHelpers
+internal static class ExecutorSummaryHelpers
 {
-  public static ExperimentResult CreateExperimentResult(string experimentId,
+  public static ExperimentExecutionSummary CreateExperimentExecutionSummary(string experimentId,
     CompletedExperiment completedExperiment,
     DateTime startTime,
     DateTime endTime,
-    IEnumerable<StepResult> stepResults)
+    IEnumerable<StepExecutionSummary> StepSummaries)
   {
-    var experimentResult = new ExperimentResult
+    var experimentSummary = new ExperimentExecutionSummary
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
@@ -19,37 +19,37 @@ internal static class ExecutorResultHelpers
       CompletedExperiment = completedExperiment,
     };
 
-    experimentResult.StepResults.AddRange(stepResults);
-    return experimentResult;
+    experimentSummary.StepSummaries.AddRange(StepSummaries);
+    return experimentSummary;
   }
 
-  public static StepResult CreateStepResult(string stepId,
+  public static StepExecutionSummary CreateStepExecutionSummary(string stepId,
     DateTime startTime,
     DateTime endTime,
-    IEnumerable<CommandResult> commandResults)
+    IEnumerable<CommandExecutionSummary> CommandSummaries)
   {
-    var stepResult = new StepResult
+    var stepResult = new StepExecutionSummary
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
       StepId = stepId
     };
 
-    stepResult.CommandResults.AddRange(commandResults);
+    stepResult.CommandSummaries.AddRange(CommandSummaries);
 
     return stepResult;
   }
 
-  public static StepResult CreateEmptyStepResult(string stepId, DateTime startTime, DateTime endTime)
+  public static StepExecutionSummary CreateEmptyStepExecutionSummary(string stepId, DateTime startTime, DateTime endTime)
   {
-    return new StepResult { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
+    return new StepExecutionSummary { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
   }
-  public static CommandResult CreateCommandResult(string commandId,
+  public static CommandExecutionSummary CreateCommandExecutionSummary(string commandId,
     DeviceCommandResult? deviceResult,
     DateTime startTime,
     DateTime endTime)
   {
-    var commandResult = new CommandResult
+    var CommandExecutionSummary = new CommandExecutionSummary
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
@@ -57,7 +57,7 @@ internal static class ExecutorResultHelpers
       Result = deviceResult
     };
 
-    return commandResult;
+    return CommandExecutionSummary;
   }
 
   private static ExecutionInfo MakeExecutionInfo(DateTime startTime, DateTime endTime)
