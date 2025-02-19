@@ -63,7 +63,7 @@ namespace Ares.Core.AresEnvironment
 
       //TODO: Make this not like this? This is a temporary fix to ensure our analyzer is capable of forwarding the image path forward.
       //realistically we should actually be saving this somewhere in the campaign as a result piece and then forwarding it to the analyzer that way.
-      if(File.Exists(fullPath))
+      if(Directory.Exists(fullPath))
       {
         AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, fullPath);
         return fullPath;
