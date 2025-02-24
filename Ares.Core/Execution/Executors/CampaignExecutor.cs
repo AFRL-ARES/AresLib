@@ -175,7 +175,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   private string CreateCampaignResultsFolder(DateTime startTime)
   {
-    var newFolderName = $"{Template.Name}_{startTime.ToString("h-mm_M-dd")}";
+    var newFolderName = $"{Template.Name}_{startTime.ToString("h-mm-ss_M-dd")}";
     var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);
     Directory.CreateDirectory(fullPath);
     return fullPath;
