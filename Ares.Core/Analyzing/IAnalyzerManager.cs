@@ -39,7 +39,7 @@ public interface IAnalyzerManager
   /// <param name="type">The type name of the analyzer</param>
   /// <returns>Analyzer of the given type</returns>
   /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  IAnalyzer GetAnalyzer(string type);
+  IAnalyzer GetAnalyzerByType(string type);
 
   /// <summary>
   /// Gets a analyzer with a specific version from the registry
@@ -77,11 +77,23 @@ public interface IAnalyzerManager
   IAnalyzer? GetAnalyzer(AnalyzerInfo info);
 
   /// <summary>
+  /// Gets a named analyzer based on the given analyzer name/> object
+  /// </summary>
+  /// <param name="name">The name of the analyzer requested</param>
+  /// <returns>The analyzer or null if none is found </returns>
+  IAnalyzer? GetAnalyzerByName(string name);
+
+  /// <summary>
   /// Adds an analyzer to the registry so that it can later be used by experiment execution
   /// </summary>
   /// <param name="analyzer">The analyzer to register</param>
   void RegisterAnalyzer(IAnalyzer analyzer);
 
+  /// <summary>
+  /// Removes an analyzer from the registry
+  /// </summary>
+  /// <param name="analyzer">The analyzer to unregister</param>
+  void UnregisterAnalyzer(IAnalyzer analyzer);
 
   // TODO remove
   void StoreAnalysis(Analysis analysis);

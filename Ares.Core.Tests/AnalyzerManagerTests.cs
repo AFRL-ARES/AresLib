@@ -39,6 +39,8 @@ internal class AnalyzerManagerTests
 
     public string Name { get; }
     public Version Version { get; }
+    public int Port { get; }
+    public string Address { get; }
     public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
     public AnalyzerState AnalyzerState { get; }
 
