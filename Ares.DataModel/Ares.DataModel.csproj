@@ -44,4 +44,12 @@
     <_Asset Include="**\*.proto" />
     <Protobuf Include="@(_Asset)" Visible="True" GrpcServices="None" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Analyzing\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Update="Analyzing\AresAnalyzer.proto" GrpcServices="Both" />
+  </ItemGroup>
 </Project>

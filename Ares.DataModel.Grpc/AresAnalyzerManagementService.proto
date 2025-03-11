@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+service AresAnalyzerService {
+	rpc GetAvailableAnalyzers(google.protobuf.Empty) returns (GetAvailableAnalyzersResponse);
+	rpc AddAnalyzer(GenericAnalyzer) returns (google.protobuf.Empty);
+	rpc RemoveAnalyzer(RemoveAnalyzerRequest) returns (google.protobuf.Empty);
+}
+
+message GenericAnalyzer {
+	string name = 1;
+	google.protobuf.StringValue address = 2;
+}
+
+message GetAvailableAnalyzersResponse {
+	repeated GenericAnalyzer Analyzers = 1;
+}
+
+message RemoveAnalyzerRequest {
+	string name = 1;
+}
