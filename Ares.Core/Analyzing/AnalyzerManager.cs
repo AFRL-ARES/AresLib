@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 
 namespace Ares.Core.Analyzing;
@@ -6,13 +7,15 @@ namespace Ares.Core.Analyzing;
 public class AnalyzerManager : IAnalyzerManager
 {
   private readonly IList<IAnalyzer> _analyzerStore = new List<IAnalyzer>();
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
   readonly AnalysisRepo _analyses;
 
-  public AnalyzerManager(AnalysisRepo analyses)
+  public AnalyzerManager(AnalysisRepo analyses, IDbContextFactory<CoreDatabaseContext> dbContextFactory)
   {
     _analyses = analyses;
+    _dbContextFactory = dbContextFactory;
     var manualAnalyzer = new NoneAnalyzer();
-    RegisterAnalyzer(manualAnalyzer);
+    _ = RegisterAnalyzer(manualAnalyzer);
   }
 
   public void StoreAnalysis(Analysis analysis)
@@ -136,22 +139,24 @@ public class AnalyzerManager : IAnalyzerManager
     return typedAnalyzers.OrderByDescending(analyzer => analyzer.Version).First();
   }
 
-  public void RegisterAnalyzer(IAnalyzer analyzer)
+  public Task RegisterAnalyzer(IAnalyzer analyzer)
   {
     var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
     if(analyzerExists)
       throw new InvalidOperationException($"Analyzer {analyzer.Name}{analyzer.Version} of type {analyzer.GetType().Name} already registered");
 
     _analyzerStore.Add(analyzer);
+    return Task.CompletedTask;
   }
 
-  public void UnregisterAnalyzer(IAnalyzer analyzer)
+  public Task UnregisterAnalyzer(IAnalyzer analyzer)
   {
     var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
     if(!analyzerExists)
-      return;
+      return Task.CompletedTask;
 
     _analyzerStore.Remove(analyzer);
+    return Task.CompletedTask;
   }
 
   public IEnumerable<IAnalyzer> AvailableAnalyzers => new ReadOnlyCollection<IAnalyzer>(_analyzerStore);

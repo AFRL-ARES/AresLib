@@ -10,19 +10,19 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
 {
   private readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
 
-  public AnalyzerBase(string name, int port, Version version, string address = "https://localhost")
+  public AnalyzerBase(string name, Version version, string address = "https://localhost")
   {
     Name = name;
     Version = version;
-    Port = port;
     Address = address;
     AnalyzerStateObservable = _analyzerStateSubject.AsObservable();
   }
 
   public string Name { get; }
   public Version Version { get; }
-  public int Port { get; }
   public string Address { get; }
+
+  public string UniqueId { get; } = new Guid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 

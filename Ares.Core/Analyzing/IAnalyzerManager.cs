@@ -87,13 +87,13 @@ public interface IAnalyzerManager
   /// Adds an analyzer to the registry so that it can later be used by experiment execution
   /// </summary>
   /// <param name="analyzer">The analyzer to register</param>
-  void RegisterAnalyzer(IAnalyzer analyzer);
+  Task RegisterAnalyzer(IAnalyzer analyzer);
 
   /// <summary>
   /// Removes an analyzer from the registry
   /// </summary>
   /// <param name="analyzer">The analyzer to unregister</param>
-  void UnregisterAnalyzer(IAnalyzer analyzer);
+  Task UnregisterAnalyzer(IAnalyzer analyzer);
 
   // TODO remove
   void StoreAnalysis(Analysis analysis);

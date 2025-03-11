@@ -6,7 +6,7 @@ namespace Ares.Core.Tests.Data.Analyzer;
 
 public class TestReplyAnalyzer : AnalyzerBase<TestReply>
 {
-  public TestReplyAnalyzer() : base("Test Analyzer", 0000, new Version(1, 0))
+  public TestReplyAnalyzer() : base("Test Analyzer", new Version(1, 0))
   {
   }
 

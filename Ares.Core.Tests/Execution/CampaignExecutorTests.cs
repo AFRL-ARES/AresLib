@@ -10,6 +10,7 @@ using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace Ares.Core.Tests.Execution;
@@ -28,7 +29,7 @@ internal class CampaignExecutorTests
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
-    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+    _analyzerManager = new AnalyzerManager(new AnalysisRepo(), new Mock<IDbContextFactory<CoreDatabaseContext>>().Object);
     _analyzerManager.RegisterAnalyzer(new TestReplyAnalyzer());
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);

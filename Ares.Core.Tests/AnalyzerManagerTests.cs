@@ -1,17 +1,22 @@
 ﻿using Ares.Core.Analyzing;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace Ares.Core.Tests;
 
 internal class AnalyzerManagerTests
 {
-  private IAnalyzerManager _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+  private IAnalyzerManager _analyzerManager;
+  private IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
+
 
   [SetUp]
   public void SetUp()
   {
-    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+    _dbContextFactory = new Mock<IDbContextFactory<CoreDatabaseContext>>().Object;
+    _analyzerManager = new AnalyzerManager(new AnalysisRepo(), _dbContextFactory);
   }
 
   [Test]
@@ -39,8 +44,8 @@ internal class AnalyzerManagerTests
 
     public string Name { get; }
     public Version Version { get; }
-    public int Port { get; }
     public string Address { get; }
+    public string UniqueId { get; } = new Guid().ToString();
     public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
     public AnalyzerState AnalyzerState { get; }
 

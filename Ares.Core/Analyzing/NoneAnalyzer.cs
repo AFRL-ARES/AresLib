@@ -10,7 +10,7 @@ namespace Ares.Core.Analyzing;
 internal class NoneAnalyzer : AnalyzerBase<Any>
 {
 
-  public NoneAnalyzer() : base("NONE", 0000, new Version(1, 0))
+  public NoneAnalyzer() : base("NONE", new Version(1, 0))
   {
   }
 
