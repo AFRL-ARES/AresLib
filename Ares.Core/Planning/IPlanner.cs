@@ -15,6 +15,11 @@ public interface IPlanner
   Version Version { get; }
 
   /// <summary>
+  /// Address used to communicate with the planner
+  /// </summary>
+  string Address { get; }
+
+  /// <summary>
   /// Current state (<see cref="PlannerState" />) of the planner which essentially indicated
   /// whether or not this planner is currently available for planning
   /// </summary>

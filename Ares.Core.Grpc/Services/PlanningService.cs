@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Ares.Core.Planning;
+﻿using Ares.Core.Planning;
 using Ares.Messaging;
 using Ares.Messaging.Planning;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
 
@@ -19,12 +19,22 @@ public class PlanningService : AresPlanning.AresPlanningBase
     _plannerManager = plannerManager;
   }
 
-  public override Task<GetAllPlannersResponse> GetAllPlanners(GetAllPlannersRequest request, ServerCallContext context)
+  public override Task<GetAllPlannersResponse> GetAllPlanners(Empty request, ServerCallContext context)
   {
     var response = new GetAllPlannersResponse();
-    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerInfo { Name = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name });
+    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerInfo { Name = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name.ToLower(), Address = planner.Address });
     response.Planners.AddRange(planners);
     return Task.FromResult(response);
+  }
+
+  public override Task<Empty> AddPlanner(PlannerInfo request, ServerCallContext context)
+  {
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<Empty> RemovePlanner(PlannerInfo request, ServerCallContext context)
+  {
+    return Task.FromResult(new Empty());
   }
 
   public override async Task<Empty> SeedManualPlanner(ManualPlannerSeed request, ServerCallContext context)

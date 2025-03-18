@@ -51,5 +51,6 @@
 
   <ItemGroup>
     <Protobuf Update="Analyzing\AresAnalyzer.proto" GrpcServices="Both" />
+    <Protobuf Update="Planning\AresPlanner.proto" GrpcServices="Both" />
   </ItemGroup>
 </Project>

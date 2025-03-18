@@ -20,6 +20,8 @@ public class ManualPlanner : IPlanner
   public string Name { get; } = "Manual Planner";
   public Version Version { get; } = new(1, 0);
 
+  public string Address { get; }
+
   public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
   {
     try

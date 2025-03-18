@@ -8,13 +8,12 @@ import "Planning/ManualPlanner.proto";
 import "google/protobuf/empty.proto";
 
 service AresPlanning {
-	rpc GetAllPlanners(GetAllPlannersRequest) returns (GetAllPlannersResponse);
+	rpc GetAllPlanners(google.protobuf.Empty) returns (GetAllPlannersResponse);
 	rpc SeedManualPlanner(planning.ManualPlannerSeed) returns (google.protobuf.Empty);
 	rpc GetManualPlannerSeed(google.protobuf.Empty) returns (planning.ManualPlannerSetCollection);
 	rpc ResetManualPlanner(google.protobuf.Empty) returns (google.protobuf.Empty);
-}
-
-message GetAllPlannersRequest {
+	rpc AddPlanner(PlannerInfo) returns (google.protobuf.Empty);
+	rpc RemovePlanner(PlannerInfo) returns (google.protobuf.Empty);
 }
 
 message GetAllPlannersResponse {

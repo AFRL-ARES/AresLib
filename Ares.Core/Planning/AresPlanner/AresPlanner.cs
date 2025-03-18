@@ -1,0 +1,84 @@
+﻿using Ares.Messaging;
+using Ares.Messaging.Planning;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+
+namespace Ares.Core.Planning.AresPlanner;
+
+public class AresPlanner : IPlanner
+{
+  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
+  readonly Uri _address;
+
+  public AresPlanner(string name, Uri address)
+  {
+    _address = address;
+    Name = name;
+    Address = address.OriginalString;
+    PlannerState = _plannerStateSubject.AsObservable();
+  }
+
+  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> experimentAnalyses, CancellationToken cancellationToken)
+  {
+    var client = ClientStore.AresPlanningClient;
+    var planRequest = new PlanRequest();
+    planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, experimentAnalyses)));
+    var result = await client.PlanAsync(planRequest);
+    return ToPlanResults(result, plannableParameters);
+  }
+
+  public IEnumerable<PlanResult> ToPlanResults(PlanResponse result, IEnumerable<ParameterMetadata> plannableMetadata)
+  {
+    var planResults = new List<PlanResult>();
+
+    if(result.ParameterValues.Count() != result.ParameterNames.Count())
+      return planResults;
+
+    for(int i = 0; i < result.ParameterNames.Count; i++)
+    {
+      var matchingMetadata = plannableMetadata.FirstOrDefault(data => data.Name == result.ParameterNames[i]);
+
+      //What do we do if we don't find the old metadata?
+      if(matchingMetadata is null)
+      {
+        matchingMetadata = new ParameterMetadata();
+        matchingMetadata.Name = result.ParameterNames[i];
+      }
+
+      var aresPlanResult = new PlanResult(matchingMetadata, result.ParameterValues[i].ToString());
+      planResults.Add(aresPlanResult);
+    }
+
+    return planResults;
+  }
+
+  public PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<Analysis> experimentAnalyses)
+  {
+    var relevantInfo = experimentAnalyses.SelectMany(analysis => analysis.CompletedExperiment.Parameters.Where(param => param.PlanningMetadata.Name == metadata.Name));
+    var parameter = new PlanningParameter();
+    parameter.ParameterName = metadata.Name;
+    parameter.IsPlanned = true;
+    parameter.DataType = metadata.GetType().ToString();
+    parameter.ParameterHistory.AddRange(relevantInfo.Select(param => double.Parse(param.Value.Value)));
+
+    if(metadata.Constraints.Any())
+    {
+      var constraint = metadata.Constraints.First();
+      parameter.MinimumValue = constraint.Minimum;
+      parameter.MaximumValue = constraint.Maximum;
+    }
+
+    return parameter;
+  }
+
+  public void Init()
+  {
+    ClientStore.CreateClient(_address);
+    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+  }
+
+  public string Name { get; }
+  public Version Version { get; } = new Version(1, 0);
+  public IObservable<PlannerState> PlannerState { get; }
+  public string Address { get; }
+}
