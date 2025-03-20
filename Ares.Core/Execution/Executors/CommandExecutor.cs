@@ -50,7 +50,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
       Status.State = ExecutionState.Failed;
       _stateSubject.OnNext(Status);
       _stateSubject.OnCompleted();
-      return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, null, DateTime.UtcNow, DateTime.UtcNow);
+      return ExecutorResultHelpers.CreateCommandResult(Template, null, DateTime.UtcNow, DateTime.UtcNow);
     }
 
     var timeStarted = DateTime.UtcNow;
@@ -67,7 +67,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
     _stateSubject.OnNext(Status);
     _stateSubject.OnCompleted();
 
-    return ExecutorResultHelpers.CreateCommandResult(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
+    return ExecutorResultHelpers.CreateCommandResult(Template, result, timeStarted, timeStarted);
   }
 
   private async Task<DeviceCommandResult> InternalExecute(CancellationToken token)
