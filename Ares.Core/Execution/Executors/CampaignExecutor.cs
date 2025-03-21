@@ -101,8 +101,13 @@ public class CampaignExecutor : ICampaignExecutor
       AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentExperimentNumber, experiment_count.ToString());
 
       var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
+
+      //TODO: Notify user
       if(experimentExecutorResult.ErrorString is not null)
+      {
+        executionSuccess = false;
         break;
+      }
 
       var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
 
@@ -131,6 +136,13 @@ public class CampaignExecutor : ICampaignExecutor
         experimentResult.CompletedExperiment.AnalysisResult = analysis.Result;
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
+
+        //TODO: Notify user of analysis failure
+        if(!analysis.Success)
+        {
+          executionSuccess = false;
+          break;
+        }
       }
       else
       {
