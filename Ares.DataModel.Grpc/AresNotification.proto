@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "google/protobuf/empty.proto";
+
+service AresNotificationRpc {
+	rpc Subscribe(SubscriptionRequest) returns (stream AresNotification);
+}
+
+message SubscriptionRequest {
+	string clientId = 1;
+}
+
+message AresNotification {
+	string title = 1;
+	string message = 2;
+	Severity notification_severity = 3;
+}
+
+enum Severity {
+	UNSPECIFIED = 0;
+	INFO = 1;
+	WARNING = 2;
+	ERROR = 3;
+	DANGER = 4;
+	SUCCESS = 5;
+}

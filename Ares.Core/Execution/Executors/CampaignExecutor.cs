@@ -4,9 +4,11 @@ using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
 using Ares.Core.Execution.StopConditions;
+using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
+
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -22,6 +24,7 @@ public class CampaignExecutor : ICampaignExecutor
   private readonly ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> _closeoutScriptComposer;
   private readonly IPlanningHelper _planningHelper;
   private readonly IEnumerable<IResultHandler> _resultHandlers;
+  private readonly IEnumerable<INotificationHandler> _notificationHandlers;
   private readonly AresVariableManager _variableManager;
 
   public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
@@ -32,6 +35,7 @@ public class CampaignExecutor : ICampaignExecutor
     IAnalyzerManager analyzerManager,
     CampaignTemplate template,
     IEnumerable<IResultHandler> resultHandlers,
+    IEnumerable<INotificationHandler> notificationHandlers,
     AresVariableManager variableManager)
   {
     _variableManager = variableManager;
@@ -42,6 +46,7 @@ public class CampaignExecutor : ICampaignExecutor
     _executionReporter = executionReporter;
     _analyzerManager = analyzerManager;
     _resultHandlers = resultHandlers;
+    _notificationHandlers = notificationHandlers;
     Template = template;
 
     Status = new CampaignExecutionStatus
@@ -91,6 +96,8 @@ public class CampaignExecutor : ICampaignExecutor
     bool executionSuccess = true;
     var experiment_count = 0;
 
+    await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
+
     while(!ShouldStop() && !token.IsCancelled)
     {
       var experimentFolder = $"Experiment_{++experiment_count}";
@@ -105,6 +112,7 @@ public class CampaignExecutor : ICampaignExecutor
       //TODO: Notify user
       if(experimentExecutorResult.ErrorString is not null)
       {
+        await HandleNotification("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
         executionSuccess = false;
         break;
       }
@@ -137,9 +145,9 @@ public class CampaignExecutor : ICampaignExecutor
         analyses.Add(analysis);
         _analyzerManager.StoreAnalysis(analysis);
 
-        //TODO: Notify user of analysis failure
-        if(!analysis.Success)
+        if(analysis.ErrorString is not null)
         {
+          await HandleNotification("Analysis Process Failed!", analysis.ErrorString, NotificationSeverityEnum.Error);
           executionSuccess = false;
           break;
         }
@@ -324,6 +332,14 @@ public class CampaignExecutor : ICampaignExecutor
     foreach(var handler in _resultHandlers)
     {
       await handler.Handle(result);
+    }
+  }
+
+  private async Task HandleNotification(string title, string message, NotificationSeverityEnum severity)
+  {
+    foreach(var handler in _notificationHandlers)
+    {
+      await handler.HandleNotification(title, message, severity);
     }
   }
 

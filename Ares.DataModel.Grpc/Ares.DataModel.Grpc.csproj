@@ -25,6 +25,9 @@
       <Protobuf Include="AresDevices.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
+		<Protobuf Include="AresNotification.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+			<Generator>MSBuild:Compile</Generator>
+		</Protobuf>
       <Protobuf Include="AresPlanning.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
@@ -37,7 +40,7 @@
   </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ares.DataModel.dll" Version="2025.3.20.150904" GeneratePathProperty="True" />
+      <PackageReference Include="Ares.DataModel.dll" Version="2025.3.26.152549" GeneratePathProperty="True" />
       <PackageReference Include="Grpc.Tools" Version="2.58.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
