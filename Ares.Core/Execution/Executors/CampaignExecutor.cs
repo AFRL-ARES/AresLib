@@ -230,7 +230,7 @@ public class CampaignExecutor : ICampaignExecutor
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if(!experimentTemplate.IsResolved())
     {
-      if(ShouldReplan(analyses))
+      if(analyses.Count() % ReplanRate == 0)
       {
         var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
         if(!resolveSuccess)
@@ -282,12 +282,6 @@ public class CampaignExecutor : ICampaignExecutor
     experimentTemplate.Name = Template.Name;
 
     return _closeoutScriptComposer.Compose(experimentTemplate);
-  }
-
-  private bool ShouldReplan(IEnumerable<Analysis> analyses)
-  {
-    var numberOfCompletedExperiments = analyses.Count();
-    return numberOfCompletedExperiments % ReplanRate == 0;
   }
 
   private void RecallPreviousExperiment(IEnumerable<Analysis> analyses, ExperimentTemplate currentTemplate)

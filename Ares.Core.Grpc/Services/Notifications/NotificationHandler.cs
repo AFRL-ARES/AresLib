@@ -1,5 +1,7 @@
 ﻿using Ares.Core.Notifications;
 using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
+using System;
 using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services.Notifications;
@@ -15,7 +17,14 @@ public class NotificationHandler : INotificationHandler
 
   public async Task HandleNotification(string title, string message, NotificationSeverityEnum severity)
   {
-    var notification = new AresNotification { Title = title, Message = message, NotificationSeverity = NotificationSeverityConverter(severity) };
+    var notification = new AresNotification
+    {
+      Title = title,
+      Message = message,
+      NotificationSeverity = NotificationSeverityConverter(severity),
+      Timestamp = DateTime.Now.ToTimestamp()
+    };
+
     await _notificationService.SendNotification(notification);
   }
 

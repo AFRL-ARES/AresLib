@@ -8,7 +8,8 @@ public static class ServiceCollectionExtensions
 {
   public static void AddNotificationHandlers(this IServiceCollection services)
   {
-    var notificationService = new AresNotificationService();
+    services.AddSingleton<IAresNotificationRepo, AresNotificationRepo>();
+    var notificationService = new AresNotificationService(new AresNotificationRepo());
     var handler = new NotificationHandler(notificationService);
     services.AddSingleton<INotificationHandler>(handler);
   }
