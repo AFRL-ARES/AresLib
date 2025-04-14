@@ -26,7 +26,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
             {
               Name = AresCoreDeviceCommandParameter.Duration.ToString(),
               Index = 0,
-              Unit = DurationUnit.Millisecond.ToString()
+              Unit = $"{DurationUnit.Millisecond}s"
             }
           }
       }
@@ -36,11 +36,21 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
   protected override async Task<DeviceCommandResult> ParseAndPerformDeviceAction(AresCoreDeviceCommand deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken)
   {
     var result = new DeviceCommandResult();
-    switch (deviceCommandEnum)
+    switch(deviceCommandEnum)
     {
       case AresCoreDeviceCommand.Sleep:
         var durationParam = parameters[0];
-        var duration = UnitsNet.Duration.FromMilliseconds(durationParam.Value.Value.Unpack<FloatValue>().Value);
+        var unpacked = durationParam.Value.Value.TryUnpack<StringValue>(out var stringValueParam);
+        var parsed = double.TryParse(stringValueParam.Value, out double doubleParam);
+
+        if(!unpacked || !parsed)
+        {
+          result.Success = false;
+          result.Error = $"Failed to parse command argument into valid sleep time value, ARES could not sleep!";
+          return result;
+        }
+
+        var duration = UnitsNet.Duration.FromMilliseconds(doubleParam);
         await Device.Sleep(duration.ToTimeSpan());
         result.Success = true;
         return result;

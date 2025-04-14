@@ -3,6 +3,7 @@ using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
 using Ares.Messaging;
 using Ares.Test;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Tests.Data;
 
@@ -12,10 +13,10 @@ internal class TestCampaignProvider
   {
     var device = new TestDevice();
     var analyzer = new TestReplyAnalyzer();
-    var commandTemplate1 = GetCommandTemplate(0, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), 10, 0));
-    var commandTemplate2 = GetCommandTemplate(1, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), 20, 0));
-    var commandTemplate3 = GetCommandTemplate(2, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), 30, 0));
-    var commandTemplate4 = GetCommandTemplate(3, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), 40, 0));
+    var commandTemplate1 = GetCommandTemplate(0, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "10", 0));
+    var commandTemplate2 = GetCommandTemplate(1, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "20", 0));
+    var commandTemplate3 = GetCommandTemplate(2, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "30", 0));
+    var commandTemplate4 = GetCommandTemplate(3, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "40", 0));
 
     var stepTemplate = GetStepTemplate("Test Step", false, commandTemplate1, commandTemplate2, commandTemplate3, commandTemplate4);
 
@@ -39,7 +40,7 @@ internal class TestCampaignProvider
     return campaignTemplate;
   }
 
-  public static Parameter GetParameter(string name, float value, int idx)
+  public static Parameter GetParameter(string name, string value, int idx)
   {
     var parameter = new Parameter();
     parameter.Index = idx;
@@ -48,7 +49,7 @@ internal class TestCampaignProvider
     parameter.Value = new ParameterValue
     {
       UniqueId = Guid.NewGuid().ToString(),
-      Value = value
+      Value = Any.Pack(new StringValue() { Value = value })
     };
 
     parameter.Metadata = new ParameterMetadata

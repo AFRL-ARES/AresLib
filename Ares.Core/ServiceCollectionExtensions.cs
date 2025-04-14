@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.AresEnvironment;
 using Ares.Core.Device;
 using Ares.Core.Execution;
 using Ares.Core.Execution.Executors;
@@ -33,7 +34,7 @@ public static class ServiceCollectionExtensions
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
     services.AddTransient<ICampaignValidator, RequiredDeviceInterpretersValidator>();
     services.AddSingleton<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
-
+    services.AddSingleton<AresVariableManager>();
     services.AddSingleton<AnalysisRepo>();
     services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
 
@@ -53,6 +54,8 @@ public static class ServiceCollectionExtensions
   {
     services.AddSingleton<ICommandComposer<StepTemplate, StepExecutor>, StepComposer>();
     services.AddSingleton<ICommandComposer<ExperimentTemplate, ExperimentExecutor>, ExperimentComposer>();
+    services.AddSingleton<ICommandComposer<ExperimentTemplate, StartupScriptExecutor>, StartupComposer>();
+    services.AddSingleton<ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor>, CloseoutComposer>();
     services.AddSingleton<ICommandComposer<CampaignTemplate, ICampaignExecutor>, CampaignComposer>();
   }
 }

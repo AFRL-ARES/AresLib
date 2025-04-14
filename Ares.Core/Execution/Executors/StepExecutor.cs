@@ -12,13 +12,14 @@ public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
     CommandExecutors = commandExecutors;
     Status = new StepExecutionStatus
     {
-      StepId = template.UniqueId
+      StepId = template.UniqueId,
+      StepName = template.Name
     };
 
     Status.CommandExecutionStatuses.AddRange(commandExecutors.Select(executor => executor.Status));
 
     var commandExecutionObservation = commandExecutors.Select(executor => {
-      return executor.StatusObservable.Select(_ => {
+      return executor.ExperimentStatusObservable.Select(_ => {
         var cmdResults = commandExecutors.Select(cmdExecutor => cmdExecutor.Status);
         Status.CommandExecutionStatuses.Clear();
         Status.CommandExecutionStatuses.AddRange(cmdResults);
@@ -26,13 +27,14 @@ public abstract class StepExecutor : IExecutor<StepResult, StepExecutionStatus>
       });
     }).Concat();
 
-    StatusObservable = commandExecutionObservation;
+    ExperimentStatusObservable = commandExecutionObservation;
   }
 
   public IExecutor<CommandResult, CommandExecutionStatus>[] CommandExecutors { get; }
   protected StepTemplate Template { get; }
-
-  public IObservable<StepExecutionStatus> StatusObservable { get; }
+  public IObservable<StepExecutionStatus> ExperimentStatusObservable { get; }
   public StepExecutionStatus Status { get; }
+  public IObservable<StepExecutionStatus>? StartupStatusObservable { get; }
+  public IObservable<StepExecutionStatus>? CloseoutStatusObservable { get; }
   public abstract Task<StepResult> Execute(ExecutionControlToken token);
 }

@@ -22,14 +22,16 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
     };
 
     _stateSubject = new BehaviorSubject<CommandExecutionStatus>(executionStatus);
-    StatusObservable = _stateSubject.AsObservable();
+
+    ExperimentStatusObservable = _stateSubject.AsObservable();
   }
 
   public CommandTemplate Template { get; set; }
 
-  public IObservable<CommandExecutionStatus> StatusObservable { get; }
+  public IObservable<CommandExecutionStatus> ExperimentStatusObservable { get; }
+  public IObservable<CommandExecutionStatus> StartupStatusObservable { get; }
+  public IObservable<CommandExecutionStatus> CloseoutStatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
-
   public async Task<CommandResult> Execute(ExecutionControlToken token)
   {
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;

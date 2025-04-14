@@ -16,6 +16,13 @@ public interface IAnalyzer
   Version Version { get; }
 
   /// <summary>
+  /// The address for reaching this analyzer. Defaults to localhost.
+  /// </summary>
+  string Address { get; }
+
+  string UniqueId { get; }
+
+  /// <summary>
   /// Provides an observable for the <see cref="AnalyzerState" />
   /// </summary>
   IObservable<AnalyzerState> AnalyzerStateObservable { get; }

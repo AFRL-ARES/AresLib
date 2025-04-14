@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.AresEnvironment;
 using Ares.Core.Device;
 using Ares.Core.Execution;
 using Ares.Core.Execution.ControlTokens;
@@ -9,6 +10,7 @@ using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace Ares.Core.Tests.Execution;
@@ -22,17 +24,19 @@ internal class CampaignExecutorTests
   private IExecutionReportStore _executionReportStore;
   private IPlanningHelper _planningHelper;
   private IEnumerable<IResultHandler> _resultHandlers;
-
+  private AresVariableManager _variableManager;
 
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
-    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+    _analyzerManager = new AnalyzerManager(new AnalysisRepo(), new Mock<IDbContextFactory<CoreDatabaseContext>>().Object);
     _analyzerManager.RegisterAnalyzer(new TestReplyAnalyzer());
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
     _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
+    _variableManager = new Mock<AresVariableManager>().Object;
+
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
     var repo = new DeviceCommandInterpreterRepo
@@ -41,7 +45,10 @@ internal class CampaignExecutorTests
     };
     var stepComposer = new StepComposer(repo);
     var experimentComposer = new ExperimentComposer(stepComposer, _analyzerManager);
-    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, _planningHelper, _executionReporter, _resultHandlers);
+    var startupScriptComposer = new StartupComposer(stepComposer);
+    var closeoutScriptComposer = new CloseoutComposer(stepComposer);
+
+    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _variableManager);
   }
 
   [SetUp]

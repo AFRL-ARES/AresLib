@@ -7,6 +7,11 @@
       "commandName": "Executable",
       "executablePath": "D:\\ARES\\MoleculeMakerRemasteredWpf\\MoleculeMakerService\\bin\\Debug\\net6.0\\MoleculeMakerService.exe",
       "workingDirectory": "D:\\ARES\\MoleculeMakerRemasteredWpf\\MoleculeMakerService\\bin\\Debug\\net6.0"
+    },
+    "FC2": {
+      "commandName": "Executable",
+      "executablePath": "C:\\ARES\\FC2\\FC2Service\\bin\\Debug\\net6.0\\FC2Service.exe",
+      "workingDirectory": "C:\\ARES\\FC2\\FC2Service\\bin\\Debug\\net6.0"
     }
   }
 }

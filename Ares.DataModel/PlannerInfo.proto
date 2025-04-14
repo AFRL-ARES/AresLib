@@ -9,4 +9,5 @@ message PlannerInfo {
 	string name = 2; // name of the planner
 	string type = 3; // type name of the planner
 	string version = 4; // version of the planner
+	google.protobuf.StringValue address = 5; // address for communicating with the planner
 }

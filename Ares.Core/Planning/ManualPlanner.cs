@@ -1,7 +1,7 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 using Ares.Messaging.Planning;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning;
 
@@ -15,10 +15,12 @@ public class ManualPlanner : IPlanner
     PlannerState = _plannerStateSubject.AsObservable();
   }
 
-  public IEnumerable<IEnumerable<(string Name, double Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
+  public IEnumerable<IEnumerable<(string Name, string Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
 
   public string Name { get; } = "Manual Planner";
   public Version Version { get; } = new(1, 0);
+
+  public string Address { get; }
 
   public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
   {
@@ -28,7 +30,7 @@ public class ManualPlanner : IPlanner
       var returnList = plannableParameters.Select(metadata => currentParameterSet.First(result => result.Name == metadata.Name).ToPlanResult(metadata));
       return Task.FromResult(returnList);
     }
-    catch (InvalidOperationException)
+    catch(InvalidOperationException)
     {
       return Task.FromResult<IEnumerable<PlanResult>>(new List<PlanResult>());
     }
@@ -39,13 +41,13 @@ public class ManualPlanner : IPlanner
   public Task Seed(ManualPlannerSeed seedParam)
   {
     Reset();
-    switch (seedParam.PlannerStuffCase)
+    switch(seedParam.PlannerStuffCase)
     {
       case ManualPlannerSeed.PlannerStuffOneofCase.None:
         break;
       case ManualPlannerSeed.PlannerStuffOneofCase.PlannerValues:
         var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues.Select(set => set.ParameterValues.Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
-        foreach (var manualPlanResults in manualPlanResultCollections)
+        foreach(var manualPlanResults in manualPlanResultCollections)
           _planResultsQueue.Enqueue(manualPlanResults);
 
         break;
@@ -76,11 +78,12 @@ public class ManualPlanner : IPlanner
     List<string> dataFileLines = lines.ToList();
 
     // Make sure the data file has data!
-    if (dataFileLines == null || dataFileLines.Count < 2)
+    if(dataFileLines == null || dataFileLines.Count < 2)
       throw new Exception("Could not read any data from file!");
 
     // Create a useful Func to split lines
-    var tokenizeLine = new Func<string, List<string>>(line => {
+    var tokenizeLine = new Func<string, List<string>>(line =>
+    {
       return line.Trim().Split(new[] { delim }, StringSplitOptions.RemoveEmptyEntries).ToList();
     });
 
@@ -88,8 +91,9 @@ public class ManualPlanner : IPlanner
     List<string> firstLineTokens = tokenizeLine(dataFileLines.First());
 
     // Ensure the validity of the data descriptions then remove them from the list
-    firstLineTokens.ForEach(desc => {
-      if (string.IsNullOrEmpty(desc.Trim()))
+    firstLineTokens.ForEach(desc =>
+    {
+      if(string.IsNullOrEmpty(desc.Trim()))
         throw new Exception("Data descriptions in file cannot be null or empty!");
     });
 
@@ -97,44 +101,32 @@ public class ManualPlanner : IPlanner
 
     // Tokenize each line and parse to doubles
     int expNum = 1;// 1 based index
-    List<List<double>> data = new List<List<double>>();
-    dataFileLines.ForEach(expDataLine => {
+    List<List<string>> data = new List<List<string>>();
+    dataFileLines.ForEach(expDataLine =>
+    {
       // Tokenize the line and check the validity of it
       expNum += 1;
       List<string> expLineTokens = tokenizeLine(expDataLine);
-      if (expLineTokens.Count != firstLineTokens.Count)
+      if(expLineTokens.Count != firstLineTokens.Count)
         throw new Exception("Experiment " + expNum + " does not have enough tokens in line!");
 
       // Parse the tokens to double and check the validities
       int tokenNum = 0;// 1 based index
-      List<double> expData = new List<double>();
-      expLineTokens.ForEach(dataToken => {
+      List<string> expData = new();
+      expLineTokens.ForEach(dataToken =>
+      {
         tokenNum += 1;
-        if (string.IsNullOrEmpty(dataToken.Trim()))
+        if(string.IsNullOrEmpty(dataToken.Trim()))
           throw new Exception("Experiment " + expNum + ", column " + tokenNum + " data is null or empty!");
 
-        double dataVal;
-        try
-        {
-          dataVal = Convert.ToDouble(dataToken);
-        }
-        catch (Exception)
-        {
-          throw new Exception("Experiment " + expNum + ", column " + tokenNum + " data cannot be parsed to a double!");
-        }
-
-        if (double.IsInfinity(dataVal) || double.IsNaN(dataVal))
-          throw new Exception("Experiment " + expNum + ", column " + tokenNum + " data cannot be NaN or an Infinity!");
-
-        // This token is good data
-        expData.Add(dataVal);
+        expData.Add(dataToken);
       });
 
       // This line is a good experiment
       data.Add(expData);
     });
 
-    foreach (var argList in data)
+    foreach(var argList in data)
     {
       var planResults = argList.Select((d, i) => new ManualPlanResult(firstLineTokens[i], d));
       _planResultsQueue.Enqueue(planResults);
@@ -142,7 +134,7 @@ public class ManualPlanner : IPlanner
   }
 
   //
-  private record ManualPlanResult(string Name, double Value)
+  private record ManualPlanResult(string Name, string Value)
   {
     public PlanResult ToPlanResult(ParameterMetadata metadata)
       => new(metadata, Value);

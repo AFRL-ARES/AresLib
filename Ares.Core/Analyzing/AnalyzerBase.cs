@@ -10,15 +10,19 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
 {
   private readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
 
-  public AnalyzerBase(string name, Version version)
+  public AnalyzerBase(string name, Version version, string address = "https://localhost")
   {
     Name = name;
     Version = version;
+    Address = address;
     AnalyzerStateObservable = _analyzerStateSubject.AsObservable();
   }
 
   public string Name { get; }
   public Version Version { get; }
+  public string Address { get; }
+
+  public string UniqueId { get; } = new Guid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 
@@ -27,11 +31,11 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
 
   public Task<Analysis> Analyze(ExperimentResult results, Any? input, CancellationToken cancellationToken)
   {
-    if (input is null)
+    if(input is null)
       return Task.FromResult(GetDefaultResult());
 
     var unpackedMessage = UnpackMessage(input);
-    if (unpackedMessage is null)
+    if(unpackedMessage is null)
       return Task.FromResult(GetDefaultResult());
 
     return AnalyzeMessage(results, unpackedMessage, cancellationToken);
@@ -54,7 +58,7 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
       var unpackedMessage = input.Unpack<T>();
       return unpackedMessage;
     }
-    catch (InvalidProtocolBufferException e)
+    catch(InvalidProtocolBufferException e)
     {
       return default;
     }

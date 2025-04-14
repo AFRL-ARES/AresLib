@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Extensions;
 
@@ -13,6 +14,16 @@ internal static class ExperimentTemplateExtensions
     => template.StepTemplates
       .SelectMany(stepTemplate => stepTemplate.CommandTemplates)
       .SelectMany(commandTemplate => commandTemplate.Parameters);
+
+  /// <summary>
+  /// Gets all the <see cref="Parameter" />s from an <see cref="ExperimentTemplate"/>
+  /// </summary>
+  /// <param name="template"></param>
+  /// <returns></returns>
+  public static IEnumerable<Parameter> GetAllStartupParameters(this ExperimentTemplate template)
+    => template.StartupStepTemplates
+    .SelectMany(step => step.CommandTemplates)
+    .SelectMany(command => command.Parameters);
 
   /// <summary>
   /// Gets all the parameters that need to be planned from a given <see cref="ExperimentTemplate" />
@@ -32,6 +43,15 @@ internal static class ExperimentTemplateExtensions
     => template.GetAllParameters().All(parameter => parameter.Value is not null);
 
   /// <summary>
+  /// Checks whether or not every <see cref="Parameter" /> within an experiment has a value. If so then
+  /// that means the template is resolved and can be sent to execution.
+  /// </summary>
+  /// <param name="template">The template to check if resolved</param>
+  /// <returns>True if resolved, false otherwise</returns>
+  public static bool IsEnvironmentResolved(this ExperimentTemplate template)
+    => template.GetAllParameters().All(parameter => parameter.Value.Value.Unpack<StringValue>().Value != string.Empty);
+
+  /// <summary>
   /// Given an experiment template, creates a new experiment template with a new unique id
   /// as well as a new id for any nested templates.
   /// </summary>
@@ -41,32 +61,32 @@ internal static class ExperimentTemplateExtensions
   {
     var newTemplate = template.Clone();
     newTemplate.UniqueId = Guid.NewGuid().ToString();
-    foreach (var stepTemplate in newTemplate.StepTemplates)
+    foreach(var stepTemplate in newTemplate.StepTemplates)
     {
       stepTemplate.UniqueId = Guid.NewGuid().ToString();
-      foreach (var commandTemplate in stepTemplate.CommandTemplates)
+      foreach(var commandTemplate in stepTemplate.CommandTemplates)
       {
         var cmdTemplateId = Guid.NewGuid().ToString();
-        if (commandTemplate.UniqueId == template.OutputCommandId)
+        if(commandTemplate.UniqueId == template.OutputCommandId)
           newTemplate.OutputCommandId = cmdTemplateId;
 
         commandTemplate.Metadata.UniqueId = Guid.NewGuid().ToString();
         commandTemplate.UniqueId = cmdTemplateId;
-        foreach (var metadataParameterMetadata in commandTemplate.Metadata.ParameterMetadatas)
+        foreach(var metadataParameterMetadata in commandTemplate.Metadata.ParameterMetadatas)
         {
           metadataParameterMetadata.UniqueId = Guid.NewGuid().ToString();
-          foreach (var constraint in metadataParameterMetadata.Constraints)
+          foreach(var constraint in metadataParameterMetadata.Constraints)
             constraint.UniqueId = Guid.NewGuid().ToString();
         }
 
-        foreach (var argument in commandTemplate.Parameters)
+        foreach(var argument in commandTemplate.Parameters)
         {
           argument.UniqueId = Guid.NewGuid().ToString();
           argument.Metadata.UniqueId = Guid.NewGuid().ToString();
-          if (argument.Value is not null)
+          if(argument.Value is not null)
             argument.Value.UniqueId = Guid.NewGuid().ToString();
 
-          foreach (var constraint in argument.Metadata.Constraints)
+          foreach(var constraint in argument.Metadata.Constraints)
             constraint.UniqueId = Guid.NewGuid().ToString();
         }
       }

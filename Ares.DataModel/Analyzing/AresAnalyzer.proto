@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package ares.messaging.analyzing;
+
+service AresAnalyzerGrpc {
+	rpc Analyzer (AnalysisRequest) returns (AnalysisResponse);
+}
+
+message AnalysisRequest {
+	double placeholder = 1;
+}
+
+message AnalysisResponse {
+	double value = 1;
+}
+
+message AnalysisInformation {
+	string blah = 1;
+}

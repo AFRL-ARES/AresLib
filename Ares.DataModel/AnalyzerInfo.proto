@@ -9,4 +9,5 @@ message AnalyzerInfo {
 	string name = 2; // name of the analyzer
 	string type = 3; // type name of the analyzer
 	string version = 4; // version of the analyzer
+	string address = 5; // address for sending analysis messages 
 }

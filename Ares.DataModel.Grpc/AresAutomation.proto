@@ -13,12 +13,12 @@ import "ExecutionResultMessages.proto";
 
 service AresAutomation {
 	// Campaigns
-	rpc GetAllCampaigns(google.protobuf.Empty) returns (CampaignsResponse);
+	rpc GetAllCampaigns(GetAllCampaignsRequest) returns (CampaignsResponse);
 	rpc GetSingleCampaign(CampaignRequest) returns (CampaignTemplate);
 	rpc RemoveCampaign(CampaignRequest) returns (google.protobuf.Empty);
 	rpc CampaignExists(CampaignRequest) returns (google.protobuf.BoolValue);
-	rpc AddCampaign(CampaignTemplate) returns (google.protobuf.Empty);
-	rpc UpdateCampaign(CampaignTemplate) returns (CampaignTemplate);
+	rpc AddCampaign(AddOrUpdateCampaignRequest) returns (google.protobuf.Empty);
+	rpc UpdateCampaign(AddOrUpdateCampaignRequest) returns (CampaignTemplate);
 	rpc CheckExecutionEligibility(google.protobuf.Empty) returns (CheckExecutionEligibilityResponse);
 
 	// Projects
@@ -52,15 +52,22 @@ service AresAutomation {
 	// Gets a stream of experiment execution statuses that can be observed in real time as experiment is running
 	// Works best after grabbing all the execution statuses which then lets you know how many experiments have been run
 	rpc GetExecutionStatusStream(google.protobuf.Empty) returns (stream ExperimentExecutionStatus);
+	rpc GetStartupExecutionStatusStream(google.protobuf.Empty) returns (stream CampaignStartupStatus);
+	rpc GetCloseoutExecutionStatusStream(google.protobuf.Empty) returns (stream CampaignCloseoutStatus);
 	// Gets the current status of a campaign execution assuming one is running
 	rpc GetCampaignExecutionStatus(google.protobuf.Empty) returns (CampaignExecutionStatusResponse);
 	rpc GetCampaignExecutionStateStream(google.protobuf.Empty) returns (stream CampaignExecutionState);
+	
 
 	// Results
 	rpc GetAvailableCampaignResults(google.protobuf.Empty) returns (AvailableCampaignResultsResponse);
 	rpc GetCampaignResult(CampaignResultRequest) returns (CampaignResult);
 
 	rpc GetAllAnalyzers(google.protobuf.Empty) returns (GetAllAnalyzersResponse);
+}
+
+message AddOrUpdateCampaignRequest {
+	CampaignTemplate template = 1;
 }
 
 message RequestById {
@@ -73,6 +80,10 @@ message CampaignRequest {
 		string campaign_name = 1; // name of the requested campaign template
 		string unique_id = 2; // id of the requested template
 	}
+}
+
+message GetAllCampaignsRequest {
+	string file_path = 1;
 }
 
 message CampaignsResponse {

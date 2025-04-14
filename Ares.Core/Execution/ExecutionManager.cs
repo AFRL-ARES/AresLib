@@ -28,7 +28,7 @@ public class ExecutionManager : IExecutionManager
     _campaignComposer = campaignComposer;
   }
 
-  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() {};
+  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() { };
 
   public bool CanRun => _startConditions.All(condition => condition.CanStart()?.Success ?? true) && _activeCampaignTemplateStore.CampaignTemplate is not null;
 
@@ -63,11 +63,40 @@ public class ExecutionManager : IExecutionManager
     if(!CampaignStopConditions.Any())
       return "The Campaign has no stop conditions, please set a stop condition before starting campaign.";
 
+    if(!EnsureParameterAssignment())
+      return "The campaign has errors in it's parameter assignments, please resolve these before starting your campaign.";
+
     var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
-    if (startConditionResults.Any())
+    if(startConditionResults.Any())
       return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}";
 
     return String.Empty;
+  }
+
+  public bool EnsureParameterAssignment()
+  {
+    var startupCommandsInvalid = _activeCampaignTemplateStore.CampaignTemplate!.ExperimentTemplates.First().StartupStepTemplates
+    .SelectMany(step => step.CommandTemplates)
+    .Any(cmd => cmd.Parameters.Any(param => param.Planned && param.PlanningMetadata is null));
+
+    if(startupCommandsInvalid)
+      return false;
+
+    var experimentCommandsInvalid = _activeCampaignTemplateStore.CampaignTemplate!.ExperimentTemplates.First().StepTemplates
+    .SelectMany(step => step.CommandTemplates)
+    .Any(cmd => cmd.Parameters.Any(param => param.Planned && param.PlanningMetadata is null));
+
+    if(experimentCommandsInvalid)
+      return false;
+
+    var closeoutCommandsInvalid = _activeCampaignTemplateStore.CampaignTemplate!.ExperimentTemplates.First().CloseoutStepTemplates
+      .SelectMany(step => step.CommandTemplates)
+      .Any(cmd => cmd.Parameters.Any(param => param.Planned && param.PlanningMetadata is null));
+
+    if(closeoutCommandsInvalid)
+      return false;
+
+    return true;
   }
 
   public void UpdateReplanRate(int newRate)
