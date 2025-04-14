@@ -27,6 +27,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private readonly IExecutionReportStore _executionReportStore;
   private readonly IEnumerable<IStartCondition> _startConditions;
   readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
+  private JsonSerializerSettings _serializerSettings;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
     IExecutionManager executionManager,
@@ -43,6 +44,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _startConditions = startConditions;
     _analyzerManager = analyzerManager;
+    _serializerSettings = CreateCustomSerializationSettings();
   }
 
 
@@ -58,12 +60,10 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<CampaignsResponse> GetAllCampaigns(GetAllCampaignsRequest request, ServerCallContext context)
   {
     var campaignResponse = new CampaignsResponse();
-    var settings = CreateCustomSerializationSettings();
-
     foreach(var file in Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json"))
     {
       var contents = await File.ReadAllTextAsync(file);
-      var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, settings);
+      var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, _serializerSettings);
 
       if(campaignTemplate is not null)
         campaignResponse.CampaignTemplates.Add(campaignTemplate);
@@ -98,7 +98,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     foreach(var file in directoryFiles)
     {
       var jsonString = File.ReadAllText(Path.Combine(AresConfig.TemplatePath, file));
-      var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString);
+      var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
       if(templateObject is not null && templateObject.Name == request.CampaignName)
         return new BoolValue { Value = true };
     }
@@ -152,11 +152,8 @@ public class AutomationService : AresAutomation.AresAutomationBase
   /// <returns></returns>
   public override Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
-    var settings = CreateCustomSerializationSettings();
-    settings.TypeNameHandling = TypeNameHandling.All;
-
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
-    var jsonString = JsonConvert.SerializeObject(request.Template, settings);
+    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
     var fullFilePath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
 
     File.WriteAllText(fullFilePath, jsonString);
@@ -165,16 +162,13 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override Task<CampaignTemplate> UpdateCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
-    var settings = CreateCustomSerializationSettings();
-    settings.TypeNameHandling = TypeNameHandling.All;
-
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
     var campaignToUpdate = directoryFiles.FirstOrDefault(file => file.Contains(request.Template.UniqueId));
 
     if(campaignToUpdate is null)
       throw new InvalidOperationException("Tried to update a campaign template that didn't exist!");
 
-    var jsonString = JsonConvert.SerializeObject(request.Template, settings);
+    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
     var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
     File.WriteAllText(fullPath, jsonString);
 
@@ -183,14 +177,13 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   private async Task<CampaignTemplate?> GetCampaignTemplate(CampaignRequest request, ServerCallContext context)
   {
-    var settings = CreateCustomSerializationSettings();
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
     var campaignFile = directoryFiles.FirstOrDefault(file => file.Contains(request.UniqueId));
 
     if(campaignFile is not null)
     {
       var jsonString = await File.ReadAllTextAsync(Path.Combine(AresConfig.TemplatePath, campaignFile));
-      var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, settings);
+      var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
 
       if(campaignObject is not null)
         return campaignObject;
@@ -424,6 +417,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
     //Add Custom Serializers
     serializerSettings.Converters.Add(new ByteStringConverter());
+
+    //Set type handling
+    serializerSettings.TypeNameHandling = TypeNameHandling.All;
 
     return serializerSettings;
   }

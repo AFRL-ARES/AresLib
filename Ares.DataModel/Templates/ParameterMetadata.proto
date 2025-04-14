@@ -12,5 +12,6 @@ message ParameterMetadata {
 	string unit = 3; // Unit descriptor, if applicable, of the argument/parameter
 	repeated Limits constraints = 4; // Collection of limits for the argument/parameter formatted to be easily converted into planner requests.
 	int64 index = 5; // Index of the collection in which executed this template
-	google.protobuf.Any extra_info = 6; //It's a pain
+	bool is_not_plannable = 6; // Set based on whether or not the parameter is meant to be plannable by external planners
+	google.protobuf.Any extra_info = 7; //It's a pain
 	}

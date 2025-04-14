@@ -49,7 +49,19 @@ internal static class ExperimentTemplateExtensions
   /// <param name="template">The template to check if resolved</param>
   /// <returns>True if resolved, false otherwise</returns>
   public static bool IsEnvironmentResolved(this ExperimentTemplate template)
-    => template.GetAllParameters().All(parameter => parameter.Value.Value.Unpack<StringValue>().Value != string.Empty);
+  {
+    var resolved = true;
+    var parameters = template.GetAllParameters();
+
+    foreach(var para in parameters)
+    {
+      var unpacked = para.Value.Value.TryUnpack<StringValue>(out var stringValue);
+      if(unpacked && stringValue.Value == string.Empty)
+        resolved = false;
+    }
+
+    return resolved;
+  }
 
   /// <summary>
   /// Given an experiment template, creates a new experiment template with a new unique id

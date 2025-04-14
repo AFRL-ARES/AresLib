@@ -18,6 +18,7 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
     var executionStatus = new CommandExecutionStatus
     {
       CommandId = template.UniqueId,
+      CommandName = template.Metadata.Name,
       State = ExecutionState.Undefined
     };
 
