@@ -22,7 +22,7 @@ public class NotificationHandler : INotificationHandler
       Title = title,
       Message = message,
       NotificationSeverity = NotificationSeverityConverter(severity),
-      Timestamp = DateTime.Now.ToTimestamp()
+      Timestamp = DateTime.UtcNow.ToTimestamp()
     };
 
     await _notificationService.SendNotification(notification);
