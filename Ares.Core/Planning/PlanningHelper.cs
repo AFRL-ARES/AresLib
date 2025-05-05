@@ -50,7 +50,7 @@ public class PlanningHelper : IPlanningHelper
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
-          Value = Any.Pack(new FloatValue() { Value = Convert.ToSingle(result.Value) })
+          Value = Any.Pack(new StringValue() { Value = result.Value })
         };
 
         parameterPlanTarget.Value = val;

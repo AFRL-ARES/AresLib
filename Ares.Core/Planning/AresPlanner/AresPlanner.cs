@@ -1,5 +1,5 @@
 ﻿using Ares.Messaging;
-using Ares.Messaging.Planning;
+using AresPlanner;
 using Google.Protobuf.WellKnownTypes;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
