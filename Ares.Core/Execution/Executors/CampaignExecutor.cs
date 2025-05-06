@@ -118,6 +118,10 @@ public class CampaignExecutor : ICampaignExecutor
       var experimentResult = await experimentExecutor.Execute(token);
       experimentResult.ResultOutputPath = experimentPath;
 
+      //If a command failed, stop the experiment.
+      if(experimentResult.StepResults.Any(step => step.CommandResults.Any(cmd => !cmd.Result.Success)) || !experimentResult.StepResults.Any())
+        break;
+
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
       if(!token.IsCancelled)
