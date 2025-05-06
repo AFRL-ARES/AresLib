@@ -16,6 +16,23 @@ public class AnalyzerManager : IAnalyzerManager
     _dbContextFactory = dbContextFactory;
     var manualAnalyzer = new NoneAnalyzer();
     _ = RegisterAnalyzer(manualAnalyzer);
+    _ = InitializeDbAnalyzers();
+  }
+
+  public async Task InitializeDbAnalyzers()
+  {
+    using var context = await _dbContextFactory.CreateDbContextAsync();
+    var availableAnalyzers = context.Analyzers;
+
+    foreach(var info in availableAnalyzers)
+    {
+      var analyzer = new AresAnalyzer.AresAnalyzer(info.Name, new Uri(info.Address))
+      {
+        UniqueId = info.UniqueId
+      };
+
+      await RegisterAnalyzer(analyzer);
+    }
   }
 
   public void StoreAnalysis(Analysis analysis)

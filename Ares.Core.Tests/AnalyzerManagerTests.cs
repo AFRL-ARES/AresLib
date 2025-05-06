@@ -42,10 +42,10 @@ internal class AnalyzerManagerTests
       Version = version;
     }
 
-    public string Name { get; }
-    public Version Version { get; }
-    public string Address { get; }
-    public string UniqueId { get; } = new Guid().ToString();
+    public string Name { get; set; }
+    public Version Version { get; set; }
+    public string Address { get; set; }
+    public string UniqueId { get; set; } = new Guid().ToString();
     public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
     public AnalyzerState AnalyzerState { get; }
 

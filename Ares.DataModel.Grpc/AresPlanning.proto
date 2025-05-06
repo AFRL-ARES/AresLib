@@ -5,6 +5,7 @@ package ares.messaging;
 import "PlannerInfo.proto";
 import "Planning/ManualPlanner.proto";
 
+import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
 
 service AresPlanning {
@@ -12,10 +13,16 @@ service AresPlanning {
 	rpc SeedManualPlanner(planning.ManualPlannerSeed) returns (google.protobuf.Empty);
 	rpc GetManualPlannerSeed(google.protobuf.Empty) returns (planning.ManualPlannerSetCollection);
 	rpc ResetManualPlanner(google.protobuf.Empty) returns (google.protobuf.Empty);
-	rpc AddPlanner(PlannerInfo) returns (google.protobuf.Empty);
-	rpc RemovePlanner(PlannerInfo) returns (google.protobuf.Empty);
+	rpc AddPlanner(GenericPlanner) returns (google.protobuf.Empty);
+	rpc RemovePlanner(GenericPlanner) returns (google.protobuf.Empty);
+	rpc UpdatePlanner(GenericPlanner) returns (google.protobuf.Empty);
 }
 
 message GetAllPlannersResponse {
 	repeated PlannerInfo planners = 1; // gets all currently registered planners
+}
+
+message GenericPlanner {
+	string name = 1;
+	google.protobuf.StringValue address = 2;
 }

@@ -78,8 +78,9 @@ public class AresPlanner : IPlanner
     _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
   }
 
-  public string Name { get; }
-  public Version Version { get; } = new Version(1, 0);
+  public string Name { get; set; }
+  public Version Version { get; set; } = new Version(1, 0);
   public IObservable<PlannerState> PlannerState { get; }
-  public string Address { get; }
+  public string Address { get; set; }
+  public string UniqueId { get; set; } = new Guid().ToString();
 }

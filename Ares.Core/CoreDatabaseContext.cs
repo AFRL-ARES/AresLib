@@ -21,6 +21,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<CampaignResult> CampaignResults => Set<CampaignResult>();
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
   public DbSet<AnalyzerInfo> Analyzers => Set<AnalyzerInfo>();
+  public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

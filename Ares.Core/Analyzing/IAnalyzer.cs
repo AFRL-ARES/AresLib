@@ -8,19 +8,22 @@ public interface IAnalyzer
   /// <summary>
   /// Optional name for the analyzer (can be useful when multiple analyzers of same type and version have to be used)
   /// </summary>
-  string Name { get; }
+  string Name { get; set; }
 
   /// <summary>
   /// Version of the analyzer
   /// </summary>
-  Version Version { get; }
+  Version Version { get; set; }
 
   /// <summary>
   /// The address for reaching this analyzer. Defaults to localhost.
   /// </summary>
-  string Address { get; }
+  string Address { get; set; }
 
-  string UniqueId { get; }
+  /// <summary>
+  /// The unique id for identifying the analyzer.
+  /// </summary>
+  string UniqueId { get; set; }
 
   /// <summary>
   /// Provides an observable for the <see cref="AnalyzerState" />

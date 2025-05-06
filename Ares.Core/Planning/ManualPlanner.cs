@@ -17,10 +17,12 @@ public class ManualPlanner : IPlanner
 
   public IEnumerable<IEnumerable<(string Name, string Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
 
-  public string Name { get; } = "Manual Planner";
-  public Version Version { get; } = new(1, 0);
+  public string Name { get; set; } = "Manual Planner";
+  public Version Version { get; set; } = new(1, 0);
 
-  public string Address { get; }
+  public string Address { get; set; }
+
+  public string UniqueId { get; set; } = new Guid().ToString();
 
   public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
   {

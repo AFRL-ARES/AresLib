@@ -7,6 +7,7 @@ import "google/protobuf/empty.proto";
 
 service AresAnalyzerService {
 	rpc GetAvailableAnalyzers(google.protobuf.Empty) returns (GetAvailableAnalyzersResponse);
+	rpc UpdateAnalzyer(GenericAnalyzer) returns (google.protobuf.Empty);
 	rpc AddAnalyzer(GenericAnalyzer) returns (google.protobuf.Empty);
 	rpc RemoveAnalyzer(RemoveAnalyzerRequest) returns (google.protobuf.Empty);
 }

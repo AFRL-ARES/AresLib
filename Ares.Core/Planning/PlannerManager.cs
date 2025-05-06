@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using System.Collections.ObjectModel;
 
 namespace Ares.Core.Planning;
@@ -5,11 +6,30 @@ namespace Ares.Core.Planning;
 public class PlannerManager : IPlannerManager
 {
   private readonly IList<IPlanner> _plannerStore = new List<IPlanner>();
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
 
-  public PlannerManager()
+  public PlannerManager(IDbContextFactory<CoreDatabaseContext> dbContextFactory)
   {
+    _dbContextFactory = dbContextFactory;
     var manualPlanner = new ManualPlanner();
     RegisterPlanner(manualPlanner);
+    _ = InitializeDbPlanners();
+  }
+
+  public async Task InitializeDbPlanners()
+  {
+    using var context = await _dbContextFactory.CreateDbContextAsync();
+    var availablePlanners = context.Planners;
+
+    foreach(var info in availablePlanners)
+    {
+      var planner = new AresPlanner.AresPlanner(info.Name, new Uri(info.Address))
+      {
+        UniqueId = info.UniqueId
+      };
+
+      await RegisterPlanner(planner);
+    }
   }
 
   public T GetPlanner<T>(Version version) where T : IPlanner
@@ -103,13 +123,26 @@ public class PlannerManager : IPlannerManager
     return typedPlanners.OrderByDescending(planner => planner.Version).First();
   }
 
-  public void RegisterPlanner(IPlanner planner)
+  public IPlanner? GetPlannerByName(string name) => _plannerStore.FirstOrDefault(planner => planner.Name == name);
+
+  public Task RegisterPlanner(IPlanner planner)
   {
     var plannerExists = _plannerStore.Any(p => p == planner || (p.Name == planner.Name && p.Version == planner.Version && planner.GetType() == p.GetType()));
     if(plannerExists)
-      throw new InvalidOperationException($"Planner {planner.Name}{planner.Version} of type {planner.GetType().Name} already registered");
+      return Task.CompletedTask;
 
     _plannerStore.Add(planner);
+    return Task.CompletedTask;
+  }
+
+  public Task UnregisterPlanner(IPlanner planner)
+  {
+    var plannerExists = _plannerStore.Any(p => p == planner || (p.Name == planner.Name && p.Version == planner.Version && planner.GetType() == p.GetType()));
+    if(!plannerExists)
+      return Task.CompletedTask;
+
+    _plannerStore.Remove(planner);
+    return Task.CompletedTask;
   }
 
   public IEnumerable<IPlanner> AvailablePlanners => new ReadOnlyCollection<IPlanner>(_plannerStore);
