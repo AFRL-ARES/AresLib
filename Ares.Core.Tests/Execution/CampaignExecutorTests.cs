@@ -6,6 +6,7 @@ using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.StopConditions;
+using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
@@ -24,6 +25,7 @@ internal class CampaignExecutorTests
   private IExecutionReportStore _executionReportStore;
   private IPlanningHelper _planningHelper;
   private IEnumerable<IResultHandler> _resultHandlers;
+  private IEnumerable<INotificationHandler> _notificationHandlers;
   private AresVariableManager _variableManager;
 
   [OneTimeSetUp]
@@ -35,6 +37,7 @@ internal class CampaignExecutorTests
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
     _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
+    _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
 
     var device = new TestDevice();
@@ -48,7 +51,7 @@ internal class CampaignExecutorTests
     var startupScriptComposer = new StartupComposer(stepComposer);
     var closeoutScriptComposer = new CloseoutComposer(stepComposer);
 
-    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _variableManager);
+    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _notificationHandlers, _variableManager);
   }
 
   [SetUp]
