@@ -21,7 +21,7 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   public string Name { get; set; }
   public Version Version { get; set; }
   public string Address { get; set; }
-  public string UniqueId { get; set; } = new Guid().ToString();
+  public string UniqueId { get; set; } = Guid.NewGuid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 

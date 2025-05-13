@@ -17,6 +17,7 @@ public class AresPlanner : IPlanner
     Name = name;
     Address = address.OriginalString;
     PlannerState = _plannerStateSubject.AsObservable();
+    UniqueId = Guid.NewGuid().ToString();
   }
 
   public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> experimentAnalyses, CancellationToken cancellationToken)
@@ -82,5 +83,5 @@ public class AresPlanner : IPlanner
   public Version Version { get; set; } = new Version(1, 0);
   public IObservable<PlannerState> PlannerState { get; }
   public string Address { get; set; }
-  public string UniqueId { get; set; } = new Guid().ToString();
+  public string UniqueId { get; set; }
 }
