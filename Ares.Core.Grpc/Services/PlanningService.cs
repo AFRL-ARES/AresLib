@@ -1,4 +1,5 @@
-﻿using Ares.Core.Planning;
+﻿using Ares.Core.Notifications;
+using Ares.Core.Planning;
 using Ares.Messaging;
 using Ares.Messaging.Planning;
 using Google.Protobuf.WellKnownTypes;
@@ -15,11 +16,13 @@ public class PlanningService : AresPlanning.AresPlanningBase
 {
   private readonly IPlannerManager _plannerManager;
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
+  private readonly INotificationHandler _notificationHandler;
 
-  public PlanningService(IPlannerManager plannerManager, IDbContextFactory<CoreDatabaseContext> coreContextFactory)
+  public PlanningService(IPlannerManager plannerManager, IDbContextFactory<CoreDatabaseContext> coreContextFactory, INotificationHandler notificationHandler)
   {
     _plannerManager = plannerManager;
     _coreContextFactory = coreContextFactory;
+    _notificationHandler = notificationHandler;
   }
 
   public override Task<GetAllPlannersResponse> GetAllPlanners(Empty request, ServerCallContext context)
@@ -111,26 +114,49 @@ public class PlanningService : AresPlanning.AresPlanningBase
 
   private async Task AddPlannerToDb(Planning.AresPlanner.AresPlanner planner, ServerCallContext context)
   {
-    var info = new PlannerInfo()
+    try
     {
-      Name = planner.Name,
-      Address = planner.Address,
-      Type = planner.GetType().ToString(),
-      Version = planner.Version.ToString(),
-      UniqueId = planner.UniqueId
-    };
+      var info = new PlannerInfo()
+      {
+        Name = planner.Name,
+        Address = planner.Address,
+        Type = planner.GetType().ToString(),
+        Version = planner.Version.ToString(),
+        UniqueId = planner.UniqueId
+      };
 
-    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    await dbContext.Planners.AddAsync(info);
-    await dbContext.SaveChangesAsync(context.CancellationToken);
+      await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+      await dbContext.Planners.AddAsync(info);
+      await dbContext.SaveChangesAsync(context.CancellationToken);
+    }
+
+    catch(Exception ex)
+    {
+      await HandleNotification("Failed to Add Planner to Database", ex.Message, NotificationSeverityEnum.Error);
+    }
+
   }
 
   private async Task RemovePlannerFromDb(string name, ServerCallContext context)
   {
-    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
-    if(oldInfo != null)
-      dbContext.Analyzers.Remove(oldInfo);
-    await dbContext.SaveChangesAsync(context.CancellationToken);
+    try
+    {
+      await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+      var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
+      if(oldInfo != null)
+        dbContext.Analyzers.Remove(oldInfo);
+      await dbContext.SaveChangesAsync(context.CancellationToken);
+    }
+
+    catch(Exception ex)
+    {
+      await HandleNotification("Failed to Remove Planner from Database", ex.Message, NotificationSeverityEnum.Error);
+
+    }
+  }
+
+  private async Task HandleNotification(string title, string message, NotificationSeverityEnum severity)
+  {
+    await _notificationHandler.HandleNotification(title, message, severity);
   }
 }
