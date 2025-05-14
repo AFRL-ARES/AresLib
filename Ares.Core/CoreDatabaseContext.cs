@@ -1,5 +1,4 @@
-﻿using Ares.Core.Analyzing;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 using Ares.Messaging.Device;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
