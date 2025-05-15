@@ -16,10 +16,9 @@ public class AnalyzerManager : IAnalyzerManager
     _dbContextFactory = dbContextFactory;
     var manualAnalyzer = new NoneAnalyzer();
     _ = RegisterAnalyzer(manualAnalyzer);
-    _ = InitializeDbAnalyzers();
   }
 
-  public async Task InitializeDbAnalyzers()
+  public async Task Init()
   {
     using var context = await _dbContextFactory.CreateDbContextAsync();
     var availableAnalyzers = context.Analyzers;

@@ -13,10 +13,9 @@ public class PlannerManager : IPlannerManager
     _dbContextFactory = dbContextFactory;
     var manualPlanner = new ManualPlanner();
     RegisterPlanner(manualPlanner);
-    _ = InitializeDbPlanners();
   }
 
-  public async Task InitializeDbPlanners()
+  public async Task Init()
   {
     using var context = await _dbContextFactory.CreateDbContextAsync();
     var availablePlanners = context.Planners;

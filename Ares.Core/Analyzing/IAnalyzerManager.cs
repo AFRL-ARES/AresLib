@@ -95,6 +95,12 @@ public interface IAnalyzerManager
   /// <param name="analyzer">The analyzer to unregister</param>
   Task UnregisterAnalyzer(IAnalyzer analyzer);
 
+  /// <summary>
+  /// Initializes the analyzer manager, loading all stored planners from the database
+  /// </summary>
+  /// <returns></returns>
+  Task Init();
+
   // TODO remove
   void StoreAnalysis(Analysis analysis);
 

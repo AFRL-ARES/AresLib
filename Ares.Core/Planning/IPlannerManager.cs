@@ -89,6 +89,12 @@ public interface IPlannerManager
   Task UnregisterPlanner(IPlanner planner);
 
   /// <summary>
+  /// Initializes the planner manager, loading all stored planners from the database
+  /// </summary>
+  /// <returns></returns>
+  Task Init();
+
+  /// <summary>
   /// The list of planners currently registers with the planner manager.
   /// </summary>
   IEnumerable<IPlanner> AvailablePlanners { get; }
