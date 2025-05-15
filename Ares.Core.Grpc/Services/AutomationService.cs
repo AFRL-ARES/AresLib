@@ -20,28 +20,28 @@ namespace Ares.Core.Grpc.Services;
 public class AutomationService : AresAutomation.AresAutomationBase
 {
   private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
-  private readonly IAnalyzerManager _analyzerManager;
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReportStore _executionReportStore;
   private readonly IEnumerable<IStartCondition> _startConditions;
   readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
+  readonly IAnalyzerRepo _analyzerRepo;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
     IExecutionManager executionManager,
     IExecutionReportStore executionReportStore,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     IEnumerable<IStartCondition> startConditions,
-    IAnalyzerManager analyzerManager,
-    IDesiredAnalysisResultFactory desiredAnalysisResultFactory)
+    IDesiredAnalysisResultFactory desiredAnalysisResultFactory,
+    IAnalyzerRepo analyzerRepo)
   {
+    _analyzerRepo = analyzerRepo;
     _desiredAnalysisResultFactory = desiredAnalysisResultFactory;
     _coreContextFactory = coreContextFactory;
     _executionManager = executionManager;
     _executionReportStore = executionReportStore;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _startConditions = startConditions;
-    _analyzerManager = analyzerManager;
   }
 
 
@@ -275,13 +275,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(response);
   }
 
-  public override Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
+  public override async Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
   {
     var response = new StartStopConditionsResponse();
-    var conditions = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
+    var conditionResults = await Task.WhenAll(_startConditions.Select(condition => condition.CanStart()));
+    var conditions = conditionResults.Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
     response.StartStopConditions.AddRange(conditions);
 
-    return Task.FromResult(response);
+    return response;
   }
 
   public override Task<Empty> RemoveStopCondition(StartStopCondition request, ServerCallContext context)
@@ -297,45 +298,21 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(new Empty());
   }
 
-
-  public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummariesAsync(Empty request, ServerCallContext context)
+  public override async Task<StartStopConditionsResponse> GetPreliminaryFailedStartConditions(CampaignTemplate request, ServerCallContext context)
   {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
-    var results = dbContext.CampaignResults.Select(result => new CampaignResultMetadata
-    {
-      CompletionTime = result.ExecutionInfo.TimeFinished,
-      ResultId = result.UniqueId
-    }).ToArray();
-
-    var response = new AvailableCampaignResultsResponse();
-    response.AvailableCampaignResults.AddRange(results);
+    var response = new StartStopConditionsResponse();
+    var conditionResults = await Task.WhenAll(_startConditions.Select(condition => condition.CanStart()));
+    var conditions = conditionResults.Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
+    response.StartStopConditions.AddRange(conditions);
 
     return response;
   }
 
-  public override async Task<CampaignExecutionSummary> GetCampaignExecutionSummary(CampaignExecutionSummaryRequest request, ServerCallContext context)
+  private async Task<IEnumerable<StartConditionResult>> GetFailedStartConditionResults()
   {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
-    var result = dbContext.CampaignResults.First(campaignResult => campaignResult.UniqueId == request.ResultId);
-
-    return result;
-  }
-
-  public override Task<GetAllAnalyzersResponse> GetAllAnalyzers(Empty request, ServerCallContext context)
-  {
-    var response = new GetAllAnalyzersResponse();
-    var analyzers = _analyzerManager.AvailableAnalyzers.Select(analyzer => new AnalyzerInfo { Name = analyzer.Name, Type = analyzer.GetType().Name, Version = analyzer.Version.ToString(), UniqueId = Guid.NewGuid().ToString() });
-    response.Analyzers.AddRange(analyzers);
-    return Task.FromResult(response);
-  }
-
-  public override Task<StartStopConditionsResponse> GetPreliminaryFailedStartConditions(CampaignTemplate request, ServerCallContext context)
-  {
-    var response = new StartStopConditionsResponse();
-    var conditions = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
-    response.StartStopConditions.AddRange(conditions);
-
-    return Task.FromResult(response);
+    var conditionTasks = _startConditions.Select(condition => condition.CanStart());
+    var conditions = await Task.WhenAll(conditionTasks);
+    return conditions;
   }
 
   public override Task<Empty> SetNumExperimentsStopCondition(NumExperimentsCondition request, ServerCallContext context)
@@ -399,14 +376,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
       });
   }
 
-  public override Task<CheckExecutionEligibilityResponse> CheckExecutionEligibility(Empty request, ServerCallContext context)
+  public override async Task<CheckExecutionEligibilityResponse> CheckExecutionEligibility(Empty request, ServerCallContext context)
   {
-    var eligbilityError = _executionManager.CheckCampaignStartPrerequisites();
+    var eligbilityError = await _executionManager.CheckCampaignStartPrerequisites();
 
-    if(String.IsNullOrEmpty(eligbilityError))
-      return Task.FromResult(new CheckExecutionEligibilityResponse { Error = string.Empty, IsEligible = true });
+    if(string.IsNullOrEmpty(eligbilityError))
+      return new CheckExecutionEligibilityResponse { Error = string.Empty, IsEligible = true };
 
     else
-      return Task.FromResult(new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false });
+      return new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false };
   }
 }

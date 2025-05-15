@@ -28,22 +28,32 @@ public class ExecutionManager : IExecutionManager
     _campaignComposer = campaignComposer;
   }
 
-  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() {};
+  public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() { };
 
-  public bool CanRun => _startConditions.All(condition => condition.CanStart()?.Success ?? true) && _activeCampaignTemplateStore.CampaignTemplate is not null;
+  public async Task<bool> CanRun()
+  {
+    if(_activeCampaignTemplateStore.CampaignTemplate is null)
+      return false;
+
+    var startConditionTasks = _startConditions.Select(sc => sc.CanStart());
+    var startConditions = await Task.WhenAll(startConditionTasks);
+    return startConditions.All(condition => condition?.Success ?? true);
+  }
+
+
 
   public int ReplanRate { get; private set; } = 1;
 
   public async Task Start()
   {
-    CheckCampaignStartPrerequisites();
+    await CheckCampaignStartPrerequisites();
     var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
     var CampaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
     CampaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
-    await PostExecution(CampaignExecutionSummary);
+    PostExecution(CampaignExecutionSummary);
   }
 
   public void Stop()
@@ -55,7 +65,7 @@ public class ExecutionManager : IExecutionManager
   public void Resume()
     => _executionControlTokenSource?.Resume();
 
-  public string CheckCampaignStartPrerequisites()
+  public async Task<string> CheckCampaignStartPrerequisites()
   {
     if(_activeCampaignTemplateStore.CampaignTemplate is null)
       return "CampaignTemplate was not assigned to the active template store.";
@@ -63,11 +73,13 @@ public class ExecutionManager : IExecutionManager
     if(!CampaignStopConditions.Any())
       return "The Campaign has no stop conditions, please set a stop condition before starting campaign.";
 
-    var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
-    if (startConditionResults.Any())
-      return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}";
+    var startConditionTasks = _startConditions.Select(sc => sc.CanStart());
+    var startConditions = await Task.WhenAll(startConditionTasks);
+    var failedStartConditions = startConditions.Where(sc => !sc.Success);
+    if(failedStartConditions.Any())
+      return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, failedStartConditions.SelectMany(conditionResult => conditionResult!.Messages))}";
 
-    return String.Empty;
+    return string.Empty;
   }
 
   public void UpdateReplanRate(int newRate)
@@ -75,7 +87,7 @@ public class ExecutionManager : IExecutionManager
     ReplanRate = newRate;
   }
 
-  private async Task PostExecution(CampaignExecutionSummary result)
+  private void PostExecution(CampaignExecutionSummary result)
   {
     //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();

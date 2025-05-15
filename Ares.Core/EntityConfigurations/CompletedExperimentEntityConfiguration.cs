@@ -27,9 +27,8 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
-    builder.HasOne(experiment => experiment.Result)
+    builder.HasMany(experiment => experiment.Results)
       .WithOne()
-      .HasForeignKey<Any>("CompletedExperimentId")
       .OnDelete(DeleteBehavior.ClientCascade);
   }
 }

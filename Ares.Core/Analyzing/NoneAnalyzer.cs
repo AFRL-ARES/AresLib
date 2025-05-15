@@ -7,14 +7,18 @@ namespace Ares.Core.Analyzing;
 /// Analyzer that returns a 0 as its analysis result.
 /// Used as a default analyzer in case no actual analyzers are present
 /// </summary>
-internal class NoneAnalyzer : AnalyzerBase<Any>
+internal class NoneAnalyzer : AnalyzerBase
 {
-
   public NoneAnalyzer() : base("NONE", new Version(1, 0))
   {
   }
 
-  protected override Task<Analysis> AnalyzeMessage(ExperimentResult _, Any __, CancellationToken ___)
+  public override Task<RequestedAnalysisData[]> GetSupportedInputs()
+  {
+    return Task.FromResult(Array.Empty<RequestedAnalysisData>());
+  }
+
+  protected override Task<Analysis> AnalyzeInputs(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
   {
     var analysis = new Analysis
     {
@@ -29,13 +33,5 @@ internal class NoneAnalyzer : AnalyzerBase<Any>
     };
 
     return Task.FromResult(analysis);
-  }
-
-  public override bool InputSupported(string fullTypeName)
-    => true;
-
-  public override Task<RequestedAnalysisData[]> GetSupportedInputs()
-  {
-    return Task.FromResult(Array.Empty<RequestedAnalysisData>());
   }
 }

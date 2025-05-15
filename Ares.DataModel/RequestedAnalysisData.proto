@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "google/protobuf/wrappers.proto";
+
+message RequestedAnalysisData {
+	string key = 1;
+	google.protobuf.StringValue type = 2;
+	bool optional = 3;
+}

@@ -4,10 +4,11 @@ package ares.messaging;
 
 import "AnalyzerInfo.proto";
 import "Analysis.proto";
+import "RequestedAnalysisData.proto";
 
 import "google/protobuf/empty.proto";
 
-service AresAnalyzer {
+service AresAnalysis {
 	rpc GetAllAnalyzers(GetAllAnalyzersRequest) returns (GetAllAnalyzersResponse);
 	rpc GetRequestedAnalysisData(RequestedAnalysisDataRequest) returns (RequestedAnalysisDataResponse);
 }

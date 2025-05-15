@@ -71,7 +71,7 @@ public class AresVariableManager
     else
     {
       var path = AresEnvironment.GetEnvironmentVariable(VariableType.CampaignMiscFolder);
-      AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, path);
+      AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, path ?? "");
       return path;
     }
 

@@ -14,34 +14,37 @@ namespace Ares.Core.Execution.Executors;
 
 public class CampaignExecutor : ICampaignExecutor
 {
-  private readonly IAnalyzerManager _analyzerManager;
   private readonly IExecutionReporter _executionReporter;
   private readonly ISubject<CampaignExecutionStatus> _executionStatusSubject;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly ICommandComposer<ExperimentTemplate, StartupScriptExecutor> _startupScriptComposer;
   private readonly ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> _closeoutScriptComposer;
   private readonly IPlanningHelper _planningHelper;
-  private readonly IEnumerable<IResultHandler> _resultHandlers;
+  private readonly IEnumerable<IExecutionSummaryHandler> _summaryHandlers;
   private readonly AresVariableManager _variableManager;
+  readonly AnalysisHelper _analysisHelper;
+  readonly AnalysisRepo _analysisRepo;
 
-  public CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
+  internal CampaignExecutor(ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     ICommandComposer<ExperimentTemplate, StartupScriptExecutor> startupScriptComposer,
     ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> closeoutScriptComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
-    IAnalyzerManager analyzerManager,
+    AnalysisHelper analysisHelper,
     CampaignTemplate template,
-    IEnumerable<IResultHandler> resultHandlers,
-    AresVariableManager variableManager)
+    IEnumerable<IExecutionSummaryHandler> resultHandlers,
+    AresVariableManager variableManager,
+    AnalysisRepo analysisRepo)
   {
+    _analysisRepo = analysisRepo;
+    _analysisHelper = analysisHelper;
     _variableManager = variableManager;
     _experimentComposer = experimentComposer;
     _startupScriptComposer = startupScriptComposer;
     _closeoutScriptComposer = closeoutScriptComposer;
     _planningHelper = planningHelper;
     _executionReporter = executionReporter;
-    _analyzerManager = analyzerManager;
-    _resultHandlers = resultHandlers;
+    _summaryHandlers = resultHandlers;
     Template = template;
 
     Status = new CampaignExecutionStatus
@@ -74,7 +77,7 @@ public class CampaignExecutor : ICampaignExecutor
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, Template.UniqueId);
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, Template.Name);
 
-    var ExperimentSummaries = new List<ExperimentResult>();
+    var experimentSummaries = new List<ExperimentExecutionSummary>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
     {
@@ -82,7 +85,7 @@ public class CampaignExecutor : ICampaignExecutor
       State = ExecutionState.Waiting
     };
 
-    _analyzerManager.ClearAnalyses();
+    _analysisRepo.ClearAnalyses();
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
@@ -101,10 +104,8 @@ public class CampaignExecutor : ICampaignExecutor
       AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentExperimentNumber, experiment_count.ToString());
 
       var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
-      if(experimentExecutorResult.ErrorString is not null)
+      if(experimentExecutorResult.ErrorString is not null || experimentExecutorResult.ExperimentExecutor is not ExperimentExecutor experimentExecutor)
         break;
-
-      var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
 
       Status.ExperimentExecutionStatuses.Add(experimentExecutor.Status);
       experimentExecutor.ExperimentStatusObservable.Subscribe(experimentStatus =>
@@ -122,15 +123,12 @@ public class CampaignExecutor : ICampaignExecutor
       // and thus sending a null result to the analyzer might break it depending on the analyzer
       if(!token.IsCancelled)
       {
-        var noneAnalyzer = _analyzerManager.GetAnalyzer<NoneAnalyzer>();
-        var analyzer = experimentExecutor.Template.Analyzer is null ? noneAnalyzer : _analyzerManager
-          .GetAnalyzer(experimentExecutor.Template.Analyzer) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {experimentExecutor.Template.Analyzer.Name}");
-
-        var analysis = await analyzer.Analyze(experimentSummary, experimentSummary.CompletedExperiment.Result, token.CancellationToken);
-        analysis.CompletedExperiment = experimentSummary.CompletedExperiment;
-        experimentSummary.CompletedExperiment.AnalysisResult = analysis.Result;
+        var analysis = await _analysisHelper.Analyze(
+          experimentExecutor.Template.Analyzer,
+          experimentSummary,
+          token.CancellationToken);
         analyses.Add(analysis);
-        _analyzerManager.StoreAnalysis(analysis);
+        _analysisRepo.Add(analysis);
       }
       else
       {
@@ -138,7 +136,7 @@ public class CampaignExecutor : ICampaignExecutor
       }
 
       await PostExperimentExecution(experimentSummary);
-      ExperimentSummaries.Add(experimentSummary);
+      experimentSummaries.Add(experimentSummary);
     }
 
     var closeoutExecutor = GenerateCloseoutScriptExecutor(token.CancellationToken);
@@ -152,7 +150,7 @@ public class CampaignExecutor : ICampaignExecutor
 
     _executionReporter.Report(Status);
 
-    var CampaignExecutionSummary = new CampaignExecutionSummary
+    var campaignExecutionSummary = new CampaignExecutionSummary
     {
       UniqueId = Guid.NewGuid().ToString(),
       CampaignId = Template.UniqueId,
@@ -163,9 +161,9 @@ public class CampaignExecutor : ICampaignExecutor
       }
     };
 
-    CampaignExecutionSummary.ExperimentSummaries.AddRange(ExperimentSummaries);
+    campaignExecutionSummary.ExperimentSummaries.AddRange(experimentSummaries);
 
-    return CampaignExecutionSummary;
+    return campaignExecutionSummary;
   }
 
   private bool ShouldStop()
@@ -307,11 +305,11 @@ public class CampaignExecutor : ICampaignExecutor
     await closeoutExecutor.Execute(token);
   }
 
-  private async Task PostExperimentExecution(ExperimentResult result)
+  private async Task PostExperimentExecution(ExperimentExecutionSummary summary)
   {
-    foreach(var handler in _resultHandlers)
+    foreach(var handler in _summaryHandlers)
     {
-      await handler.Handle(result);
+      await handler.Handle(summary);
     }
   }
 

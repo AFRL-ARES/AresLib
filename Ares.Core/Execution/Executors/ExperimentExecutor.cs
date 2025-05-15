@@ -72,7 +72,7 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
 
     if(Template.OutputCommands.Any())
     {
-      var commandExecutionSummaries = stepSummaries
+      var keyedCommandSummaries = stepSummaries
         .SelectMany(stepSummary => stepSummary.CommandSummaries)
         .Select(
           (summary) => new
@@ -82,7 +82,7 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
           })
         .Where(anon => anon.Key is not null);
 
-      var results = commandExecutionSummaries
+      var results = keyedCommandSummaries
         .Select(a => new ExperimentResult() { Key = a.Key, Data = a.Summary.Result.Result });
 
       completedExperiment.Results.AddRange(results);

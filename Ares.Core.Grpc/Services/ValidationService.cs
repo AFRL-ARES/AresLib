@@ -13,43 +13,43 @@ namespace Ares.Core.Grpc.Services;
 
 public class ValidationService : AresValidation.AresValidationBase
 {
-  private readonly IAnalyzerManager _analyzerManager;
   private readonly IEnumerable<ICampaignValidator> _validators;
+  readonly IAnalyzerRepo _analyzerRepo;
 
-  public ValidationService(IEnumerable<ICampaignValidator> validators, IAnalyzerManager analyzerManager)
+  public ValidationService(IEnumerable<ICampaignValidator> validators, IAnalyzerRepo analyzerRepo)
   {
+    _analyzerRepo = analyzerRepo;
     _validators = validators;
-    _analyzerManager = analyzerManager;
   }
 
-  public override Task<ValidationResponse> ValidateAnalyzerSelection(AnalyzerValidationRequest request, ServerCallContext context)
+  public override async Task<ValidationResponse> ValidateAnalyzerSelection(AnalyzerValidationRequest request, ServerCallContext context)
   {
-    var analyzer = _analyzerManager.GetAnalyzer(request.Analyzer);
-    if (analyzer is null)
-      throw new InvalidOperationException($"Could not find analyzer {request.Analyzer} to validate {request.OutputCommandMetadata}");
+    var analyzer = _analyzerRepo.GetAnalyzer(request.Analyzer);
+    if(request.ExperimentTemplate is null)
+      throw new InvalidOperationException("No command metadata specified");
+
+    if(analyzer is null)
+      throw new InvalidOperationException($"Could not find analyzer {request.Analyzer} to validate {request.ExperimentTemplate.Name}");
 
     var response = new ValidationResponse();
 
-    if (request.OutputCommandMetadata is null)
-      throw new InvalidOperationException("No command metadata specified");
-
-    if (request.OutputCommandMetadata.OutputMetadata is null)
+    if(!request.ExperimentTemplate.OutputCommands.Any())
     {
       response.Success = false;
-      response.Messages.Add("The command does not have an output metadata defined");
-      return Task.FromResult(response);
+      response.Messages.Add("The experiment does not have any output commands defined");
+      return response;
     }
 
-    var result = GoodAnalyzerValidator.Validate(request.OutputCommandMetadata.OutputMetadata, analyzer);
+    var result = await GoodAnalyzerValidator.Validate(request.ExperimentTemplate, analyzer);
     response.Success = result.Success;
     response.Messages.AddRange(result.Messages);
 
-    return Task.FromResult(response);
+    return response;
   }
 
-  public override Task<ValidationResponse> ValidateFullCampaign(CampaignTemplate request, ServerCallContext context)
+  public override async Task<ValidationResponse> ValidateFullCampaign(CampaignTemplate request, ServerCallContext context)
   {
-    var validatorResponses = _validators.Select(validator => validator.Validate(request)).ToArray();
+    var validatorResponses = await Task.WhenAll(_validators.Select(validator => validator.Validate(request)));
     var response = new ValidationResponse
     {
       Success = validatorResponses.All(result => result.Success)
@@ -57,7 +57,7 @@ public class ValidationService : AresValidation.AresValidationBase
 
     response.Messages.AddRange(validatorResponses.SelectMany(result => result.Messages));
 
-    return Task.FromResult(response);
+    return response;
   }
 
   public override Task<ValidationResponse> VlidateRegisteredDevices(Empty request, ServerCallContext context)

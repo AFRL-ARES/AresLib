@@ -1,4 +1,5 @@
-﻿using Ares.Messaging;
+﻿using Ares.Core.Validation;
+using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Analyzing;
@@ -26,15 +27,17 @@ public interface IAnalyzer
   /// </summary>
   AnalyzerState AnalyzerState { get; }
 
-  bool InputSupported(string fullTypeName);
+  Task<ValidationResult> ValidateInput(AnalyzerInputValidationRequest validationRequest);
+
+  Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputValidationRequest> validationRequests);
 
   Task<RequestedAnalysisData[]> GetSupportedInputs();
 
   /// <summary>
   /// Returns the values for the given parameter metadata
   /// </summary>
-  /// <param name="input">The experiment output to analyze in the form of the <see cref="Any" /> proto message</param>
+  /// <param name="inputs">The experiment outputs to analyze in the form of the <see cref="AnalyzerInput" /> proto message</param>
   /// <param name="cancellationToken"></param>
   /// <returns><see cref="Analysis" /> which has the result as well as the metadata about the analyzer.</returns>
-  Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken);
+  Task<Analysis> Analyze(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken);
 }

@@ -16,24 +16,24 @@ namespace Ares.Core.Tests.Execution;
 
 internal class CampaignExecutorTests
 {
-  private IAnalyzerManager _analyzerManager;
+  private IAnalyzerRepo _analyzerManager;
   private CampaignComposer _campaignComposer;
   private ICampaignExecutor _campaignExecutor;
   private IExecutionReporter _executionReporter;
   private IExecutionReportStore _executionReportStore;
   private IPlanningHelper _planningHelper;
-  private IEnumerable<IResultHandler> _resultHandlers;
+  private IEnumerable<IExecutionSummaryHandler> _resultHandlers;
   private AresVariableManager _variableManager;
 
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
-    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+    _analyzerManager = new AnalyzerRepo(new AnalysisRepo());
     _analyzerManager.RegisterAnalyzer(new TestReplyAnalyzer());
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
-    _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
+    _resultHandlers = new Mock<IEnumerable<IExecutionSummaryHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
 
     var device = new TestDevice();

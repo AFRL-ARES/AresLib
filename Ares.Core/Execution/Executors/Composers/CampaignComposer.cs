@@ -7,26 +7,29 @@ namespace Ares.Core.Execution.Executors.Composers;
 
 public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExecutor>
 {
-  private readonly IAnalyzerManager _analyzerManager;
   private readonly IExecutionReporter _executionReporter;
   private readonly ICommandComposer<ExperimentTemplate, ExperimentExecutor> _experimentComposer;
   private readonly ICommandComposer<ExperimentTemplate, StartupScriptExecutor> _startupScriptComposer;
   private readonly ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> _closeoutScriptComposer;
   private readonly IPlanningHelper _planningHelper;
-  private readonly IEnumerable<IResultHandler> _resultHandlers;
+  private readonly IEnumerable<IExecutionSummaryHandler> _resultHandlers;
   private readonly AresVariableManager _variableManager;
+  readonly AnalysisHelper _analysisHelper;
+  readonly AnalysisRepo _analysisRepo;
 
-  public CampaignComposer(IAnalyzerManager analyzerManager,
+  internal CampaignComposer(AnalysisHelper analysisHelper,
     ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     ICommandComposer<ExperimentTemplate, StartupScriptExecutor> startupScriptComposer,
     ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> closeoutScriptComposer,
     IPlanningHelper planningHelper,
     IExecutionReporter executionReporter,
-    IEnumerable<IResultHandler> resultHandlers,
-    AresVariableManager variableManager)
+    IEnumerable<IExecutionSummaryHandler> resultHandlers,
+    AresVariableManager variableManager,
+    AnalysisRepo analysisRepo)
   {
+    _analysisRepo = analysisRepo;
+    _analysisHelper = analysisHelper;
     _variableManager = variableManager;
-    _analyzerManager = analyzerManager;
     _experimentComposer = experimentComposer;
     _startupScriptComposer = startupScriptComposer;
     _closeoutScriptComposer = closeoutScriptComposer;
@@ -36,5 +39,5 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   }
 
   public ICampaignExecutor Compose(CampaignTemplate template)
-    => new CampaignExecutor(_experimentComposer, _startupScriptComposer, _closeoutScriptComposer, _planningHelper, _executionReporter, _analyzerManager, template, _resultHandlers, _variableManager);
+    => new CampaignExecutor(_experimentComposer, _startupScriptComposer, _closeoutScriptComposer, _planningHelper, _executionReporter, _analysisHelper, template, _resultHandlers, _variableManager, _analysisRepo);
 }

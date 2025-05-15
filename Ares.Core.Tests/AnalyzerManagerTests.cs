@@ -6,12 +6,12 @@ namespace Ares.Core.Tests;
 
 internal class AnalyzerManagerTests
 {
-  private IAnalyzerManager _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+  private IAnalyzerRepo _analyzerManager = new AnalyzerRepo(new AnalysisRepo());
 
   [SetUp]
   public void SetUp()
   {
-    _analyzerManager = new AnalyzerManager(new AnalysisRepo());
+    _analyzerManager = new AnalyzerRepo(new AnalysisRepo());
   }
 
   [Test]
@@ -42,7 +42,7 @@ internal class AnalyzerManagerTests
     public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
     public AnalyzerState AnalyzerState { get; }
 
-    public bool InputSupported(string fullTypeName)
+    public bool InputsSupported(string fullTypeName)
       => throw new NotImplementedException();
 
     public Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken)

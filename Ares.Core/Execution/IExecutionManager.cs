@@ -17,7 +17,7 @@ public interface IExecutionManager
   /// <summary>
   /// Indicates whether the currently loaded campaign has all the prerequisites in order to start and run
   /// </summary>
-  public bool CanRun { get; }
+  public Task<bool> CanRun();
 
   /// <summary>
   /// Starts the campaign if not already running.
@@ -56,5 +56,5 @@ public interface IExecutionManager
   /// Checks whether the prerequisites to execution have been met
   /// </summary>
   /// <returns> An error string if the campaign is not executable, an empty string otherwise </returns>
-  string CheckCampaignStartPrerequisites();
+  Task<string> CheckCampaignStartPrerequisites();
 }

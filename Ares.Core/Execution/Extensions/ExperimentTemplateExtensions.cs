@@ -66,8 +66,16 @@ internal static class ExperimentTemplateExtensions
       foreach(var commandTemplate in stepTemplate.CommandTemplates)
       {
         var cmdTemplateId = Guid.NewGuid().ToString();
-        if(commandTemplate.UniqueId == template.OutputCommandId)
-          newTemplate.OutputCommandId = cmdTemplateId;
+        var outputCmd = template.OutputCommands.FirstOrDefault(oc => oc.CommandId == commandTemplate.UniqueId);
+        if(outputCmd is not null)
+        {
+          var newOutputCommand = new OutputCommandSelection() 
+          { 
+            CommandId = cmdTemplateId, 
+            Key = outputCmd.Key 
+          };
+          newTemplate.OutputCommands.Add(newOutputCommand);
+        }
 
         commandTemplate.Metadata.UniqueId = Guid.NewGuid().ToString();
         commandTemplate.UniqueId = cmdTemplateId;

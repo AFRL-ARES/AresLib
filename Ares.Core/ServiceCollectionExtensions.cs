@@ -26,7 +26,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<IPlannerManager, PlannerManager>();
     services.AddSingleton<IExecutionReporter, ExecutionReporter>();
     services.AddSingleton<IExecutionReportStore, ExecutionReportStore>();
-    services.AddSingleton<IAnalyzerManager, AnalyzerManager>();
+    services.AddSingleton<IAnalyzerRepo, AnalyzerRepo>();
     services.AddTransient<INumExperimentsRunFactory, NumExperimentsRunFactory>();
     services.AddSingleton<IActiveCampaignTemplateStore, ActiveCampaignTemplateStore>();
     services.AddSingleton<ICampaignValidatorRepository, CampaignValidatorRepository>();
@@ -36,6 +36,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
     services.AddSingleton<AresVariableManager>();
     services.AddSingleton<AnalysisRepo>();
+    services.AddSingleton<AnalysisHelper>();
     services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
 
     services.BindComposers();

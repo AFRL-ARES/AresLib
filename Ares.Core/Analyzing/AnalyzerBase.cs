@@ -1,14 +1,13 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Ares.Core.Validation;
 using Ares.Messaging;
-using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Analyzing;
 
-public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
+public abstract class AnalyzerBase : IAnalyzer
 {
-  private readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
+  protected readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
 
   public AnalyzerBase(string name, Version version)
   {
@@ -22,22 +21,16 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 
-  public virtual bool InputSupported(string fullTypeName)
-    => typeof(T).FullName == fullTypeName;
-
-  public Task<Analysis> Analyze(ExperimentResult results, Any? input, CancellationToken cancellationToken)
+  public virtual Task<Analysis> Analyze(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
   {
-    if(input is null)
+    var inputsArr = inputs.ToArray();
+    if(!inputsArr.Any())
       return Task.FromResult(GetDefaultResult());
 
-    var unpackedMessage = UnpackMessage(input);
-    if(unpackedMessage is null)
-      return Task.FromResult(GetDefaultResult());
-
-    return AnalyzeMessage(results, unpackedMessage, cancellationToken);
+    return AnalyzeInputs(summary, inputs, cancellationToken);
   }
 
-  private Analysis GetDefaultResult()
+  protected Analysis GetDefaultResult()
   {
     return new Analysis
     {
@@ -47,20 +40,40 @@ public abstract class AnalyzerBase<T> : IAnalyzer where T : IMessage, new()
     };
   }
 
-  private T? UnpackMessage(Any input)
-  {
-    try
-    {
-      var unpackedMessage = input.Unpack<T>();
-      return unpackedMessage;
-    }
-    catch(InvalidProtocolBufferException e)
-    {
-      return default;
-    }
-  }
-
-  protected abstract Task<Analysis> AnalyzeMessage(ExperimentResult result, T input, CancellationToken cancellationToken);
+  protected abstract Task<Analysis> AnalyzeInputs(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken);
 
   public abstract Task<RequestedAnalysisData[]> GetSupportedInputs();
+
+  public async Task<ValidationResult> ValidateInput(AnalyzerInputValidationRequest validationRequest)
+  {
+    var inputs = await GetSupportedInputs();
+    return ValidateInputHelper(validationRequest, inputs);
+  }
+
+  private ValidationResult ValidateInputHelper(AnalyzerInputValidationRequest validationRequest, IEnumerable<RequestedAnalysisData> supportedAnalysisInputs)
+  {
+    var requestedInput = supportedAnalysisInputs.FirstOrDefault(i => i.Key == validationRequest.Key);
+    if(requestedInput is null)
+    {
+      return new ValidationResult(
+        false,
+        $"Input with key of {validationRequest.Key} is unsupported.");
+    }
+
+    if(requestedInput.Type != validationRequest.TypeName)
+    {
+      return new ValidationResult(
+        false,
+        $"Input type mismatch. Input {requestedInput.Key} expects type of {requestedInput.Key} but received {validationRequest.TypeName}");
+    }
+
+    return new ValidationResult(true);
+  }
+
+  public async Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputValidationRequest> validationRequests)
+  {
+    var inputs = await GetSupportedInputs();
+    var validationResults = validationRequests.Select(vr => ValidateInputHelper(vr, inputs)).ToArray();
+    return new ValidationResult(validationResults);
+  }
 }

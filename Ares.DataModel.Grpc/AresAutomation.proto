@@ -59,7 +59,7 @@ service AresAutomation {
 	
 
 	// Summaries
-	rpc GetAvailableCampaignSummaries(google.protobuf.Empty) returns (AvailableCampaignExecutionSummariesResponse);
+	rpc GetAvailableCampaignExecutionSummaries(google.protobuf.Empty) returns (AvailableCampaignExecutionSummariesResponse);
 	rpc GetCampaignSummary(CampaignExecutionSummaryRequest) returns (CampaignExecutionSummary);
 }
 
