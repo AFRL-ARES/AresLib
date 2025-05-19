@@ -25,7 +25,7 @@ public class AresPlanner : IPlanner
     var client = ClientStore.AresPlanningClient;
     var planRequest = new PlanRequest();
     planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, experimentAnalyses)));
-    var result = await client.PlanAsync(planRequest);
+    var result = await client.PlanAsync(planRequest, deadline: DateTime.UtcNow.AddSeconds(30));
     return ToPlanResults(result, plannableParameters);
   }
 
