@@ -1,6 +1,5 @@
 ﻿using Google.Protobuf;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EntityConfigurations;
@@ -52,13 +51,16 @@ public abstract class AresEntityTypeBaseConfiguration<TAresCoreEntity> : IEntity
     if(provider is null)
       return "NOW()";
 
-    if(provider.Contains("Postgres", StringComparison.InvariantCultureIgnoreCase))
+    if(provider.Contains("Postgres", StringComparison.CurrentCultureIgnoreCase))
       return "NOW()";
 
     if(provider.Contains("Sqlite", StringComparison.CurrentCultureIgnoreCase))
       return "DATETIME('now')";
 
-    else
+    if(provider.Contains("SqlServer", StringComparison.CurrentCultureIgnoreCase))
       return "getdate()";
+
+    else
+      return "NOW()";
   }
 }
