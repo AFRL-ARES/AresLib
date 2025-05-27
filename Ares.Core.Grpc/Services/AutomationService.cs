@@ -69,7 +69,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
       try
       {
         var contents = await File.ReadAllTextAsync(file);
-        var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents);
+        var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, _serializerSettings);
         if(campaignTemplate is not null)
           campaignResponse.CampaignTemplates.Add(campaignTemplate);
 

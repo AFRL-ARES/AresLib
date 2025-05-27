@@ -91,14 +91,12 @@ public class CampaignExecutor : ICampaignExecutor
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _executionReporter.Report(Status);
 
+    await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
+
     var startupExecutor = GenerateStartupScriptExecutor(token.CancellationToken);
     await HandleExperimentStartup(token, startupExecutor);
     bool executionSuccess = true;
     var experiment_count = 0;
-
-    await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
-
-    await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
 
     while(!ShouldStop() && !token.IsCancelled)
     {
