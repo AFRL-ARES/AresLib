@@ -44,7 +44,7 @@ internal static class ExecutorResultHelpers
   {
     return new StepResult { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
   }
-  public static CommandResult CreateCommandResult(string commandId,
+  public static CommandResult CreateCommandResult(CommandTemplate template,
     DeviceCommandResult? deviceResult,
     DateTime startTime,
     DateTime endTime)
@@ -53,8 +53,10 @@ internal static class ExecutorResultHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
-      CommandId = commandId,
-      Result = deviceResult
+      CommandId = template.UniqueId,
+      Result = deviceResult,
+      CommandDescription = template.Metadata.Description,
+      CommandName = template.Metadata.Name
     };
 
     return commandResult;

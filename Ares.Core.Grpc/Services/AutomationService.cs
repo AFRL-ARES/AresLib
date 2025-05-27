@@ -3,6 +3,7 @@ using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Core.Grpc.Helpers;
+using Ares.Core.Notifications;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
@@ -26,6 +27,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReportStore _executionReportStore;
   private readonly IEnumerable<IStartCondition> _startConditions;
+  private readonly IEnumerable<INotificationHandler> _notificationHandlers;
   readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
   private JsonSerializerSettings _serializerSettings;
 
@@ -35,6 +37,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     IEnumerable<IStartCondition> startConditions,
     IAnalyzerManager analyzerManager,
+    IEnumerable<INotificationHandler> notificationHandlers,
     IDesiredAnalysisResultFactory desiredAnalysisResultFactory)
   {
     _desiredAnalysisResultFactory = desiredAnalysisResultFactory;
@@ -45,6 +48,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     _startConditions = startConditions;
     _analyzerManager = analyzerManager;
     _serializerSettings = CreateCustomSerializationSettings();
+    _notificationHandlers = notificationHandlers;
   }
 
 
@@ -62,11 +66,21 @@ public class AutomationService : AresAutomation.AresAutomationBase
     var campaignResponse = new CampaignsResponse();
     foreach(var file in Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json"))
     {
-      var contents = await File.ReadAllTextAsync(file);
-      var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, _serializerSettings);
+      try
+      {
+        var contents = await File.ReadAllTextAsync(file);
+        var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents);
+        if(campaignTemplate is not null)
+          campaignResponse.CampaignTemplates.Add(campaignTemplate);
 
-      if(campaignTemplate is not null)
-        campaignResponse.CampaignTemplates.Add(campaignTemplate);
+        else
+          throw new Exception("Deserialization of campaign template failed");
+      }
+
+      catch(Exception ex)
+      {
+        HandleNotification("Error Loading Campaign Template", $"{file} - {ex.Message}", NotificationSeverityEnum.Error);
+      }
     }
 
     return campaignResponse;
@@ -166,7 +180,12 @@ public class AutomationService : AresAutomation.AresAutomationBase
     var campaignToUpdate = directoryFiles.FirstOrDefault(file => file.Contains(request.Template.UniqueId));
 
     if(campaignToUpdate is null)
-      throw new InvalidOperationException("Tried to update a campaign template that didn't exist!");
+    {
+      var title = "Error Updating Campaign";
+      var message = $"Attempted to update a campaign that didn't exist. {request.Template.Name} couldn't be found in your list of available campaign templates.";
+      HandleNotification(title, message, NotificationSeverityEnum.Error);
+      return Task.FromResult(request.Template);
+    }
 
     var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
     var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
@@ -189,6 +208,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
         return campaignObject;
     }
 
+    var title = "Error Fetching Campaign Template";
+    var message = $"Attempted to fetch a campaign that didn't exist. {request.CampaignName}'s UUID did not match any of the existing campaigns in your data directory";
+    HandleNotification(title, message, NotificationSeverityEnum.Error);
     return null;
   }
 
@@ -422,5 +444,13 @@ public class AutomationService : AresAutomation.AresAutomationBase
     serializerSettings.TypeNameHandling = TypeNameHandling.All;
 
     return serializerSettings;
+  }
+
+  private void HandleNotification(string title, string message, NotificationSeverityEnum severity)
+  {
+    foreach(var handler in _notificationHandlers)
+    {
+      handler.HandleNotification(title, message, severity);
+    }
   }
 }

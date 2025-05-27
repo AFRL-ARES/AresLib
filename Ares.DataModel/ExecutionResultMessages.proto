@@ -42,4 +42,6 @@ message CommandResult {
   string command_id = 2;
   ExecutionInfo execution_info = 3;
   DeviceCommandResult result = 4;
+  string command_name = 5;
+  string command_description = 6;
 }

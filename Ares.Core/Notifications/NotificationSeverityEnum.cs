@@ -1,4 +1,4 @@
-﻿namespace Ares.Core.Notifications;
+namespace Ares.Core.Notifications;
 
 public enum NotificationSeverityEnum
 {
@@ -8,3 +8,4 @@ public enum NotificationSeverityEnum
   Danger,
   Success
 }
+

@@ -8,6 +8,7 @@ using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
+
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -97,6 +98,8 @@ public class CampaignExecutor : ICampaignExecutor
 
     await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
 
+    await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
+
     while(!ShouldStop() && !token.IsCancelled)
     {
       var experimentFolder = $"Experiment_{++experiment_count}";
@@ -107,8 +110,14 @@ public class CampaignExecutor : ICampaignExecutor
       AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentExperimentNumber, experiment_count.ToString());
 
       var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
+
+      //TODO: Notify user
       if(experimentExecutorResult.ErrorString is not null)
+      {
+        await HandleNotification("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
+        executionSuccess = false;
         break;
+      }
 
       var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
 
@@ -202,7 +211,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   private string CreateCampaignResultsFolder(DateTime startTime)
   {
-    var newFolderName = $"{Template.Name}_{startTime.ToString("h-mm-ss_M-dd")}";
+    var newFolderName = $"{Template.Name}_{startTime.ToString("_yyyy-MM-dd_HH-mm-ss")}";
     var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);
     Directory.CreateDirectory(fullPath);
     return fullPath;
@@ -237,7 +246,7 @@ public class CampaignExecutor : ICampaignExecutor
     var experimentTemplate = Template.ExperimentTemplates.First().CloneWithNewIds();
     if(!experimentTemplate.IsResolved())
     {
-      if(ShouldReplan(analyses))
+      if(analyses.Count() % ReplanRate == 0)
       {
         var resolveSuccess = await _planningHelper.TryResolveParameters(Template.PlannerAllocations, experimentTemplate.GetAllPlannedParameters(), analyses, cancellationToken);
         if(!resolveSuccess)
@@ -289,12 +298,6 @@ public class CampaignExecutor : ICampaignExecutor
     experimentTemplate.Name = Template.Name;
 
     return _closeoutScriptComposer.Compose(experimentTemplate);
-  }
-
-  private bool ShouldReplan(IEnumerable<Analysis> analyses)
-  {
-    var numberOfCompletedExperiments = analyses.Count();
-    return numberOfCompletedExperiments % ReplanRate == 0;
   }
 
   private void RecallPreviousExperiment(IEnumerable<Analysis> analyses, ExperimentTemplate currentTemplate)

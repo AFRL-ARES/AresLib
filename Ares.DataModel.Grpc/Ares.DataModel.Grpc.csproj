@@ -25,6 +25,9 @@
       <Protobuf Include="AresDevices.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
+		<Protobuf Include="AresNotification.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
+			<Generator>MSBuild:Compile</Generator>
+		</Protobuf>
       <Protobuf Include="AresPlanning.proto" GrpcServices="Both" AdditionalImportDirs="$(DataModelProtoPath)">
         <Generator>MSBuild:Compile</Generator>
       </Protobuf>
@@ -37,13 +40,10 @@
 		<Protobuf Include="AresAnalyzerManagementService.proto" GrpcServices="Both" AdditionaImportDirs="$(DataModelProtoPath)">
 			<Generator>MSBuild:Compile</Generator>
 		</Protobuf>
-		<Protobuf Include="AresNotification.proto" GrpcServices="Both" AdditionaImportDirs="$(DataModelProtoPath)">
-			<Generator>MSBuild:Compile</Generator>
-		</Protobuf>
   </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ares.DataModel.dll" Version="2025.5.14.113654" GeneratePathProperty="True" />
+      <PackageReference Include="Ares.DataModel.dll" Version="2025.5.27.135751" GeneratePathProperty="True" />
       <PackageReference Include="Grpc.Tools" Version="2.58.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
