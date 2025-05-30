@@ -34,10 +34,13 @@ public class ExecutionManager : IExecutionManager
 
   public int ReplanRate { get; private set; } = 1;
 
-  public async Task Start()
+  public async Task Start(string executionNotes)
   {
     CheckCampaignStartPrerequisites();
     var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
+    if(!string.IsNullOrEmpty(executionNotes))
+      executor.UpdateExecutionNotes(executionNotes);
+
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();

@@ -36,7 +36,7 @@ service AresAutomation {
 	rpc SetCampaignForExecution(CampaignRequest) returns (CampaignTemplate);
 	rpc GetCurrentlySelectedCampaign(google.protobuf.Empty) returns (CampaignResponse);
 
-	rpc StartExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
+	rpc StartExecution(StartCampaignRequest) returns (google.protobuf.Empty);
 	rpc StopExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
 	rpc PauseExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
 	rpc ResumeExecution(google.protobuf.Empty) returns (google.protobuf.Empty);
@@ -93,6 +93,10 @@ message CampaignsResponse {
 message CampaignResponse {
 	bool has_value = 1;
 	CampaignTemplate value = 2;
+}
+
+message StartCampaignRequest {
+	string user_notes = 1;
 }
 
 message ProjectRequest {

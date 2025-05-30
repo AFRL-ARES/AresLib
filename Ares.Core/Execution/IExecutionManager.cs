@@ -24,8 +24,9 @@ public interface IExecutionManager
   /// Throws an <see cref="InvalidOperationException" /> if the campaign template has not been set or the execution
   /// prerequisite have not been met
   /// </summary>
+  /// <param name="executionNotes"> User notes written for an execution instance, not specific to a template.</param>
   /// <returns>A task that will complete when the campaign completes</returns>
-  Task Start();
+  Task Start(string executionNotes);
 
   /// <summary>
   /// Stops the campaign execution if running or paused. Does nothing if the campaign is not running.

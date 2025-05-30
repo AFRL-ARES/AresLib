@@ -7,4 +7,5 @@ public interface ICampaignExecutor : IExecutor<CampaignResult, CampaignExecution
 {
   IList<IStopCondition> StopConditions { get; }
   double ReplanRate { get; set; }
+  void UpdateExecutionNotes(string executionNotes);
 }

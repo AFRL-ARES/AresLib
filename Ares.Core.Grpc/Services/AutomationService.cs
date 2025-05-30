@@ -221,9 +221,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(response);
   }
 
-  public override Task<Empty> StartExecution(Empty request, ServerCallContext context)
+  public override Task<Empty> StartExecution(StartCampaignRequest request, ServerCallContext context)
   {
-    _executionManager.Start();
+    _executionManager.Start(request.UserNotes);
     return Task.FromResult(new Empty());
   }
 

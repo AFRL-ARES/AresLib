@@ -1,5 +1,6 @@
 ﻿using Ares.Core.Analyzing;
 using Ares.Core.AresEnvironment;
+using Ares.Core.EntityConfigurations;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
@@ -61,7 +62,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   public async Task<CampaignResult> Execute(ExecutionControlToken token)
   {
-    var startTime = DateTime.Now;
+    var startTime = DateTime.UtcNow;
 
     //Create Campaign Path
     var campaignPath = CreateCampaignResultsFolder(startTime);
@@ -78,6 +79,10 @@ public class CampaignExecutor : ICampaignExecutor
     //Set Internal Variables related to Campaign
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, Template.UniqueId);
     AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, Template.Name);
+
+    //If execution notes exist, output them now
+    if(!string.IsNullOrEmpty(ExecutionNotes))
+      await OutputExperimentNotes(campaignPath);
 
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
@@ -109,7 +114,6 @@ public class CampaignExecutor : ICampaignExecutor
 
       var experimentExecutorResult = await GenerateExperimentExecutor(analyses, token.CancellationToken);
 
-      //TODO: Notify user
       if(experimentExecutorResult.ErrorString is not null)
       {
         await HandleNotification("Experiment Executor Generation Failure", experimentExecutorResult.ErrorString, NotificationSeverityEnum.Error);
@@ -198,9 +202,11 @@ public class CampaignExecutor : ICampaignExecutor
     };
 
     campaignResult.ExperimentResults.AddRange(experimentResults);
-
+    ExecutionNotes = string.Empty;
     return campaignResult;
   }
+
+  public void UpdateExecutionNotes(string notes) => ExecutionNotes = notes;
 
   private bool ShouldStop()
   {
@@ -234,6 +240,12 @@ public class CampaignExecutor : ICampaignExecutor
     var startupPath = Path.Combine(campaignPath, folderName);
     Directory.CreateDirectory(startupPath);
     return startupPath;
+  }
+
+  private async Task OutputExperimentNotes(string campaignPath)
+  {
+    var path = Path.Combine(campaignPath, "CampaignNotes.txt");
+    await File.WriteAllTextAsync(path, ExecutionNotes);
   }
 
   private async Task<ExperimentExecutorResult> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
@@ -354,6 +366,7 @@ public class CampaignExecutor : ICampaignExecutor
   public CampaignTemplate Template { get; }
   public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
   public double ReplanRate { get; set; } = 1;
+  public string? ExecutionNotes { get; set; }
   public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
 }
