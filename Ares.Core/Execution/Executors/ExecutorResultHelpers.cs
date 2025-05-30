@@ -67,6 +67,8 @@ internal static class ExecutorResultHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       TimeFinished = endTime.ToTimestamp(),
-      TimeStarted = startTime.ToTimestamp()
+      TimeStarted = startTime.ToTimestamp(),
+      Timezone = TimeZoneInfo.Local.DisplayName,
+      LocaltimeOffset = DateTimeOffset.Now.Offset.ToString()
     };
 }
