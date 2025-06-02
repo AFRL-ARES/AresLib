@@ -13,7 +13,7 @@
 		<Exec Command="dotnet pack -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmmss&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
 	</Target>
   <ItemGroup>
-    <PackageReference Include="Ares.Core" Version="2025.5.30.131042" />
+    <PackageReference Include="Ares.Core" Version="2025.6.2.142112" />
     <PackageReference Include="Ares.DataModel.Grpc" Version="2025.5.30.112641" />
     <PackageReference Include="DynamicData" Version="7.14.2" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />

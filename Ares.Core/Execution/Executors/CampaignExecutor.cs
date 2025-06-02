@@ -244,7 +244,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   private async Task OutputExperimentNotes(string campaignPath)
   {
-    var path = Path.Combine(campaignPath, "CampaignNotes.txt");
+    var path = Path.Combine(campaignPath, "ExecutionNotes.txt");
     await File.WriteAllTextAsync(path, ExecutionNotes);
   }
 
