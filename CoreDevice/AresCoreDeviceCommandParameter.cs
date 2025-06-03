@@ -1,5 +1,6 @@
 ﻿namespace CoreDevice;
 public enum AresCoreDeviceCommandParameter
 {
-  Duration
+  Duration,
+  ConfirmationMessage
 }

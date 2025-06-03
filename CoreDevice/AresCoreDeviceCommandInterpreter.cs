@@ -1,7 +1,6 @@
 ﻿using Ares.Device;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
-using UnitsNet;
 using UnitsNet.Units;
 
 namespace CoreDevice;
@@ -29,6 +28,21 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
               Unit = $"{DurationUnit.Millisecond}s"
             }
           }
+      },
+
+      new CommandMetadata
+      {
+        DeviceName = Device.Name,
+        Name = AresCoreDeviceCommand.WaitForUser.ToString(),
+        Description = "ARES will request user confirmation before continuing.",
+        ParameterMetadatas =
+        {
+          new ParameterMetadata
+          {
+            Name = AresCoreDeviceCommandParameter.ConfirmationMessage.ToString(),
+            Index = 0
+          }
+        }
       }
     };
   }
@@ -47,6 +61,21 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
 
         var duration = UnitsNet.Duration.FromMilliseconds(doubleValue);
         await Device.Sleep(duration.ToTimeSpan());
+        result.Success = true;
+        return result;
+
+      case AresCoreDeviceCommand.WaitForUser:
+        var messageParam = parameters[0];
+        var unpacked = messageParam.Value.Value.TryUnpack<StringValue>(out var stringValue);
+
+        if(!unpacked)
+        {
+          result.Success = false;
+          result.Error = "Failed to unpack message parameter in WaitForUser command!";
+          return result;
+        }
+
+        await Device.WaitForUser(stringValue.Value);
         result.Success = true;
         return result;
 

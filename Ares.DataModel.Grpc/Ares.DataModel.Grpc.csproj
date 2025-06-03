@@ -40,6 +40,9 @@
 		<Protobuf Include="AresAnalyzerManagementService.proto" GrpcServices="Both" AdditionaImportDirs="$(DataModelProtoPath)">
 			<Generator>MSBuild:Compile</Generator>
 		</Protobuf>
+		<Protobuf Include="AresUserConfirmation.proto" GrpcServices="Both" AdditionaImportDirs="$(DataModelProtoPath)">
+			<Generator>MSBuild:Compile</Generator>
+		</Protobuf>
   </ItemGroup>
 
     <ItemGroup>

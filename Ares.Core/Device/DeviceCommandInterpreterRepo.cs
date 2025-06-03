@@ -1,18 +1,18 @@
 ﻿using Ares.Device;
 using CoreDevice;
-using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
 
 namespace Ares.Core.Device;
 
 public class DeviceCommandInterpreterRepo : SynchronizedCollection<IDeviceCommandInterpreter<IAresDevice>>, IDeviceCommandInterpreterRepo
 {
   private ConcurrentBag<IDeviceCommandInterpreter<IAresDevice>> _bag = new();
-  public DeviceCommandInterpreterRepo()
+  private IEnumerable<IDeviceConfirmationRequestHandler> _deviceConfirmationHandler;
+
+  public DeviceCommandInterpreterRepo(IEnumerable<IDeviceConfirmationRequestHandler> confirmationServices)
   {
-    var coreDevice = new AresCoreDevice();
+    _deviceConfirmationHandler = confirmationServices;
+    var coreDevice = new AresCoreDevice(_deviceConfirmationHandler);
     var coreInterpreter = new AresCoreDeviceCommandInterpreter(coreDevice);
     Add(coreInterpreter);
   }

@@ -11,6 +11,7 @@ using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
+using Ares.Device;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -26,6 +27,7 @@ internal class CampaignExecutorTests
   private IPlanningHelper _planningHelper;
   private IEnumerable<IResultHandler> _resultHandlers;
   private IEnumerable<INotificationHandler> _notificationHandlers;
+  private IEnumerable<IDeviceConfirmationRequestHandler> _deviceConfirmationHandler;
   private AresVariableManager _variableManager;
 
   [OneTimeSetUp]
@@ -39,10 +41,11 @@ internal class CampaignExecutorTests
     _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
     _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
+    _deviceConfirmationHandler = new Mock<IEnumerable<IDeviceConfirmationRequestHandler>>().Object;
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
-    var repo = new DeviceCommandInterpreterRepo
+    var repo = new DeviceCommandInterpreterRepo(_deviceConfirmationHandler)
     {
       cmdInterpreter
     };

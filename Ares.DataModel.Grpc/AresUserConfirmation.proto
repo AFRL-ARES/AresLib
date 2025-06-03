@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "google/protobuf/empty.proto";
+
+service AresUserConfirmationRpc {
+	//Bidrectional stream
+	rpc ConfirmationStream(stream UIRequest) returns (stream ServiceResponse);
+}
+
+message UIRequest {
+	oneof request_content {
+		InitializeConnection initial_connect = 1;
+		ConfirmationResponse confirmation_response = 2;
+	}
+}
+
+message InitializeConnection {
+	string client_id = 1;
+}
+
+message ConfirmationResponse {
+	bool confirmation = 1;
+	string request_id = 2;
+}
+
+message ServiceResponse {
+	oneof response_content {
+		ConfirmationRequest confirmation_request = 1;
+		Acknowledge acknowledge = 2;
+	}
+}
+
+message ConfirmationRequest {
+	string request_id = 1;
+	string user_comment = 2;
+}
+
+message Acknowledge {
+	string message_id = 1;
+	string status = 2;
+}
