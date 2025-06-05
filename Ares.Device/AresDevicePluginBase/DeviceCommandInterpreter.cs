@@ -50,7 +50,19 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
     var parsed = Enum.TryParse<TDeviceCommandEnum>(commandTemplate.Metadata.Name, out var deviceCommandEnum);
 
     if(!parsed)
+    {
       deviceCommandEnum = default;
+      if(!deviceCommandEnum.ToString().Contains("None", StringComparison.InvariantCultureIgnoreCase))
+      {
+        var result = new DeviceCommandResult()
+        {
+          Error = "Failed to parse device command, and no default options was detected.",
+          Success = false,
+        };
+
+        return Task.FromResult(result);
+      }
+    }
 
     var arguments = commandTemplate.Parameters.OrderBy(argument => argument.Index).ToArray();
     return ParseAndPerformDeviceAction(deviceCommandEnum, arguments, cancellationToken);
