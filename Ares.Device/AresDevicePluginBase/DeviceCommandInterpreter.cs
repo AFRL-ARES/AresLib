@@ -47,7 +47,11 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
 
   private Task<DeviceCommandResult> RouteDeviceAction(CommandTemplate commandTemplate, CancellationToken cancellationToken)
   {
-    var deviceCommandEnum = Enum.Parse<TDeviceCommandEnum>(commandTemplate.Metadata.Name);
+    var parsed = Enum.TryParse<TDeviceCommandEnum>(commandTemplate.Metadata.Name, out var deviceCommandEnum);
+
+    if(!parsed)
+      deviceCommandEnum = default;
+
     var arguments = commandTemplate.Parameters.OrderBy(argument => argument.Index).ToArray();
     return ParseAndPerformDeviceAction(deviceCommandEnum, arguments, cancellationToken);
   }
