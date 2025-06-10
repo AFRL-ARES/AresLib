@@ -43,7 +43,7 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
   // We want this abstract class to handle as much conversion/routing of protobuf/db to
   // lib representations as possible, making it easier/obvious for extensions to "know what to do".
   // couldn't think of something better to say, but its a comment that will get deleted anyway.
-  protected abstract Task<DeviceCommandResult> ParseAndPerformDeviceAction(TDeviceCommandEnum deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken);
+  protected abstract Task<DeviceCommandResult> ParseAndPerformDeviceAction(TDeviceCommandEnum deviceCommandEnum, Parameter[] parameters, CommandMetadata metadata, CancellationToken cancellationToken);
 
   private Task<DeviceCommandResult> RouteDeviceAction(CommandTemplate commandTemplate, CancellationToken cancellationToken)
   {
@@ -58,14 +58,17 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
         {
           Error = "Failed to parse device command, and no default options was detected.",
           Success = false,
+          Result = default,
+          UniqueId = Guid.NewGuid().ToString()
         };
 
         return Task.FromResult(result);
       }
     }
 
+    var metadata = commandTemplate.Metadata;
     var arguments = commandTemplate.Parameters.OrderBy(argument => argument.Index).ToArray();
-    return ParseAndPerformDeviceAction(deviceCommandEnum, arguments, cancellationToken);
+    return ParseAndPerformDeviceAction(deviceCommandEnum, arguments, metadata, cancellationToken);
   }
 
   protected abstract CommandMetadata[] CommandsToMetadatas();

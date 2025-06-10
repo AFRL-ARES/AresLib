@@ -11,7 +11,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
   {
   }
 
-  protected override Task<DeviceCommandResult> ParseAndPerformDeviceAction(TestDeviceCommand deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken)
+  protected override Task<DeviceCommandResult> ParseAndPerformDeviceAction(TestDeviceCommand deviceCommandEnum, Parameter[] parameters, CommandMetadata metadata, CancellationToken cancellationToken)
   {
     switch(deviceCommandEnum)
     {
