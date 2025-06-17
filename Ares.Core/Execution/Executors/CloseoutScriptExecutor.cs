@@ -7,8 +7,8 @@ namespace Ares.Core.Execution.Executors
 {
   public class CloseoutScriptExecutor : IExecutor<Empty, CampaignCloseoutStatus>
   {
-    public CloseoutScriptExecutor(ExperimentTemplate template, IExecutor<StepResult, StepExecutionStatus>[] closeoutStepExecutors) 
-    { 
+    public CloseoutScriptExecutor(ExperimentTemplate template, IExecutor<StepResult, StepExecutionStatus>[] closeoutStepExecutors)
+    {
       CloseoutStepExecutors = closeoutStepExecutors;
       Template = template;
       Status = new CampaignCloseoutStatus { CampaignId = template.UniqueId };
@@ -24,7 +24,7 @@ namespace Ares.Core.Execution.Executors
           Status.CloseoutExecutionStatuses.AddRange(cmdResults);
           return Status;
         });
-       }).Concat();
+      }).Concat();
 
       ExperimentStatusObservable = experimentStepExecutionObservation;
     }
@@ -38,14 +38,14 @@ namespace Ares.Core.Execution.Executors
     public ExperimentTemplate Template { get; set; }
 
 
-    public async Task<Empty> Execute(ExecutionControlToken executionToken)
+    public async Task<Empty> Execute(ExecutionControlTokenSource executionTokenSource)
     {
       foreach(var closeoutStep in CloseoutStepExecutors)
       {
-        if(executionToken.IsCancelled)
+        if(executionTokenSource.Token.IsCancelled)
           break;
 
-        var stepResult = await closeoutStep.Execute(executionToken);
+        var stepResult = await closeoutStep.Execute(executionTokenSource);
 
         if(!stepResult.CommandResults.Any())
           break;

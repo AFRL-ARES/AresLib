@@ -9,16 +9,17 @@ public class SequentialStepExecutor : StepExecutor
   {
   }
 
-  public override async Task<StepResult> Execute(ExecutionControlToken token)
+  public override async Task<StepResult> Execute(ExecutionControlTokenSource tokenSource)
   {
+    var token = tokenSource.Token;
     var startTime = DateTime.UtcNow;
     var commandResults = new List<CommandResult>();
-    foreach (var command in CommandExecutors)
+    foreach(var command in CommandExecutors)
     {
-      if (token.IsCancelled)
+      if(token.IsCancelled)
         break;
 
-      var commandResult = await command.Execute(token);
+      var commandResult = await command.Execute(tokenSource);
 
       if(commandResult.Result.Success)
         commandResults.Add(commandResult);

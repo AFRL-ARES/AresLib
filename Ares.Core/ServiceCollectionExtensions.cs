@@ -7,7 +7,6 @@ using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
-using Ares.Core.UserConfirmation;
 using Ares.Core.Validation.Campaign;
 using Ares.Device;
 using Ares.Messaging;
@@ -39,7 +38,6 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<AresVariableManager>();
     services.AddSingleton<AnalysisRepo>();
     services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
-    services.AddSingleton<IDeviceConfirmationRequestHandler, DeviceConfirmationRequestHandler>();
 
     services.BindComposers();
     services.BindStartConditions();

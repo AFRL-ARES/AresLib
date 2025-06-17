@@ -27,7 +27,6 @@ internal class CampaignExecutorTests
   private IPlanningHelper _planningHelper;
   private IEnumerable<IResultHandler> _resultHandlers;
   private IEnumerable<INotificationHandler> _notificationHandlers;
-  private IEnumerable<IDeviceConfirmationRequestHandler> _deviceConfirmationHandler;
   private AresVariableManager _variableManager;
 
   [OneTimeSetUp]
@@ -41,11 +40,10 @@ internal class CampaignExecutorTests
     _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
     _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
-    _deviceConfirmationHandler = new Mock<IEnumerable<IDeviceConfirmationRequestHandler>>().Object;
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
-    var repo = new DeviceCommandInterpreterRepo(_deviceConfirmationHandler)
+    var repo = new DeviceCommandInterpreterRepo()
     {
       cmdInterpreter
     };
@@ -69,6 +67,6 @@ internal class CampaignExecutorTests
     var controlTokenSource = new ExecutionControlTokenSource();
     var stopCondition = new NumExperimentsRun(_executionReportStore, 1);
     _campaignExecutor.StopConditions.Add(stopCondition);
-    Assert.DoesNotThrowAsync(() => _campaignExecutor.Execute(controlTokenSource.Token));
+    Assert.DoesNotThrowAsync(() => _campaignExecutor.Execute(controlTokenSource));
   }
 }

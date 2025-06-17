@@ -1,6 +1,5 @@
 ﻿using Ares.Core.Analyzing;
 using Ares.Core.AresEnvironment;
-using Ares.Core.EntityConfigurations;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
@@ -9,7 +8,6 @@ using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
-
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
@@ -60,9 +58,10 @@ public class CampaignExecutor : ICampaignExecutor
     ExperimentStatusObservable = _executionStatusSubject.AsObservable();
   }
 
-  public async Task<CampaignResult> Execute(ExecutionControlToken token)
+  public async Task<CampaignResult> Execute(ExecutionControlTokenSource tokenSource)
   {
     var startTime = DateTime.UtcNow;
+    var token = tokenSource.Token;
 
     //Create Campaign Path
     var campaignPath = CreateCampaignResultsFolder(startTime);
@@ -99,7 +98,7 @@ public class CampaignExecutor : ICampaignExecutor
     await HandleNotification("Campaign Started!", $"ARES has started a campaign named {Template.Name} successfully!", NotificationSeverityEnum.Success);
 
     var startupExecutor = GenerateStartupScriptExecutor(token.CancellationToken);
-    await HandleExperimentStartup(token, startupExecutor);
+    await HandleExperimentStartup(tokenSource, startupExecutor);
     bool executionSuccess = true;
     var experiment_count = 0;
 
@@ -134,12 +133,17 @@ public class CampaignExecutor : ICampaignExecutor
       experimentExecutor.ExperimentStatusObservable.Subscribe(experimentStatus =>
       {
         _executionReporter.Report(experimentStatus);
-        Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+
+        if(IsAwaitingResponse(experimentStatus))
+          Status.State = ExecutionState.AwaitingUser;
+
+        else
+          Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
         _executionStatusSubject.OnNext(Status);
         _executionReporter.Report(Status);
       });
 
-      var experimentResult = await experimentExecutor.Execute(token);
+      var experimentResult = await experimentExecutor.Execute(tokenSource);
       experimentResult.ResultOutputPath = experimentPath;
 
       //If a command failed, stop the experiment.
@@ -177,7 +181,7 @@ public class CampaignExecutor : ICampaignExecutor
     }
 
     var closeoutExecutor = GenerateCloseoutScriptExecutor(token.CancellationToken);
-    await HandleExperimentCloseout(token, closeoutExecutor);
+    await HandleExperimentCloseout(tokenSource, closeoutExecutor);
 
     if(executionSuccess)
     {
@@ -207,6 +211,11 @@ public class CampaignExecutor : ICampaignExecutor
   }
 
   public void UpdateExecutionNotes(string notes) => ExecutionNotes = notes;
+
+  private bool IsAwaitingResponse(ExperimentExecutionStatus status)
+    => status.StepExecutionStatuses
+    .Any(step => step.CommandExecutionStatuses
+    .Any(cmd => cmd.State == ExecutionState.AwaitingUser));
 
   private bool ShouldStop()
   {
@@ -315,7 +324,7 @@ public class CampaignExecutor : ICampaignExecutor
     var previousExperiment = analyses.LastOrDefault();
   }
 
-  public async Task HandleExperimentStartup(ExecutionControlToken token, StartupScriptExecutor? startupExecutor)
+  public async Task HandleExperimentStartup(ExecutionControlTokenSource tokenSource, StartupScriptExecutor? startupExecutor)
   {
     if(startupExecutor is null)
       throw new InvalidOperationException("Startup Executor returned null, cannot execute experiment!");
@@ -323,15 +332,15 @@ public class CampaignExecutor : ICampaignExecutor
     startupExecutor.ExperimentStatusObservable.Subscribe(startupStatus =>
     {
       _executionReporter.Report(startupStatus);
-      Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+      Status.State = tokenSource.Token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
       _executionStatusSubject.OnNext(Status);
       _executionReporter.Report(Status);
     });
 
-    await startupExecutor.Execute(token);
+    await startupExecutor.Execute(tokenSource);
   }
 
-  public async Task HandleExperimentCloseout(ExecutionControlToken token, CloseoutScriptExecutor? closeoutExecutor)
+  public async Task HandleExperimentCloseout(ExecutionControlTokenSource tokenSource, CloseoutScriptExecutor? closeoutExecutor)
   {
     if(closeoutExecutor is null)
       throw new InvalidOperationException("Closeout Executor returned null, cannot execute closeout script!");
@@ -339,12 +348,12 @@ public class CampaignExecutor : ICampaignExecutor
     closeoutExecutor.ExperimentStatusObservable.Subscribe(closeoutStatus =>
     {
       _executionReporter.Report(closeoutStatus);
-      Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
+      Status.State = tokenSource.Token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
       _executionStatusSubject.OnNext(Status);
       _executionReporter.Report(Status);
     });
 
-    await closeoutExecutor.Execute(token);
+    await closeoutExecutor.Execute(tokenSource);
   }
 
   private async Task PostExperimentExecution(ExperimentResult result)

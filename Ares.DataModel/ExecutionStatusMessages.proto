@@ -53,7 +53,8 @@ enum ExecutionState {
   UNDEFINED = 0;
   SUCCEEDED = 1;
   WAITING = 2;
-  RUNNING = 3;
-  PAUSED = 4;
-  FAILED = 5;
+  AWAITING_USER = 3;
+  RUNNING = 4;
+  PAUSED = 5;
+  FAILED = 6;
 }

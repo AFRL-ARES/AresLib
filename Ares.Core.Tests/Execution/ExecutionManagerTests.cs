@@ -27,7 +27,7 @@ internal class ExecutionManagerTests
     var mockCampaignComposer = new Mock<ICommandComposer<CampaignTemplate, ICampaignExecutor>>();
     var mockCampaignExecutor = new Mock<ICampaignExecutor>();
     mockCampaignExecutor.SetupGet(executor => executor.StopConditions).Returns(new List<IStopCondition>());
-    mockCampaignExecutor.Setup(executor => executor.Execute(It.IsAny<ExecutionControlToken>())).ReturnsAsync(new CampaignResult
+    mockCampaignExecutor.Setup(executor => executor.Execute(It.IsAny<ExecutionControlTokenSource>())).ReturnsAsync(new CampaignResult
     {
       UniqueId = Guid.NewGuid().ToString(),
       CampaignId = Guid.NewGuid().ToString(),

@@ -44,16 +44,17 @@ public class ExperimentExecutor : IExecutor<ExperimentResult, ExperimentExecutio
 
   public ExperimentExecutionStatus Status { get; }
 
-  public async Task<ExperimentResult> Execute(ExecutionControlToken token)
+  public async Task<ExperimentResult> Execute(ExecutionControlTokenSource tokenSource)
   {
     var startTime = DateTime.UtcNow;
     var stepResults = new List<StepResult>();
+    var token = tokenSource.Token;
     foreach(var executableStep in ExperimentStepExecutors)
     {
-      if(token.IsCancelled)
+      if(tokenSource.Token.IsCancelled)
         break;
 
-      var stepResult = await executableStep.Execute(token);
+      var stepResult = await executableStep.Execute(tokenSource);
 
       if(!stepResult.CommandResults.Any())
         break;

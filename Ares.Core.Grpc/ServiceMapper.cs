@@ -1,6 +1,5 @@
 ﻿using Ares.Core.Grpc.Services;
 using Ares.Core.Grpc.Services.Notifications;
-using Ares.Core.Grpc.Services.UserConfirmation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 
@@ -13,7 +12,6 @@ public static class ServiceMapper
     routeBuilder.MapGrpcService<DevicesService>();
     routeBuilder.MapGrpcService<AresServerInfoService>();
     routeBuilder.MapGrpcService<AresNotificationService>();
-    routeBuilder.MapGrpcService<AresUserConfirmationService>();
     routeBuilder.MapGrpcService<AutomationService>();
     routeBuilder.MapGrpcService<HealthCheckService>();
     routeBuilder.MapGrpcService<PlanningService>();

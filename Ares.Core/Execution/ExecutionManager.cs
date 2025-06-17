@@ -16,6 +16,7 @@ public class ExecutionManager : IExecutionManager
   private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
+  private ICampaignExecutor? _currentExecutor;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
     IDbContextFactory<CoreDatabaseContext> dbContext,
@@ -37,14 +38,14 @@ public class ExecutionManager : IExecutionManager
   public async Task Start(string executionNotes)
   {
     CheckCampaignStartPrerequisites();
-    var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
+    _currentExecutor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
     if(!string.IsNullOrEmpty(executionNotes))
-      executor.UpdateExecutionNotes(executionNotes);
+      _currentExecutor.UpdateExecutionNotes(executionNotes);
 
-    executor.StopConditions.Add(CampaignStopConditions);
-    executor.ReplanRate = ReplanRate;
+    _currentExecutor.StopConditions.Add(CampaignStopConditions);
+    _currentExecutor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
-    var campaignResult = await executor.Execute(_executionControlTokenSource.Token);
+    var campaignResult = await _currentExecutor.Execute(_executionControlTokenSource);
     campaignResult.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
     await PostExecution(campaignResult);
   }
@@ -112,6 +113,7 @@ public class ExecutionManager : IExecutionManager
     //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
+    _currentExecutor = null;
   }
 
   private async Task StoreCompletedCampaign(CampaignResult result)

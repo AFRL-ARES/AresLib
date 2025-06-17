@@ -9,10 +9,10 @@ public class ParallelStepExecutor : StepExecutor
   {
   }
 
-  public override async Task<StepResult> Execute(ExecutionControlToken token)
+  public override async Task<StepResult> Execute(ExecutionControlTokenSource tokenSource)
   {
     var startTime = DateTime.UtcNow;
-    var commandTasks = CommandExecutors.Select(command => command.Execute(token));
+    var commandTasks = CommandExecutors.Select(command => command.Execute(tokenSource));
     var commandResults = await Task.WhenAll(commandTasks);
 
     return ExecutorResultHelpers.CreateStepResult(Template.UniqueId, startTime, DateTime.UtcNow, commandResults);
