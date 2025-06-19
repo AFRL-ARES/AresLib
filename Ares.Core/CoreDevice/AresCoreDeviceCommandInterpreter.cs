@@ -34,15 +34,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
       {
         DeviceName = Device.Name,
         Name = AresCoreDeviceCommand.WaitForUser.ToString(),
-        Description = "ARES will request user confirmation before continuing.",
-        ParameterMetadatas =
-        {
-          new ParameterMetadata
-          {
-            Name = AresCoreDeviceCommandParameter.ConfirmationMessage.ToString(),
-            Index = 0
-          }
-        }
+        Description = "ARES will request user confirmation before continuing."
       }
     };
   }

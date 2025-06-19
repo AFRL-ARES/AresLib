@@ -37,11 +37,12 @@ message StepExecutionStatus {
 message CommandExecutionStatus {
   string command_id = 1;
   string command_name = 2;
+  string device_name = 3;
   // since a command is technically the only executable entity, it makes sense for it to have an execution state
   // and since step/experiment statuses all contain a command status at verying degrees of depth,
   // they can extrapolate the state that they should be in. Campaign is a bit special so it gets its own state so that
   // it's easier to check its status during runtime.
-  ExecutionState state = 3;
+  ExecutionState state = 4;
 }
 
 // the higher number has higher priority on the status of a container holding an entity with this state
