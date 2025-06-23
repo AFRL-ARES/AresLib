@@ -5,11 +5,13 @@ using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.Extensions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Core.Notifications;
+using Ares.Core.Output;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Reflection;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -63,28 +65,16 @@ public class CampaignExecutor : ICampaignExecutor
     var startTime = DateTime.UtcNow;
     var token = tokenSource.Token;
 
-    //Create Campaign Path
-    var campaignPath = CreateCampaignResultsFolder(startTime);
-    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignResultPath, campaignPath);
+    //Init Campaign Directories
+    var campaignPath = await CampaignOutputHelper.InitializeOutputDirectories(Template, startTime);
 
-    //Create Miscellaneous Folder
-    var miscFolderPath = CreateCampaignMiscellaneousFolder(campaignPath);
-    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignMiscFolder, miscFolderPath);
-
-    //Create Startup Folder
-    var startupFolder = CreateStartupSubFolder(campaignPath, "Startup");
-    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignStartupFolder, startupFolder);
-
-    //Set Internal Variables related to Campaign
-    AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, Template.UniqueId);
-    AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, Template.Name);
-
-    //If execution notes exist, output them now
     if(!string.IsNullOrEmpty(ExecutionNotes))
-      await OutputExperimentNotes(campaignPath);
+      await CampaignOutputHelper.WriteExperimentNotes(campaignPath, ExecutionNotes);
 
     if(CampaignTags.Any())
-      await OutputExperimentTags(campaignPath);
+      await CampaignOutputHelper.WriteExperimentTags(campaignPath, CampaignTags);
+
+    await CampaignOutputHelper.OutputVersionFile(campaignPath, Template);
 
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
@@ -108,8 +98,7 @@ public class CampaignExecutor : ICampaignExecutor
     while(!ShouldStop() && !token.IsCancelled)
     {
       var experimentFolder = $"Experiment_{++experiment_count}";
-      var experimentPath = CreateExperimentSubFolder(campaignPath, experimentFolder);
-      AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.ExperimentResultPath, experimentPath);
+      var experimentPath = CampaignOutputHelper.CreateExperimentSubFolder(campaignPath, experimentFolder);
 
       //Populate Internal Variables Related to Experiment
       AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentExperimentNumber, experiment_count.ToString());
@@ -225,47 +214,6 @@ public class CampaignExecutor : ICampaignExecutor
   private bool ShouldStop()
   {
     return StopConditions.Any(condition => condition.ShouldStop());
-  }
-
-  private string CreateCampaignResultsFolder(DateTime startTime)
-  {
-    var newFolderName = $"{Template.Name}_{startTime.ToString("_yyyy-MM-dd_HH-mm-ss")}";
-    var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);
-    Directory.CreateDirectory(fullPath);
-    return fullPath;
-  }
-
-  private string CreateCampaignMiscellaneousFolder(string campaignPath)
-  {
-    var newFolderPath = Path.Combine(campaignPath, "Miscellaneous");
-    Directory.CreateDirectory(newFolderPath);
-    return newFolderPath;
-  }
-
-  private string CreateExperimentSubFolder(string camapignPath, string folderName)
-  {
-    var experimentPath = Path.Combine(camapignPath, folderName);
-    Directory.CreateDirectory(experimentPath);
-    return experimentPath;
-  }
-
-  private string CreateStartupSubFolder(string campaignPath, string folderName)
-  {
-    var startupPath = Path.Combine(campaignPath, folderName);
-    Directory.CreateDirectory(startupPath);
-    return startupPath;
-  }
-
-  private async Task OutputExperimentNotes(string campaignPath)
-  {
-    var path = Path.Combine(campaignPath, "ExecutionNotes.txt");
-    await File.WriteAllTextAsync(path, ExecutionNotes);
-  }
-
-  private async Task OutputExperimentTags(string campaignPath)
-  {
-    var path = Path.Combine(campaignPath, "ExecutionTags.txt");
-    await File.WriteAllTextAsync(path, string.Join(",", CampaignTags));
   }
 
   private async Task<ExperimentExecutorResult> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)

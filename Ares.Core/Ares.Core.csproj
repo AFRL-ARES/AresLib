@@ -8,6 +8,7 @@
     <Company>DCS</Company>
     <Description>Library containing the command compilation and execution logic for campaigns.</Description>
     <LangVersion>default</LangVersion>
+		<InformationalVersion>0.0.1-beta</InformationalVersion>
   </PropertyGroup>
 
 	<Target Name="NugetPackAutoVersioning" AfterTargets="Build">
