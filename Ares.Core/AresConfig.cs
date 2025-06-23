@@ -7,5 +7,7 @@
     public static string TemplatePath { get; set; } = string.Empty;
 
     public static string DevicesPath { get; set; } = string.Empty;
+
+    public static string TagsPath { get; set; } = string.Empty;
   }
 }

@@ -27,12 +27,12 @@ service AresAutomation {
 	rpc RemoveProject(ProjectRequest) returns (google.protobuf.Empty);
 	rpc AddProject(Project) returns (google.protobuf.Empty);
 
-	// Execution
+	//Tags
+	rpc GetAllTags(google.protobuf.Empty) returns (TagsResponse);
+	rpc AddTag(TagRequest) returns (TagsResponse);
+	rpc RemoveTag(TagRequest) returns (TagsResponse);
 
-	// informs the execution system of what campaign needs to be executed
-	// takes in a campaign request instead of a template as the campaigns need to come from an internal
-	// persistence layer as opposed to any template that can be passed in.
-	// Returns a campaign template that was selected
+	// Execution
 	rpc SetCampaignForExecution(CampaignRequest) returns (CampaignTemplate);
 	rpc GetCurrentlySelectedCampaign(google.protobuf.Empty) returns (CampaignResponse);
 
@@ -66,6 +66,14 @@ service AresAutomation {
 	rpc GetAllAnalyzers(google.protobuf.Empty) returns (GetAllAnalyzersResponse);
 }
 
+message TagRequest {
+	string tag_name = 1;
+}
+
+message TagsResponse {
+	repeated string available_tags = 1;
+}
+
 message AddOrUpdateCampaignRequest {
 	CampaignTemplate template = 1;
 }
@@ -97,6 +105,7 @@ message CampaignResponse {
 
 message StartCampaignRequest {
 	string user_notes = 1;
+	repeated string campaign_tags = 2;
 }
 
 message ProjectRequest {

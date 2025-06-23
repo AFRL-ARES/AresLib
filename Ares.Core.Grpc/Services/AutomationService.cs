@@ -5,6 +5,7 @@ using Ares.Core.Execution.StopConditions;
 using Ares.Core.Grpc.Helpers;
 using Ares.Core.Notifications;
 using Ares.Messaging;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
@@ -223,7 +224,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override Task<Empty> StartExecution(StartCampaignRequest request, ServerCallContext context)
   {
-    _executionManager.Start(request.UserNotes);
+    _executionManager.Start(request.UserNotes, request.CampaignTags.ToList());
     return Task.FromResult(new Empty());
   }
 
@@ -431,6 +432,41 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
     else
       return Task.FromResult(new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false });
+  }
+
+  public override async Task<TagsResponse> GetAllTags(Empty request, ServerCallContext context)
+  {
+    var tags = (await File.ReadAllTextAsync(AresConfig.TagsPath)).Split(",").ToList();
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(tags);
+    return response;
+  }
+
+  public override async Task<TagsResponse> AddTag(TagRequest request, ServerCallContext context)
+  {
+    var tags = await File.ReadAllTextAsync(AresConfig.TagsPath);
+    var updatedTags = $"{tags},{request.TagName}";
+    await File.WriteAllTextAsync(AresConfig.TagsPath, updatedTags);
+
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(updatedTags.Split(","));
+    return response;
+  }
+
+  public override async Task<TagsResponse> RemoveTag(TagRequest request, ServerCallContext context)
+  {
+    var tags = (await File.ReadAllTextAsync(AresConfig.TagsPath)).Split(",").ToList();
+    var response = new TagsResponse();
+
+    if(tags is not null && tags.Contains(request.TagName))
+    {
+      tags.Remove(request.TagName);
+      var tagsString = string.Join(",", tags);
+      await File.WriteAllTextAsync(AresConfig.TagsPath, tagsString);
+    }
+
+    response.AvailableTags.AddRange(tags);
+    return response;
   }
 
   private JsonSerializerSettings CreateCustomSerializationSettings()

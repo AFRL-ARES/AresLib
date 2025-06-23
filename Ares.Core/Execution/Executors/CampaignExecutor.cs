@@ -83,6 +83,9 @@ public class CampaignExecutor : ICampaignExecutor
     if(!string.IsNullOrEmpty(ExecutionNotes))
       await OutputExperimentNotes(campaignPath);
 
+    if(CampaignTags.Any())
+      await OutputExperimentTags(campaignPath);
+
     var experimentResults = new List<ExperimentResult>();
     var analyses = new List<Analysis>();
     Status = new CampaignExecutionStatus
@@ -212,6 +215,8 @@ public class CampaignExecutor : ICampaignExecutor
 
   public void UpdateExecutionNotes(string notes) => ExecutionNotes = notes;
 
+  public void UpdateCampaignTags(List<string> tags) => CampaignTags = tags;
+
   private bool IsAwaitingResponse(ExperimentExecutionStatus status)
     => status.StepExecutionStatuses
     .Any(step => step.CommandExecutionStatuses
@@ -255,6 +260,12 @@ public class CampaignExecutor : ICampaignExecutor
   {
     var path = Path.Combine(campaignPath, "ExecutionNotes.txt");
     await File.WriteAllTextAsync(path, ExecutionNotes);
+  }
+
+  private async Task OutputExperimentTags(string campaignPath)
+  {
+    var path = Path.Combine(campaignPath, "ExecutionTags.txt");
+    await File.WriteAllTextAsync(path, string.Join(",", CampaignTags));
   }
 
   private async Task<ExperimentExecutorResult> GenerateExperimentExecutor(IEnumerable<Analysis> analyses, CancellationToken cancellationToken)
@@ -376,6 +387,7 @@ public class CampaignExecutor : ICampaignExecutor
   public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
   public double ReplanRate { get; set; } = 1;
   public string? ExecutionNotes { get; set; }
+  public List<string> CampaignTags { get; set; } = new();
   public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
 }
