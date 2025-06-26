@@ -1,5 +1,6 @@
 ﻿using Ares.Messaging;
-using AresPlanner;
+using Ares.Messaging.Planning;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -8,7 +9,7 @@ namespace Ares.Core.Planning.AresPlanner;
 
 public class AresPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
+  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(PlannerState.Disconnected);
   readonly Uri _address;
 
   public AresPlanner(string name, Uri address)
@@ -16,7 +17,7 @@ public class AresPlanner : IPlanner
     _address = address;
     Name = name;
     Address = address.OriginalString;
-    PlannerState = _plannerStateSubject.AsObservable();
+    State = _plannerStateSubject.AsObservable();
     UniqueId = Guid.NewGuid().ToString();
   }
 
@@ -73,15 +74,31 @@ public class AresPlanner : IPlanner
     return parameter;
   }
 
-  public void Init()
+  public async Task Init()
   {
     ClientStore.CreateClient(_address);
-    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    var client = ClientStore.AresPlanningClient;
+    var response = await client.RequestCapabilitiesAsync(new Empty());
+
+    if(response is null)
+    {
+      _plannerStateSubject.OnNext(PlannerState.Disconnected);
+      return;
+    }
+
+    AvailablePlanners.AddRange(response.AvailablePlanners);
+    foreach(var planner in response.AvailablePlanners)
+    {
+      if(planner.Settings.Any())
+        PlannerSettings.Add(planner.PlannerName, planner.Settings.ToList());
+    }
   }
 
   public string Name { get; set; }
   public Version Version { get; set; } = new Version(1, 0);
-  public IObservable<PlannerState> PlannerState { get; }
+  public IObservable<PlannerState> State { get; set; }
+  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IDictionary<string, List<PlannerSetting>> PlannerSettings { get; } = new Dictionary<string, List<PlannerSetting>>();
   public string Address { get; set; }
   public string UniqueId { get; set; }
 }

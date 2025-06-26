@@ -7,22 +7,15 @@ namespace Ares.Core.Planning;
 
 public class ManualPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
+  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(PlannerState.Disconnected);
   private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
 
   public ManualPlanner()
   {
-    PlannerState = _plannerStateSubject.AsObservable();
+    State = _plannerStateSubject.AsObservable();
   }
 
   public IEnumerable<IEnumerable<(string Name, string Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
-
-  public string Name { get; set; } = "Manual Planner";
-  public Version Version { get; set; } = new(1, 0);
-
-  public string Address { get; set; }
-
-  public string UniqueId { get; set; } = new Guid().ToString();
 
   public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
   {
@@ -38,7 +31,7 @@ public class ManualPlanner : IPlanner
     }
   }
 
-  public IObservable<PlannerState> PlannerState { get; }
+  public IObservable<PlannerState> State { get; }
 
   public Task Seed(ManualPlannerSeed seedParam)
   {
@@ -70,7 +63,17 @@ public class ManualPlanner : IPlanner
 
   public Task Init()
   {
-    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    _plannerStateSubject.OnNext(PlannerState.Connected);
+
+    var manualPlanner = new Planner()
+    {
+      PlannerName = "Manual Planner",
+      Description = "A planner used for executing sets of manual values.",
+      UniqueId = UniqueId,
+      Version = Version.ToString()
+    };
+
+    AvailablePlanners.Add(manualPlanner);
     return Task.CompletedTask;
   }
 
@@ -141,4 +144,10 @@ public class ManualPlanner : IPlanner
     public PlanResult ToPlanResult(ParameterMetadata metadata)
       => new(metadata, Value);
   }
+  public string Name { get; set; } = "Manual Planner";
+  public Version Version { get; set; } = new(1, 0);
+  public string Address { get; set; } = string.Empty;
+  public string UniqueId { get; set; } = new Guid().ToString();
+  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IDictionary<string, List<PlannerSetting>> PlannerSettings { get; } = new Dictionary<string, List<PlannerSetting>>();
 }

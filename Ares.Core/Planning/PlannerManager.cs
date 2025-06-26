@@ -27,6 +27,7 @@ public class PlannerManager : IPlannerManager
         UniqueId = info.UniqueId
       };
 
+      await planner.Init();
       await RegisterPlanner(planner);
     }
   }

@@ -1,13 +1,48 @@
 syntax = "proto3";
 
-package AresPlanner;
+import "google/protobuf/empty.proto";
+
+package ares.messaging.planning;
 
 service AresPlannerGrpc {
-	rpc Plan (PlanRequest) returns (PlanResponse);
+  rpc RequestCapabilities(google.protobuf.Empty) returns (Capabilities);
+	rpc Plan(PlanRequest) returns (PlanResponse);
+}
+
+message Capabilities {
+  string service_name = 1;
+  repeated Planner available_planners = 2;
+}
+
+message Planner {
+  string planner_name = 1;
+  repeated PlannerSetting settings = 2;
+  string description = 3;
+  string version = 4;
+  string unique_id = 5;
+}
+
+message PlannerSetting {
+  string setting_name = 1;
+  SettingValue setting_value = 2;
+  bool optional = 3;
+}
+
+message SettingValue {
+  oneof value_data {
+    bool bool_value = 1;
+    int32 int32_value = 2;
+    int64 int64_value = 3;
+    float float_value = 4;
+    double double_value = 5;
+    string string_value = 6;
+    bytes bytes_value = 7;
+  }
 }
 
 message PlanRequest {
-  repeated PlanningParameter planning_parameters = 1;
+  string requested_planner = 1;
+  repeated PlanningParameter planning_parameters = 2;
 }
 
 message PlanResponse {

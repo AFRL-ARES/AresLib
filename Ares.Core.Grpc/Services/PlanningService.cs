@@ -2,6 +2,7 @@
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Ares.Messaging.Planning;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,33 @@ public class PlanningService : AresPlanning.AresPlanningBase
     return Task.FromResult(response);
   }
 
+  public override Task<CapabilitiesResponse> GetPlannerCapabilities(CapabilitiesRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.PlannerName);
+    var response = new CapabilitiesResponse();
+
+    if(planner is not null)
+      response.PlannerCapability.AddRange(planner.AvailablePlanners.Select(p => p.PlannerName));
+
+    return Task.FromResult(response);
+  }
+
+  public override Task<PlannerSettingsResponse> GetPlannerSettings(PlannerSettingsRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.ServiceName);
+    var response = new PlannerSettingsResponse();
+
+    if(planner is null)
+      return Task.FromResult(response);
+
+    var found = planner.PlannerSettings.TryGetValue(request.PlannerName, out var settings);
+
+    if(found)
+      response.Settings.AddRange(settings);
+
+    return Task.FromResult(response);
+  }
+
   public override async Task<Empty> AddPlanner(GenericPlanner request, ServerCallContext context)
   {
     if(_plannerManager.AvailablePlanners.Any(p => p.Name == request.Name))
@@ -40,7 +68,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
 
     var uri = new Uri(request.Address);
     var planner = new Planning.AresPlanner.AresPlanner(request.Name, new Uri(request.Address));
-    planner.Init();
+    await planner.Init();
     await _plannerManager.RegisterPlanner(planner);
     await AddPlannerToDb(planner, context);
     return new Empty();
@@ -67,7 +95,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
 
     await _plannerManager.UnregisterPlanner(planner);
     var updatedPlanner = new Planning.AresPlanner.AresPlanner(request.Name, new Uri(request.Address));
-    updatedPlanner.Init();
+    await updatedPlanner.Init();
     await _plannerManager.RegisterPlanner(updatedPlanner);
     await RemovePlannerFromDb(planner.Name, context);
     await AddPlannerToDb(updatedPlanner, context);
