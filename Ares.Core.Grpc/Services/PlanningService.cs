@@ -1,30 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Messaging;
 using Ares.Messaging.Planning;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
 
 public class PlanningService : AresPlanning.AresPlanningBase
 {
   private readonly IPlannerManager _plannerManager;
+  private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
+  private readonly INotificationHandler _notificationHandler;
 
-  public PlanningService(IPlannerManager plannerManager)
+  public PlanningService(IPlannerManager plannerManager, IDbContextFactory<CoreDatabaseContext> coreContextFactory, INotificationHandler notificationHandler)
   {
     _plannerManager = plannerManager;
+    _coreContextFactory = coreContextFactory;
+    _notificationHandler = notificationHandler;
   }
 
-  public override Task<GetAllPlannersResponse> GetAllPlanners(GetAllPlannersRequest request, ServerCallContext context)
+  public override Task<GetAllPlannersResponse> GetAllPlanners(Empty request, ServerCallContext context)
   {
     var response = new GetAllPlannersResponse();
-    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerInfo { Name = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name });
+    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerInfo { Name = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name, Address = planner.Address });
     response.Planners.AddRange(planners);
     return Task.FromResult(response);
+  }
+
+  public override async Task<Empty> AddPlanner(GenericPlanner request, ServerCallContext context)
+  {
+    if(_plannerManager.AvailablePlanners.Any(p => p.Name == request.Name))
+      return new Empty();
+
+    var uri = new Uri(request.Address);
+    var planner = new Planning.AresPlanner.AresPlanner(request.Name, new Uri(request.Address));
+    planner.Init();
+    await _plannerManager.RegisterPlanner(planner);
+    await AddPlannerToDb(planner, context);
+    return new Empty();
+  }
+
+  public override async Task<Empty> RemovePlanner(GenericPlanner request, ServerCallContext context)
+  {
+    var planner = _plannerManager.GetPlannerByName(request.Name);
+
+    if(planner is null)
+      return new Empty();
+
+    await _plannerManager.UnregisterPlanner(planner);
+    await RemovePlannerFromDb(request.Name, context);
+    return new Empty();
+  }
+
+  public override async Task<Empty> UpdatePlanner(GenericPlanner request, ServerCallContext context)
+  {
+    var planner = _plannerManager.GetPlannerByName(request.Name);
+
+    if(planner is null)
+      return new Empty();
+
+    await _plannerManager.UnregisterPlanner(planner);
+    var updatedPlanner = new Planning.AresPlanner.AresPlanner(request.Name, new Uri(request.Address));
+    updatedPlanner.Init();
+    await _plannerManager.RegisterPlanner(updatedPlanner);
+    await RemovePlannerFromDb(planner.Name, context);
+    await AddPlannerToDb(updatedPlanner, context);
+    return new Empty();
   }
 
   public override async Task<Empty> SeedManualPlanner(ManualPlannerSeed request, ServerCallContext context)
@@ -63,5 +110,53 @@ public class PlanningService : AresPlanning.AresPlanningBase
     var coll = new ManualPlannerSetCollection();
     coll.PlannedValues.AddRange(sets);
     return coll;
+  }
+
+  private async Task AddPlannerToDb(Planning.AresPlanner.AresPlanner planner, ServerCallContext context)
+  {
+    try
+    {
+      var info = new PlannerInfo()
+      {
+        Name = planner.Name,
+        Address = planner.Address,
+        Type = planner.GetType().ToString(),
+        Version = planner.Version.ToString(),
+        UniqueId = planner.UniqueId
+      };
+
+      await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+      await dbContext.Planners.AddAsync(info);
+      await dbContext.SaveChangesAsync(context.CancellationToken);
+    }
+
+    catch(Exception ex)
+    {
+      await HandleNotification("Failed to Add Planner to Database", ex.Message, NotificationSeverityEnum.Error);
+    }
+
+  }
+
+  private async Task RemovePlannerFromDb(string name, ServerCallContext context)
+  {
+    try
+    {
+      await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+      var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
+      if(oldInfo != null)
+        dbContext.Analyzers.Remove(oldInfo);
+      await dbContext.SaveChangesAsync(context.CancellationToken);
+    }
+
+    catch(Exception ex)
+    {
+      await HandleNotification("Failed to Remove Planner from Database", ex.Message, NotificationSeverityEnum.Error);
+
+    }
+  }
+
+  private async Task HandleNotification(string title, string message, NotificationSeverityEnum severity)
+  {
+    await _notificationHandler.HandleNotification(title, message, severity);
   }
 }

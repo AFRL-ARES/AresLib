@@ -16,6 +16,7 @@ public class ExecutionManager : IExecutionManager
   private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
+  private ICampaignExecutor? _currentExecutor;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
     IDbContextFactory<CoreDatabaseContext> dbContext,
@@ -44,7 +45,7 @@ public class ExecutionManager : IExecutionManager
 
   public int ReplanRate { get; private set; } = 1;
 
-  public async Task Start()
+  public async Task Start(string executionNotes, List<string> campaignTags)
   {
     var err = await CheckCampaignStartPrerequisites();
     if(!string.IsNullOrEmpty(err))
@@ -55,9 +56,9 @@ public class ExecutionManager : IExecutionManager
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
-    var CampaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
-    CampaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
-    PostExecution(CampaignExecutionSummary);
+    var campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
+    campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
+    PostExecution(campaignExecutionSummary);
   }
 
   public void Stop()
@@ -77,13 +78,40 @@ public class ExecutionManager : IExecutionManager
     if(!CampaignStopConditions.Any())
       return "The Campaign has no stop conditions, please set a stop condition before starting campaign.";
 
-    var startConditionTasks = _startConditions.Select(sc => sc.CanStart());
-    var startConditions = await Task.WhenAll(startConditionTasks);
-    var failedStartConditions = startConditions.Where(sc => !sc.Success);
-    if(failedStartConditions.Any())
-      return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, failedStartConditions.SelectMany(conditionResult => conditionResult!.Messages))}";
+    if(!EnsureParameterAssignment())
+      return "The campaign has errors in it's parameter assignments, please resolve these before starting your campaign.";
+
+    var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
+    if(startConditionResults.Any())
+      return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}";
 
     return string.Empty;
+  }
+
+  public bool EnsureParameterAssignment()
+  {
+    var startupCommandsInvalid = _activeCampaignTemplateStore.CampaignTemplate!.ExperimentTemplates.First().StartupStepTemplates
+    .SelectMany(step => step.CommandTemplates)
+    .Any(cmd => cmd.Parameters.Any(param => param.Planned && param.PlanningMetadata is null));
+
+    if(startupCommandsInvalid)
+      return false;
+
+    var experimentCommandsInvalid = _activeCampaignTemplateStore.CampaignTemplate!.ExperimentTemplates.First().StepTemplates
+    .SelectMany(step => step.CommandTemplates)
+    .Any(cmd => cmd.Parameters.Any(param => param.Planned && param.PlanningMetadata is null));
+
+    if(experimentCommandsInvalid)
+      return false;
+
+    var closeoutCommandsInvalid = _activeCampaignTemplateStore.CampaignTemplate!.ExperimentTemplates.First().CloseoutStepTemplates
+      .SelectMany(step => step.CommandTemplates)
+      .Any(cmd => cmd.Parameters.Any(param => param.Planned && param.PlanningMetadata is null));
+
+    if(closeoutCommandsInvalid)
+      return false;
+
+    return true;
   }
 
   public void UpdateReplanRate(int newRate)
@@ -96,6 +124,7 @@ public class ExecutionManager : IExecutionManager
     //await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
+    _currentExecutor = null;
   }
 
   private async Task StoreCompletedCampaign(CampaignExecutionSummary result)

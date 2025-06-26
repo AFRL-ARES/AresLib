@@ -1,4 +1,6 @@
 using Ares.Messaging;
+using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Planning;
 
@@ -48,7 +50,7 @@ public class PlanningHelper : IPlanningHelper
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
-          Value = result.Value
+          Value = Any.Pack(new StringValue() { Value = result.Value })
         };
 
         parameterPlanTarget.Value = val;

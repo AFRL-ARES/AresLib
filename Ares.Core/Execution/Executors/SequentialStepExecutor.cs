@@ -11,22 +11,23 @@ public class SequentialStepExecutor : StepExecutor
 
   public override async Task<StepExecutionSummary> Execute(ExecutionControlToken token)
   {
+    var token = tokenSource.Token;
     var startTime = DateTime.UtcNow;
-    var CommandSummaries = new List<CommandExecutionSummary>();
+    var commandSummaries = new List<CommandExecutionSummary>();
     foreach (var command in CommandExecutors)
     {
-      if (token.IsCancelled)
+      if(token.IsCancelled)
         break;
 
-      var CommandExecutionSummary = await command.Execute(token);
+      var commandExecutionSummary = await command.Execute(token);
 
-      if(CommandExecutionSummary.Result.Success)
-        CommandSummaries.Add(CommandExecutionSummary);
+      if(commandExecutionSummary.Result.Success)
+        commandSummaries.Add(commandExecutionSummary);
 
       else
         return ExecutorSummaryHelpers.CreateEmptyStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow);
     }
 
-    return ExecutorSummaryHelpers.CreateStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow, CommandSummaries);
+    return ExecutorSummaryHelpers.CreateStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow, commandSummaries);
   }
 }

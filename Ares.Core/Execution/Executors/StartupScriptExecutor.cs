@@ -35,15 +35,15 @@ namespace Ares.Core.Execution.Executors
     public IExecutor<StepExecutionSummary, StepExecutionStatus>[] StartupStepExecutors { get; }
     public ExperimentTemplate Template { get; set; }
 
-    public async Task<Empty> Execute(ExecutionControlToken executionToken)
+    public async Task<Empty> Execute(ExecutionControlTokenSource executionTokenSource)
     {
 
       foreach(var startupStep in StartupStepExecutors)
       {
-        if(executionToken.IsCancelled)
+        if(executionTokenSource.Token.IsCancelled)
           break;
 
-        var stepResult = await startupStep.Execute(executionToken);
+        var stepResult = await startupStep.Execute(executionTokenSource);
 
         if(!stepResult.CommandSummaries.Any())
           break;

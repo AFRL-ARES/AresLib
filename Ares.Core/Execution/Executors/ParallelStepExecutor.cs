@@ -13,8 +13,8 @@ public class ParallelStepExecutor : StepExecutor
   {
     var startTime = DateTime.UtcNow;
     var commandTasks = CommandExecutors.Select(command => command.Execute(token));
-    var CommandSummaries = await Task.WhenAll(commandTasks);
+    var commandSummaries = await Task.WhenAll(commandTasks);
 
-    return ExecutorSummaryHelpers.CreateStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow, CommandSummaries);
+    return ExecutorSummaryHelpers.CreateStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow, commandSummaries);
   }
 }

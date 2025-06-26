@@ -9,5 +9,5 @@ public interface IExecutor<TResult, out TStatus>
 {
   IObservable<TStatus> ExperimentStatusObservable { get; }
   TStatus Status { get; }
-  Task<TResult> Execute(ExecutionControlToken executionToken);
+  Task<TResult> Execute(ExecutionControlTokenSource executionTokenSource);
 }

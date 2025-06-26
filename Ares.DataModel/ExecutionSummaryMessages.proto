@@ -11,6 +11,8 @@ message ExecutionInfo {
   google.protobuf.StringValue unique_id = 1;
   google.protobuf.Timestamp time_started = 2;
   google.protobuf.Timestamp time_finished = 3;
+  google.protobuf.StringValue timezone = 4;
+  google.protobuf.StringValue localtime_offset = 5;
 }
 
 message CampaignExecutionSummary {
@@ -42,4 +44,6 @@ message CommandExecutionSummary {
   string command_id = 2;
   ExecutionInfo execution_info = 3;
   DeviceCommandResult result = 4;
+  string command_name = 5;
+  string command_description = 6;
 }

@@ -6,10 +6,13 @@ using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.StopConditions;
+using Ares.Core.Notifications;
 using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
+using Ares.Device;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace Ares.Core.Tests.Execution;
@@ -43,7 +46,7 @@ internal class CampaignExecutorTests
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
-    var repo = new DeviceCommandInterpreterRepo
+    var repo = new DeviceCommandInterpreterRepo()
     {
       cmdInterpreter
     };
@@ -67,6 +70,6 @@ internal class CampaignExecutorTests
     var controlTokenSource = new ExecutionControlTokenSource();
     var stopCondition = new NumExperimentsRun(_executionReportStore, 1);
     _campaignExecutor.StopConditions.Add(stopCondition);
-    Assert.DoesNotThrowAsync(() => _campaignExecutor.Execute(controlTokenSource.Token));
+    Assert.DoesNotThrowAsync(() => _campaignExecutor.Execute(controlTokenSource));
   }
 }

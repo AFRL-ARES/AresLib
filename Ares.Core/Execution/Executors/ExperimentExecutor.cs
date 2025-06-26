@@ -48,12 +48,13 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
   {
     var startTime = DateTime.UtcNow;
     var stepSummaries = new List<StepExecutionSummary>();
+    var token = tokenSource.Token;
     foreach(var executableStep in ExperimentStepExecutors)
     {
-      if(token.IsCancelled)
+      if(tokenSource.Token.IsCancelled)
         break;
 
-      var stepResult = await executableStep.Execute(token);
+      var stepResult = await executableStep.Execute(tokenSource);
 
       if(!stepResult.CommandSummaries.Any())
         break;

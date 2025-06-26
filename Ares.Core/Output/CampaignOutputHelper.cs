@@ -1,0 +1,99 @@
+﻿using Ares.Messaging;
+using System.Reflection;
+
+namespace Ares.Core.Output;
+
+public static class CampaignOutputHelper
+{
+  public static Task<string> InitializeOutputDirectories(CampaignTemplate template, DateTime startTime)
+  {
+    //Create Results Directory
+    var campaignPath = CreateCampaignResultsFolder(template.Name, startTime);
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignResultPath, campaignPath);
+
+    //Create Miscellaneous Folder
+    var miscFolderPath = CreateCampaignMiscellaneousFolder(campaignPath);
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignMiscFolder, miscFolderPath);
+
+    //Create Startup Folder
+    var startupFolder = CreateStartupSubFolder(campaignPath, "Startup");
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.CampaignStartupFolder, startupFolder);
+
+    //Set Internal Variables related to Campaign
+    AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignId, template.UniqueId);
+    AresEnvironment.AresEnvironment.SetInternalVariable(InternalVariableType.CurrentCampaignName, template.Name);
+
+    return Task.FromResult(campaignPath);
+  }
+
+  public static async Task WriteExperimentNotes(string campaignPath, string notes)
+  {
+    var path = Path.Combine(campaignPath, "ExecutionNotes.txt");
+    await File.WriteAllTextAsync(path, notes);
+  }
+
+  public static async Task WriteExperimentTags(string campaignPath, List<string> tags)
+  {
+    var path = Path.Combine(campaignPath, "ExecutionTags.txt");
+    await File.WriteAllTextAsync(path, string.Join(",", tags));
+  }
+
+  private static string CreateCampaignMiscellaneousFolder(string campaignPath)
+  {
+    var newFolderPath = Path.Combine(campaignPath, "Miscellaneous");
+    Directory.CreateDirectory(newFolderPath);
+    return newFolderPath;
+  }
+
+  public static string CreateExperimentSubFolder(string camapignPath, string folderName)
+  {
+    var experimentPath = Path.Combine(camapignPath, folderName);
+    Directory.CreateDirectory(experimentPath);
+    AresEnvironment.AresEnvironment.SetEnvironmentVariable(VariableType.ExperimentResultPath, experimentPath);
+    return experimentPath;
+  }
+
+  private static string CreateStartupSubFolder(string campaignPath, string folderName)
+  {
+    var startupPath = Path.Combine(campaignPath, folderName);
+    Directory.CreateDirectory(startupPath);
+    return startupPath;
+  }
+
+  private static string CreateCampaignResultsFolder(string campaignName, DateTime startTime)
+  {
+    var newFolderName = $"{campaignName}_{startTime.ToString("_yyyy-MM-dd_HH-mm-ss")}";
+    var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);
+    Directory.CreateDirectory(fullPath);
+    return fullPath;
+  }
+
+  public static async Task OutputVersionFile(string campaignPath, CampaignTemplate template)
+  {
+    var versionedItems = new Dictionary<string, string>();
+    var path = Path.Combine(campaignPath, "Version.txt");
+    var experimentTemplate = template.ExperimentTemplates.First();
+    var analyzerInfo = experimentTemplate.Analyzer;
+
+    if(analyzerInfo is not null)
+      versionedItems.Add(analyzerInfo.Name, analyzerInfo.Version);
+
+    foreach(var allocation in template.PlannerAllocations)
+    {
+      var found = versionedItems.TryGetValue(allocation.Planner.Name, out var value);
+
+      if(!found)
+        versionedItems.Add(allocation.Planner.Name, allocation.Planner.Version);
+    }
+
+    var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+    var assemblyVersion = assembly.GetName().Version;
+    var informationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+    if(informationalVersion is not null)
+      versionedItems.Add("AresCore", informationalVersion);
+
+    foreach(var (key, value) in versionedItems)
+      await File.AppendAllTextAsync(path, $"{key} -- {value}\r\n");
+  }
+}

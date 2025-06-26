@@ -1,6 +1,6 @@
-﻿using System.Reactive.Linq;
-using Ares.Core.Execution.ControlTokens;
+﻿using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
+using System.Reactive.Linq;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -18,8 +18,10 @@ public abstract class StepExecutor : IExecutor<StepExecutionSummary, StepExecuti
 
     Status.CommandExecutionStatuses.AddRange(commandExecutors.Select(executor => executor.Status));
 
-    var commandExecutionObservation = commandExecutors.Select(executor => {
-      return executor.ExperimentStatusObservable.Select(_ => {
+    var commandExecutionObservation = commandExecutors.Select(executor =>
+    {
+      return executor.ExperimentStatusObservable.Select(_ =>
+      {
         var cmdResults = commandExecutors.Select(cmdExecutor => cmdExecutor.Status);
         Status.CommandExecutionStatuses.Clear();
         Status.CommandExecutionStatuses.AddRange(cmdResults);

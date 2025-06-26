@@ -1,6 +1,7 @@
 ﻿using Ares.Device.Tests.Device;
 using Ares.Messaging;
 using Ares.Test;
+using Google.Protobuf.WellKnownTypes;
 using Moq;
 using Moq.Protected;
 
@@ -37,7 +38,7 @@ internal class DeviceLibraryTests
     parameter.Value = new ParameterValue
     {
       UniqueId = Guid.NewGuid().ToString(),
-      Value = "12345"
+      Value = Any.Pack(new StringValue() { Value = "12345" })
     };
 
     command.Parameters.Add(parameter);

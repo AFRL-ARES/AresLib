@@ -12,6 +12,7 @@ public abstract class DeviceCommandInterpreter<TQualifiedDevice, TDeviceCommandE
   where TQualifiedDevice : IAresDevice
   where TDeviceCommandEnum : struct, Enum
 {
+
   protected DeviceCommandInterpreter(TQualifiedDevice device)
   {
     Device = device;

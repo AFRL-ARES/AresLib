@@ -9,7 +9,10 @@ using Ares.Core.Analyzing;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
+using Ares.Core.Grpc.Helpers;
+using Ares.Core.Notifications;
 using Ares.Messaging;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
@@ -24,7 +27,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReportStore _executionReportStore;
   private readonly IEnumerable<IStartCondition> _startConditions;
+  private readonly IEnumerable<INotificationHandler> _notificationHandlers;
   readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
+  private JsonSerializerSettings _serializerSettings;
   readonly IAnalyzerRepo _analyzerRepo;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
@@ -32,8 +37,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
     IExecutionReportStore executionReportStore,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     IEnumerable<IStartCondition> startConditions,
-    IDesiredAnalysisResultFactory desiredAnalysisResultFactory,
-    IAnalyzerRepo analyzerRepo)
+    IAnalyzerRepo analyzerRepo,
+    IEnumerable<INotificationHandler> notificationHandlers,
+    IDesiredAnalysisResultFactory desiredAnalysisResultFactory)
   {
     _analyzerRepo = analyzerRepo;
     _desiredAnalysisResultFactory = desiredAnalysisResultFactory;
@@ -42,6 +48,8 @@ public class AutomationService : AresAutomation.AresAutomationBase
     _executionReportStore = executionReportStore;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _startConditions = startConditions;
+    _serializerSettings = CreateCustomSerializationSettings();
+    _notificationHandlers = notificationHandlers;
   }
 
 
@@ -57,14 +65,23 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<CampaignsResponse> GetAllCampaigns(GetAllCampaignsRequest request, ServerCallContext context)
   {
     var campaignResponse = new CampaignsResponse();
-
     foreach(var file in Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json"))
     {
-      var contents = await File.ReadAllTextAsync(file);
-      var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents);
+      try
+      {
+        var contents = await File.ReadAllTextAsync(file);
+        var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, _serializerSettings);
+        if(campaignTemplate is not null)
+          campaignResponse.CampaignTemplates.Add(campaignTemplate);
 
-      if(campaignTemplate is not null)
-        campaignResponse.CampaignTemplates.Add(campaignTemplate);
+        else
+          throw new Exception("Deserialization of campaign template failed");
+      }
+
+      catch(Exception ex)
+      {
+        HandleNotification("Error Loading Campaign Template", $"{file} - {ex.Message}", NotificationSeverityEnum.Error);
+      }
     }
 
     return campaignResponse;
@@ -96,7 +113,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     foreach(var file in directoryFiles)
     {
       var jsonString = File.ReadAllText(Path.Combine(AresConfig.TemplatePath, file));
-      var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString);
+      var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
       if(templateObject is not null && templateObject.Name == request.CampaignName)
         return new BoolValue { Value = true };
     }
@@ -151,7 +168,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
-    var jsonString = JsonConvert.SerializeObject(request.Template, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
     var fullFilePath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
 
     File.WriteAllText(fullFilePath, jsonString);
@@ -164,9 +181,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
     var campaignToUpdate = directoryFiles.FirstOrDefault(file => file.Contains(request.Template.UniqueId));
 
     if(campaignToUpdate is null)
-      throw new InvalidOperationException("Tried to update a campaign template that didn't exist!");
+    {
+      var title = "Error Updating Campaign";
+      var message = $"Attempted to update a campaign that didn't exist. {request.Template.Name} couldn't be found in your list of available campaign templates.";
+      HandleNotification(title, message, NotificationSeverityEnum.Error);
+      return Task.FromResult(request.Template);
+    }
 
-    var jsonString = JsonConvert.SerializeObject(request.Template, new JsonSerializerSettings() { TypeNameHandling = TypeNameHandling.All });
+    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
     var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
     File.WriteAllText(fullPath, jsonString);
 
@@ -181,12 +203,15 @@ public class AutomationService : AresAutomation.AresAutomationBase
     if(campaignFile is not null)
     {
       var jsonString = await File.ReadAllTextAsync(Path.Combine(AresConfig.TemplatePath, campaignFile));
-      var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString);
+      var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
 
       if(campaignObject is not null)
         return campaignObject;
     }
 
+    var title = "Error Fetching Campaign Template";
+    var message = $"Attempted to fetch a campaign that didn't exist. {request.CampaignName}'s UUID did not match any of the existing campaigns in your data directory";
+    HandleNotification(title, message, NotificationSeverityEnum.Error);
     return null;
   }
 
@@ -197,9 +222,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(response);
   }
 
-  public override Task<Empty> StartExecution(Empty request, ServerCallContext context)
+  public override Task<Empty> StartExecution(StartCampaignRequest request, ServerCallContext context)
   {
-    _executionManager.Start();
+    _executionManager.Start(request.UserNotes, request.CampaignTags.ToList());
     return Task.FromResult(new Empty());
   }
 
@@ -389,5 +414,61 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
     else
       return new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false };
+  }
+
+  public override async Task<TagsResponse> GetAllTags(Empty request, ServerCallContext context)
+  {
+    var tags = (await File.ReadAllTextAsync(AresConfig.TagsPath)).Split(",").ToList();
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(tags);
+    return response;
+  }
+
+  public override async Task<TagsResponse> AddTag(TagRequest request, ServerCallContext context)
+  {
+    var tags = await File.ReadAllTextAsync(AresConfig.TagsPath);
+    var updatedTags = $"{tags},{request.TagName}";
+    await File.WriteAllTextAsync(AresConfig.TagsPath, updatedTags);
+
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(updatedTags.Split(","));
+    return response;
+  }
+
+  public override async Task<TagsResponse> RemoveTag(TagRequest request, ServerCallContext context)
+  {
+    var tags = (await File.ReadAllTextAsync(AresConfig.TagsPath)).Split(",").ToList();
+    var response = new TagsResponse();
+
+    if(tags is not null && tags.Contains(request.TagName))
+    {
+      tags.Remove(request.TagName);
+      var tagsString = string.Join(",", tags);
+      await File.WriteAllTextAsync(AresConfig.TagsPath, tagsString);
+    }
+
+    response.AvailableTags.AddRange(tags);
+    return response;
+  }
+
+  private JsonSerializerSettings CreateCustomSerializationSettings()
+  {
+    var serializerSettings = new JsonSerializerSettings();
+
+    //Add Custom Serializers
+    serializerSettings.Converters.Add(new ByteStringConverter());
+
+    //Set type handling
+    serializerSettings.TypeNameHandling = TypeNameHandling.All;
+
+    return serializerSettings;
+  }
+
+  private void HandleNotification(string title, string message, NotificationSeverityEnum severity)
+  {
+    foreach(var handler in _notificationHandlers)
+    {
+      handler.HandleNotification(title, message, severity);
+    }
   }
 }

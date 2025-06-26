@@ -19,7 +19,8 @@ public class CoreDatabaseContext : DbContext
   public DbSet<PlannerTransaction> PlannerTransactions => Set<PlannerTransaction>();
   public DbSet<CampaignExecutionSummary> CampaignExecutionSummaries => Set<CampaignExecutionSummary>();
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
-  public DbSet<AresNotification> Notifications => Set<AresNotification>();
+  public DbSet<AnalyzerInfo> Analyzers => Set<AnalyzerInfo>();
+  public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

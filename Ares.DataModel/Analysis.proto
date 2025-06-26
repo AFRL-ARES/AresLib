@@ -11,4 +11,5 @@ message Analysis {
 	CompletedExperiment completed_experiment = 2; // Completed experiment in which data was used to provide result
 	float result = 3; // Result of the process performed on the completed experiment's output
 	AnalyzerInfo analyzer = 4; // Name of the analyzer providing the process result
+	google.protobuf.StringValue error_string = 5; //A string that is populated when an error occurs during analysis
 }

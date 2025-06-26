@@ -53,8 +53,10 @@ internal static class ExecutorSummaryHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
-      CommandId = commandId,
-      Result = deviceResult
+      CommandId = template.UniqueId,
+      Result = deviceResult,
+      CommandDescription = template.Metadata.Description,
+      CommandName = template.Metadata.Name
     };
 
     return CommandExecutionSummary;
@@ -65,6 +67,8 @@ internal static class ExecutorSummaryHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       TimeFinished = endTime.ToTimestamp(),
-      TimeStarted = startTime.ToTimestamp()
+      TimeStarted = startTime.ToTimestamp(),
+      Timezone = TimeZoneInfo.Local.DisplayName,
+      LocaltimeOffset = DateTimeOffset.Now.Offset.ToString()
     };
 }

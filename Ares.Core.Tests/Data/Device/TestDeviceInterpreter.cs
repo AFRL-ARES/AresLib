@@ -22,10 +22,10 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
         var reply = new TestReply();
         var param = parameters.First(parameter => parameter.Metadata.Name == TestDeviceCommandParameter.ReplyParameter.ToString());
         reply.Message = $"Device received {param.Value.Value}";
+        var unpacked = param.Value.Value.TryUnpack<StringValue>(out var stringValueParam);
+        var parsed = float.TryParse(stringValueParam.Value, out var floatValue);
 
-        var parsed = float.TryParse(param.Value.Value, out var floatValue);
-
-        if(!parsed)
+        if(!unpacked || !parsed)
         {
           result.Error = "Test device failed to parse number!";
           result.Success = false;

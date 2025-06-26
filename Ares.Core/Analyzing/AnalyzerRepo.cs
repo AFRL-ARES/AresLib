@@ -1,16 +1,20 @@
-﻿using System.Collections.ObjectModel;
-using Ares.Messaging;
+﻿using Ares.Messaging;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.ObjectModel;
 
 namespace Ares.Core.Analyzing;
 
 public class AnalyzerRepo : IAnalyzerRepo
 {
   private readonly IList<IAnalyzer> _analyzerStore = new List<IAnalyzer>();
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
+  readonly AnalysisRepo _analyses;
 
   public AnalyzerRepo()
   {
+    _dbContextFactory = dbContextFactory;
     var manualAnalyzer = new NoneAnalyzer();
-    RegisterAnalyzer(manualAnalyzer);
+    _ = RegisterAnalyzer(manualAnalyzer);
   }
 
   public T GetAnalyzer<T>(Version version) where T : IAnalyzer
@@ -25,6 +29,8 @@ public class AnalyzerRepo : IAnalyzerRepo
 
     return analyzer;
   }
+
+  public IAnalyzer? GetAnalyzerByName(string name) => _analyzerStore.FirstOrDefault(analyzer => analyzer.Name == name);
 
   public T GetAnalyzer<T>(string name, Version version) where T : IAnalyzer
   {
@@ -43,7 +49,7 @@ public class AnalyzerRepo : IAnalyzerRepo
     return analyzer;
   }
 
-  public IAnalyzer GetAnalyzer(string type)
+  public IAnalyzer GetAnalyzerByType(string type)
   {
     var typedAnalyzers = _analyzerStore.Where(p => p.GetType().Name == type).ToList();
     if(!typedAnalyzers.Any())
@@ -122,13 +128,24 @@ public class AnalyzerRepo : IAnalyzerRepo
     return typedAnalyzers.OrderByDescending(analyzer => analyzer.Version).First();
   }
 
-  public void RegisterAnalyzer(IAnalyzer analyzer)
+  public Task RegisterAnalyzer(IAnalyzer analyzer)
   {
     var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
     if(analyzerExists)
       throw new InvalidOperationException($"Analyzer {analyzer.Name}{analyzer.Version} of type {analyzer.GetType().Name} already registered");
 
     _analyzerStore.Add(analyzer);
+    return Task.CompletedTask;
+  }
+
+  public Task UnregisterAnalyzer(IAnalyzer analyzer)
+  {
+    var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
+    if(!analyzerExists)
+      return Task.CompletedTask;
+
+    _analyzerStore.Remove(analyzer);
+    return Task.CompletedTask;
   }
 
   public IEnumerable<IAnalyzer> AvailableAnalyzers => new ReadOnlyCollection<IAnalyzer>(_analyzerStore);

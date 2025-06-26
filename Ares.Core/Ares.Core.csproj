@@ -8,6 +8,7 @@
     <Company>DCS</Company>
     <Description>Library containing the command compilation and execution logic for campaigns.</Description>
     <LangVersion>default</LangVersion>
+		<InformationalVersion>0.0.1-beta</InformationalVersion>
   </PropertyGroup>
 
 	<Target Name="NugetPackAutoVersioning" AfterTargets="Build">
@@ -22,15 +23,16 @@
 
 
   <ItemGroup>
-	  <PackageReference Include="Ares.DataModel.dll" Version="2025.6.26.120145" />
-	  <PackageReference Include="Ares.Device.dll" Version="2025.6.26.120535" />
-	  <PackageReference Include="CoreDevice" Version="2025.6.26.120550" />
+	  <PackageReference Include="Ares.DataModel.dll" Version="2025.6.19.91604" />
+	  <PackageReference Include="Ares.Device.dll" Version="2025.6.19.91615" />
 	  <PackageReference Include="DynamicData" Version="7.14.2" />
+	  <PackageReference Include="Grpc.Net.Client" Version="2.57.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.11" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.11" />
 	  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="7.0.1" />
 	  <PackageReference Include="System.Runtime" Version="4.3.1" />
 	  <PackageReference Include="System.ServiceModel.Primitives" Version="6.2.0" />
+	  <PackageReference Include="UnitsNet" Version="5.33.0" />
 	</ItemGroup>
 
 </Project>

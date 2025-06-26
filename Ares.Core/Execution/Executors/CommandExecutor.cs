@@ -18,6 +18,8 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     var executionStatus = new CommandExecutionStatus
     {
       CommandId = template.UniqueId,
+      CommandName = template.Metadata.Name,
+      DeviceName = template.Metadata.DeviceName,
       State = ExecutionState.Undefined
     };
 
@@ -34,6 +36,8 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
   public CommandExecutionStatus Status => _stateSubject.Value;
   public async Task<CommandExecutionSummary> Execute(ExecutionControlToken token)
   {
+    var token = tokenSource.Token;
+
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
     if(token.IsPaused)
@@ -58,7 +62,11 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     var result = await InternalExecute(token.CancellationToken);
     execInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
 
-    if(result.Success)
+    if(result.AwaitUserInput)
+      AwaitUserInput(tokenSource);
+
+
+    else if(result.Success)
       Status.State = ExecutionState.Succeeded;
 
     else
@@ -82,5 +90,15 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
       var result = new DeviceCommandResult() { Success = false, Error = e.Message };
       return result;
     }
+  }
+
+  private void AwaitUserInput(ExecutionControlTokenSource tokenSource)
+  {
+    tokenSource.Pause();
+    Status.State = ExecutionState.AwaitingUser;
+    _stateSubject.OnNext(Status);
+    var ct = new CancellationToken();
+    tokenSource.WaitForResume(ct);
+    Status.State = ExecutionState.Succeeded;
   }
 }

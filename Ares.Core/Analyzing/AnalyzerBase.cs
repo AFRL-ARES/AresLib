@@ -9,15 +9,18 @@ public abstract class AnalyzerBase : IAnalyzer
 {
   protected readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
 
-  public AnalyzerBase(string name, Version version)
+  public AnalyzerBase(string name, Version version, string address = "https://localhost")
   {
     Name = name;
     Version = version;
+    Address = address;
     AnalyzerStateObservable = _analyzerStateSubject.AsObservable();
   }
 
-  public string Name { get; }
-  public Version Version { get; }
+  public string Name { get; set; }
+  public Version Version { get; set; }
+  public string Address { get; set; }
+  public string UniqueId { get; set; } = Guid.NewGuid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 

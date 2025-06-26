@@ -3,6 +3,7 @@ using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
 using Ares.Messaging;
 using Ares.Test;
+using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Tests.Data;
 
@@ -48,7 +49,7 @@ internal class TestCampaignProvider
     parameter.Value = new ParameterValue
     {
       UniqueId = Guid.NewGuid().ToString(),
-      Value = value
+      Value = Any.Pack(new StringValue() { Value = value })
     };
 
     parameter.Metadata = new ParameterMetadata
