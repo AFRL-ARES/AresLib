@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Analyzing;
+using Ares.Core.Validation;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 
@@ -6,12 +7,12 @@ namespace Ares.Core.Tests;
 
 internal class AnalyzerManagerTests
 {
-  private IAnalyzerRepo _analyzerManager = new AnalyzerRepo(new AnalysisRepo());
+  private IAnalyzerRepo _analyzerManager = new AnalyzerRepo();
 
   [SetUp]
   public void SetUp()
   {
-    _analyzerManager = new AnalyzerRepo(new AnalysisRepo());
+    _analyzerManager = new AnalyzerRepo();
   }
 
   [Test]
@@ -43,9 +44,29 @@ internal class AnalyzerManagerTests
     public AnalyzerState AnalyzerState { get; }
 
     public bool InputsSupported(string fullTypeName)
-      => throw new NotImplementedException();
+      => true;
 
     public Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken)
       => throw new NotImplementedException();
+
+    public Task<ValidationResult> ValidateInput(AnalyzerInputValidationRequest validationRequest)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputValidationRequest> validationRequests)
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task<RequestedAnalysisData[]> GetSupportedInputs()
+    {
+      throw new NotImplementedException();
+    }
+
+    public Task<Analysis> Analyze(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
+    {
+      throw new NotImplementedException();
+    }
   }
 }

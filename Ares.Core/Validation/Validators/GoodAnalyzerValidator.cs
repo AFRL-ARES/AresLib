@@ -5,12 +5,12 @@ namespace Ares.Core.Validation.Validators;
 
 public static class GoodAnalyzerValidator
 {
-  public static async Task<ValidationResult> Validate(ExperimentTemplate experimentTemplate, IAnalyzerRepo analyzerManager)
+  public static async Task<ValidationResult> Validate(ExperimentTemplate experimentTemplate, IAnalyzerRepo analyzerRepo)
   {
     if(experimentTemplate.Analyzer is null)
       return new ValidationResult(true);
 
-    var analyzer = analyzerManager.GetAnalyzer(experimentTemplate.Analyzer);
+    var analyzer = analyzerRepo.GetAnalyzer(experimentTemplate.Analyzer);
     if(analyzer is null)
       return new ValidationResult(false, $"Unable to find analyzer {experimentTemplate.Analyzer}");
 

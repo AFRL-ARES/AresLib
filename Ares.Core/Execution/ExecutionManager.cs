@@ -46,7 +46,11 @@ public class ExecutionManager : IExecutionManager
 
   public async Task Start()
   {
-    await CheckCampaignStartPrerequisites();
+    var err = await CheckCampaignStartPrerequisites();
+    if(!string.IsNullOrEmpty(err))
+    {
+      throw new InvalidOperationException(err);
+    }
     var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;

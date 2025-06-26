@@ -40,7 +40,7 @@ public class ValidationService : AresValidation.AresValidationBase
       return response;
     }
 
-    var result = await GoodAnalyzerValidator.Validate(request.ExperimentTemplate, analyzer);
+    var result = await GoodAnalyzerValidator.Validate(request.ExperimentTemplate, _analyzerRepo);
     response.Success = result.Success;
     response.Messages.AddRange(result.Messages);
 
@@ -60,7 +60,7 @@ public class ValidationService : AresValidation.AresValidationBase
     return response;
   }
 
-  public override Task<ValidationResponse> VlidateRegisteredDevices(Empty request, ServerCallContext context)
+  public override Task<ValidationResponse> ValidateRegisteredDevices(Empty request, ServerCallContext context)
   {
     throw new NotImplementedException("Might not need this method");
   }

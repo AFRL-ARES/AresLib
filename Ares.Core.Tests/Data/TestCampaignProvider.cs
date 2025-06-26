@@ -71,9 +71,11 @@ internal class TestCampaignProvider
       Analyzer = analyzer,
       Name = name,
       Resolved = true,
-      OutputCommandId = outputCommand,
-      UniqueId = Guid.NewGuid().ToString()
+      UniqueId = Guid.NewGuid().ToString(),
     };
+
+    var outputCmd = new OutputCommandSelection() { CommandId = outputCommand, Key = "TestKey" };
+    experimentTemplate.OutputCommands.Add(outputCmd);
 
     experimentTemplate.StepTemplates.AddRange(stepTemplates);
 
@@ -105,6 +107,7 @@ internal class TestCampaignProvider
     };
 
     template.Parameters.AddRange(parameters);
+    template.UniqueId = metadata.UniqueId;
 
     return template;
   }

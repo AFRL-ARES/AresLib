@@ -16,7 +16,7 @@ namespace Ares.Core.Tests.Execution;
 
 internal class CampaignExecutorTests
 {
-  private IAnalyzerRepo _analyzerManager;
+  private IAnalyzerRepo _analyzerRepo;
   private CampaignComposer _campaignComposer;
   private ICampaignExecutor _campaignExecutor;
   private IExecutionReporter _executionReporter;
@@ -24,16 +24,21 @@ internal class CampaignExecutorTests
   private IPlanningHelper _planningHelper;
   private IEnumerable<IExecutionSummaryHandler> _resultHandlers;
   private AresVariableManager _variableManager;
+  private AnalysisHelper _analysisHelper;
+  private AnalysisRepo _analysisRepo;
 
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
-    _analyzerManager = new AnalyzerRepo(new AnalysisRepo());
-    _analyzerManager.RegisterAnalyzer(new TestReplyAnalyzer());
+    _analyzerRepo = new AnalyzerRepo();
+    var replyAnalyzer = new TestReplyAnalyzer();
+    _analyzerRepo.RegisterAnalyzer(replyAnalyzer);
+    _analysisRepo = new AnalysisRepo();
+    _analysisHelper = new AnalysisHelper(_analyzerRepo);
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
-    _resultHandlers = new Mock<IEnumerable<IExecutionSummaryHandler>>().Object;
+    _resultHandlers = new Mock<List<IExecutionSummaryHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
 
     var device = new TestDevice();
@@ -43,11 +48,11 @@ internal class CampaignExecutorTests
       cmdInterpreter
     };
     var stepComposer = new StepComposer(repo);
-    var experimentComposer = new ExperimentComposer(stepComposer, _analyzerManager);
+    var experimentComposer = new ExperimentComposer(stepComposer, _analyzerRepo);
     var startupScriptComposer = new StartupComposer(stepComposer);
     var closeoutScriptComposer = new CloseoutComposer(stepComposer);
 
-    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _variableManager);
+    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _variableManager, _analysisRepo);
   }
 
   [SetUp]

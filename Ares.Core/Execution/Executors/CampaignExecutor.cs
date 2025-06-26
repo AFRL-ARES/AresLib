@@ -157,7 +157,7 @@ public class CampaignExecutor : ICampaignExecutor
       ExecutionInfo = new ExecutionInfo
       {
         TimeFinished = DateTime.UtcNow.ToTimestamp(),
-        TimeStarted = startTime.ToTimestamp()
+        TimeStarted = startTime.ToUniversalTime().ToTimestamp()
       }
     };
 

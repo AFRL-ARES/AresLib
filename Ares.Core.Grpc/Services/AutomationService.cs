@@ -206,6 +206,10 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<CampaignTemplate> SetCampaignForExecution(CampaignRequest request, ServerCallContext context)
   {
     var template = await GetCampaignTemplate(request, context);
+    if(template is null)
+    {
+      throw new InvalidOperationException($"No campaign template found for request. Name: {request.CampaignName}");
+    }
     _activeCampaignTemplateStore.CampaignTemplate = template;
     return template;
   }

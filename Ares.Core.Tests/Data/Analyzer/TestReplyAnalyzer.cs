@@ -4,14 +4,22 @@ using Ares.Test;
 
 namespace Ares.Core.Tests.Data.Analyzer;
 
-public class TestReplyAnalyzer : AnalyzerBase<TestReply>
+public class TestReplyAnalyzer : AnalyzerBase
 {
   public TestReplyAnalyzer() : base("Test Analyzer", new Version(1, 0))
   {
   }
 
-  protected override Task<Analysis> AnalyzeMessage(ExperimentResult result, TestReply input, CancellationToken cancellationToken)
+  public override Task<RequestedAnalysisData[]> GetSupportedInputs()
   {
+    throw new NotImplementedException();
+  }
+
+  protected override Task<Analysis> AnalyzeInputs(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
+  {
+    var firstData = inputs.First().Data;
+    var reply = firstData.Unpack<TestReply>();
+
     var analysis = new Analysis
     {
       Analyzer = new AnalyzerInfo
@@ -21,7 +29,7 @@ public class TestReplyAnalyzer : AnalyzerBase<TestReply>
         UniqueId = Guid.NewGuid().ToString(),
         Version = Version.ToString()
       },
-      Result = input.Number,
+      Result = reply.Number,
       UniqueId = Guid.NewGuid().ToString()
     };
 
