@@ -43,7 +43,7 @@
   </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Ares.DataModel.dll" Version="2025.7.1.104439" GeneratePathProperty="True" />
+      <PackageReference Include="Ares.DataModel.dll" Version="2025.7.1.122354" GeneratePathProperty="True" />
       <PackageReference Include="Grpc.Tools" Version="2.58.0">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

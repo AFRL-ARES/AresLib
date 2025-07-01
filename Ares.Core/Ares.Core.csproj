@@ -23,8 +23,8 @@
 
 
   <ItemGroup>
-	  <PackageReference Include="Ares.DataModel.dll" Version="2025.7.1.104439" />
-	  <PackageReference Include="Ares.Device.dll" Version="2025.7.1.104501" />
+	  <PackageReference Include="Ares.DataModel.dll" Version="2025.7.1.122354" />
+	  <PackageReference Include="Ares.Device.dll" Version="2025.7.1.122414" />
 	  <PackageReference Include="DynamicData" Version="7.14.2" />
 	  <PackageReference Include="Grpc.Net.Client" Version="2.57.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.11" />

@@ -3,13 +3,11 @@ using Ares.Messaging.Planning;
 using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning.AresPlanner;
 
 public class AresPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(PlannerState.Disconnected);
   readonly Uri _address;
 
   public AresPlanner(string name, Uri address)
@@ -17,7 +15,7 @@ public class AresPlanner : IPlanner
     _address = address;
     Name = name;
     Address = address.OriginalString;
-    State = _plannerStateSubject.AsObservable();
+    Status = new PlannerStatus { PlannerState = PlannerState.Inactive, Message = $"{name} has not been activated" };
     UniqueId = Guid.NewGuid().ToString();
   }
 
@@ -86,17 +84,22 @@ public class AresPlanner : IPlanner
       response = await client.RequestCapabilitiesAsync(new Empty());
     }
 
-    catch(Exception ex)
+    catch(Exception)
     {
-      _plannerStateSubject.OnNext(PlannerState.Disconnected);
+      Status.PlannerState = PlannerState.Error;
+      Status.Message = "Failed to establish a connection with the planner!";
       return;
     }
 
     if(response is null)
     {
-      _plannerStateSubject.OnNext(PlannerState.Disconnected);
+      Status.PlannerState = PlannerState.Error;
+      Status.Message = "Planner returned a null capability response!";
       return;
     }
+
+    AvailablePlanners.Clear();
+    PlannerSettings.Clear();
 
     AvailablePlanners.AddRange(response.AvailablePlanners);
     foreach(var planner in response.AvailablePlanners)
@@ -106,11 +109,14 @@ public class AresPlanner : IPlanner
     }
 
     Timeout = TimeSpan.FromSeconds(response.TimeoutSeconds);
+    await Task.Delay(TimeSpan.FromSeconds(0.5));
+    Status.PlannerState = PlannerState.Active;
+    Status.Message = $"Successfully activated {Name}!";
   }
 
   public string Name { get; set; }
   public Version Version { get; set; } = new Version(1, 0);
-  public IObservable<PlannerState> State { get; set; }
+  public PlannerStatus Status { get; protected set; }
   public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
   public IDictionary<string, List<PlannerSetting>> PlannerSettings { get; } = new Dictionary<string, List<PlannerSetting>>();
   public string Address { get; set; }

@@ -1,18 +1,16 @@
 ﻿using Ares.Messaging;
 using Ares.Messaging.Planning;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning;
 
 public class ManualPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(PlannerState.Disconnected);
   private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
 
   public ManualPlanner()
   {
-    State = _plannerStateSubject.AsObservable();
+    Status = new PlannerStatus { PlannerState = PlannerState.Active, Message = "Manual Planner is active!" };
   }
 
   public IEnumerable<IEnumerable<(string Name, string Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
@@ -30,8 +28,6 @@ public class ManualPlanner : IPlanner
       return Task.FromResult<IEnumerable<PlanResult>>(new List<PlanResult>());
     }
   }
-
-  public IObservable<PlannerState> State { get; }
 
   public Task Seed(ManualPlannerSeed seedParam)
   {
@@ -63,8 +59,6 @@ public class ManualPlanner : IPlanner
 
   public Task Init()
   {
-    _plannerStateSubject.OnNext(PlannerState.Connected);
-
     var manualPlanner = new Planner()
     {
       PlannerName = "Manual Planner",
@@ -138,12 +132,13 @@ public class ManualPlanner : IPlanner
     }
   }
 
-  //
   private record ManualPlanResult(string Name, string Value)
   {
     public PlanResult ToPlanResult(ParameterMetadata metadata)
       => new(metadata, Value);
   }
+
+  public PlannerStatus Status { get; protected set; }
   public string Name { get; set; } = "Manual Planner";
   public Version Version { get; set; } = new(1, 0);
   public string Address { get; set; } = string.Empty;

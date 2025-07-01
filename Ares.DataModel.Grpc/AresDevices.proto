@@ -16,9 +16,6 @@ service AresDevices {
 	rpc GetCommandMetadatas(CommandMetadatasRequest) returns (CommandMetadatasResponse);
 	rpc ExecuteCommand(CommandTemplate) returns (DeviceCommandResult);
 	rpc GetAllDeviceConfigs(DeviceConfigRequest) returns (DeviceConfigResponse);
-	// rpc AddDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
-	// rpc UpdateDeviceConfig(ares.messaging.device.DeviceConfig) returns (google.protobuf.Empty);
-	// rpc RemoveDeviceConfig(.ares.messaging.device.RemoveDeviceConfigRequest) returns (google.protobuf.Empty);
 	rpc Activate(DeviceActivateRequest) returns (google.protobuf.Empty);
 }
 

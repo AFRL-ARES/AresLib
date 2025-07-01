@@ -1,10 +1,11 @@
 ﻿syntax = "proto3";
 
-package ares.messaging;
+package ares.messaging.planning;
 
 import "PlannerInfo.proto";
 import "Planning/ManualPlanner.proto";
 import "Planning/ares_planner.proto";
+import "Planning/PlannerStatus.proto";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/empty.proto";
@@ -13,6 +14,8 @@ service AresPlanning {
 	rpc GetAllPlanners(google.protobuf.Empty) returns (GetAllPlannersResponse);
 	rpc GetPlannerCapabilities(CapabilitiesRequest) returns (CapabilitiesResponse);
 	rpc GetPlannerSettings(PlannerSettingsRequest) returns (PlannerSettingsResponse);
+	rpc GetPlannerStatus(PlannerStatusRequest) returns (PlannerStatus);
+	rpc ActivatePlanner(PlannerActivationRequest) returns (google.protobuf.Empty);
 
 	rpc SeedManualPlanner(planning.ManualPlannerSeed) returns (google.protobuf.Empty);
 	rpc GetManualPlannerSeed(google.protobuf.Empty) returns (planning.ManualPlannerSetCollection);
@@ -28,7 +31,15 @@ message GetAllPlannersResponse {
 }
 
 message CapabilitiesRequest {
-	string planner_name = 1;
+	string adapter_name = 1;
+}
+
+message PlannerStatusRequest {
+	string adapter_name = 1;
+}
+
+message PlannerActivationRequest {
+	string adapter_name = 1;
 }
 
 message PlannerSettingsRequest {

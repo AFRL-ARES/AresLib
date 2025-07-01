@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
@@ -36,13 +37,34 @@ public class PlanningService : AresPlanning.AresPlanningBase
 
   public override Task<CapabilitiesResponse> GetPlannerCapabilities(CapabilitiesRequest request, ServerCallContext context)
   {
-    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.PlannerName);
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.AdapterName);
     var response = new CapabilitiesResponse();
 
     if(planner is not null)
       response.PlannerCapability.AddRange(planner.AvailablePlanners.Select(p => p.PlannerName));
 
     return Task.FromResult(response);
+  }
+
+  public override Task<PlannerStatus> GetPlannerStatus(PlannerStatusRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.AdapterName);
+
+    if(planner is null)
+      return Task.FromResult(new PlannerStatus { PlannerState = PlannerState.Error, Message = "ARES was unable to find this planner!" });
+
+    return Task.FromResult(planner.Status);
+  }
+
+  public override async Task<Empty> ActivatePlanner(PlannerActivationRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.AdapterName);
+
+    if(planner is null)
+      return new Empty();
+
+    await planner.Init();
+    return new Empty();
   }
 
   public override Task<PlannerSettingsResponse> GetPlannerSettings(PlannerSettingsRequest request, ServerCallContext context)
@@ -170,9 +192,9 @@ public class PlanningService : AresPlanning.AresPlanningBase
     try
     {
       await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-      var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
+      var oldInfo = await dbContext.Planners.FirstOrDefaultAsync(a => a.AdapterName == name);
       if(oldInfo != null)
-        dbContext.Analyzers.Remove(oldInfo);
+        dbContext.Planners.Remove(oldInfo);
       await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 

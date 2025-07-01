@@ -21,10 +21,10 @@ public interface IPlanner
   string Address { get; set; }
 
   /// <summary>
-  /// Current state (<see cref="State" />) of the planner which essentially indicated
+  /// Current status (<see cref="PlannerStatus" />) of the planner which essentially indicates
   /// whether or not this planner is currently available for planning
   /// </summary>
-  IObservable<PlannerState> State { get; }
+  PlannerStatus Status { get; }
 
   /// <summary>
   /// A list of planners reported to be available by the planner service
@@ -40,6 +40,12 @@ public interface IPlanner
   /// Id used to uniquely identify this instance of the planner
   /// </summary>
   string UniqueId { get; set; }
+
+  /// <summary>
+  /// Initializes the planner adapter, including verifying the connection status
+  /// </summary>
+  /// <returns></returns>
+  Task Init();
 
   /// <summary>
   /// Returns the values for the given parameter metadata
