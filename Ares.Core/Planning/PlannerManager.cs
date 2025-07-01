@@ -22,7 +22,7 @@ public class PlannerManager : IPlannerManager
 
     foreach(var info in availablePlanners)
     {
-      var planner = new AresPlanner.AresPlanner(info.Name, new Uri(info.Address))
+      var planner = new AresPlanner.AresPlanner(info.AdapterName, new Uri(info.Address))
       {
         UniqueId = info.UniqueId
       };

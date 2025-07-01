@@ -71,6 +71,7 @@ public class AresPlanner : IPlanner
       parameter.MaximumValue = constraint.Maximum;
     }
 
+    parameter.PlannerName = metadata.PlannerName;
     return parameter;
   }
 

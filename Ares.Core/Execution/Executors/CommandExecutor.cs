@@ -31,8 +31,6 @@ public class CommandExecutor : IExecutor<CommandResult, CommandExecutionStatus>
   public CommandTemplate Template { get; set; }
 
   public IObservable<CommandExecutionStatus> ExperimentStatusObservable { get; }
-  public IObservable<CommandExecutionStatus> StartupStatusObservable { get; }
-  public IObservable<CommandExecutionStatus> CloseoutStatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
   public async Task<CommandResult> Execute(ExecutionControlTokenSource tokenSource)
   {

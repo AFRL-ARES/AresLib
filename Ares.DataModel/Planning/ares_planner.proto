@@ -10,22 +10,23 @@ service AresPlannerGrpc {
 }
 
 message Capabilities {
-  string service_name = 1;
-  repeated Planner available_planners = 2;
+  string service_name = 1; // Name descriptor of the planner adapter service 
+  int64 timeout_seconds = 2; // The timeout, in seconds, that ARES will wait to receive a response from the service
+  repeated Planner available_planners = 3; // The planners this service is capable of utilizing
 }
 
 message Planner {
-  string planner_name = 1;
-  repeated PlannerSetting settings = 2;
-  string description = 3;
-  string version = 4;
+  string planner_name = 1; // Name descriptor of the planner
+  repeated PlannerSetting settings = 2; // The settings associated with this planner
+  string description = 3; // A brief description of this planner
+  string version = 4; // Version descriptor of the planner
   string unique_id = 5;
 }
 
 message PlannerSetting {
-  string setting_name = 1;
-  SettingValue setting_value = 2;
-  bool optional = 3;
+  string setting_name = 1; // Name descriptor of the setting
+  SettingValue setting_value = 2; // The value of this setting
+  bool optional = 3; // Set based on whether this setting is optional or required
 }
 
 message SettingValue {
@@ -41,8 +42,7 @@ message SettingValue {
 }
 
 message PlanRequest {
-  string requested_planner = 1;
-  repeated PlanningParameter planning_parameters = 2;
+  repeated PlanningParameter planning_parameters = 1; // The parameters ARES is requesting the service to plan for
 }
 
 message PlanResponse {
@@ -51,22 +51,23 @@ message PlanResponse {
 }
 
 message PlanningParameter {
-  string parameter_name = 1;
-  double parameter_value = 2;
-  double minimum_value = 3;
-  double maximum_value = 4;
-  double minimum_precision = 5;
-  repeated double parameter_history = 6;
-  string data_type = 7;
-  Metadata metadata = 8;
-  bool is_planned = 9;
-  bool is_result = 10;
+  string parameter_name = 1; // Name descriptor of the parameter
+  double parameter_value = 2; // Value descriptor of the parameter
+  double minimum_value = 3; // The minimum value that can be associated with the parameter
+  double maximum_value = 4; // The maximum value that can be associated with the parameter
+  double minimum_precision = 5; // The minimum precision associated with the parameter
+  repeated double parameter_history = 6; // Previous values used for the parameter
+  string data_type = 7; // The data type of the paramere
+  Metadata metadata = 8; // Metadata associated with the parameter
+  bool is_planned = 9; // Set based on whether the parameter should be planned for
+  bool is_result = 10; // Set based on whether the parameter is designed as the result of the experiment
+  string planner_name = 11; // The planner requested to plan for the parameter
 }
 
 message PlannedParameter {
-  string parameter_name = 1;
-  double parameter_value = 2;
-  Metadata metadata = 3;
+  string parameter_name = 1; // Name descriptor of the parameter
+  double parameter_value = 2; // Value of the planned parameter
+  Metadata metadata = 3; // Metadata associated with the planned parameter
 }
 
 //This is sort of a place holder for now, until we (or atleast I) understand our needs better
