@@ -79,7 +79,18 @@ public class AresPlanner : IPlanner
   {
     ClientStore.CreateClient(_address);
     var client = ClientStore.AresPlanningClient;
-    var response = await client.RequestCapabilitiesAsync(new Empty());
+    Capabilities? response = null;
+
+    try
+    {
+      response = await client.RequestCapabilitiesAsync(new Empty());
+    }
+
+    catch(Exception ex)
+    {
+      _plannerStateSubject.OnNext(PlannerState.Disconnected);
+      return;
+    }
 
     if(response is null)
     {
@@ -93,6 +104,8 @@ public class AresPlanner : IPlanner
       if(planner.Settings.Any())
         PlannerSettings.Add(planner.PlannerName, planner.Settings.ToList());
     }
+
+    Timeout = TimeSpan.FromSeconds(response.TimeoutSeconds);
   }
 
   public string Name { get; set; }
@@ -102,4 +115,5 @@ public class AresPlanner : IPlanner
   public IDictionary<string, List<PlannerSetting>> PlannerSettings { get; } = new Dictionary<string, List<PlannerSetting>>();
   public string Address { get; set; }
   public string UniqueId { get; set; }
+  public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 }
