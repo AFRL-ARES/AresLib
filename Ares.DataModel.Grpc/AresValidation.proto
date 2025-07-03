@@ -4,7 +4,7 @@ package ares.messaging;
 
 import "Templates/CampaignTemplate.proto";
 import "google/protobuf/empty.proto";
-import "AnalyzerInfo.proto";
+import "Analyzing/AnalyzerInfo.proto";
 import "Templates/ExperimentTemplate.proto";
 
 service AresValidation {
@@ -14,7 +14,7 @@ service AresValidation {
 }
 
 message AnalyzerValidationRequest {
-	AnalyzerInfo analyzer = 1;
+	analyzing.AnalyzerInfo analyzer = 1;
 	ExperimentTemplate experiment_template = 2;
 }
 

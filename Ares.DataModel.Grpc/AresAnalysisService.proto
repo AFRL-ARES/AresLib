@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "Analyzing/Input/AnalyzerParameter.proto";
+import "Analyzing/AnalyzerCapabilities.proto";
+import "ValidationResult.proto";
+import "Analyzing/AnalysisResult.proto";
+import "Analyzing/Input/AnalyzerInput.proto";
+import "Analyzing/Input/AnalyzerInputDescription.proto";
+import "Analyzing/AnalyzerState.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+service AresAnalysisService {
+	rpc ValidateInputs(InputValidationRequest) returns (ValidationResult);
+	rpc Analyze(AnalysisRequest) returns (analyzing.AnalysisResult);
+
+	rpc GetAnalyzerParameters(AnalyzerParametersRequest) returns (AnalyzerParametersResponse);
+}
+
+message AnalysisRequest {
+	string analyzer_id = 1;
+	repeated analyzing.input.AnalyzerInput inputs = 2;
+	repeated analyzing.AnalyzerSetting settings = 3;
+}
+
+message InputValidationRequest {
+	string analyzer_id = 1;
+	repeated analyzing.input.AnalyzerInputDescription inputs = 2;
+}
+
+message AnalyzerParametersRequest {
+	string analyzer_id = 1;
+}
+
+message AnalyzerParametersResponse {
+	repeated analyzing.input.AnalyzerParameter analysis_parameters = 1;
+}

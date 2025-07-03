@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package ares.messaging.analyzing;
+
+import "Analyzing/Input/InputTypes.proto";
+
+message AnalyzerSettingParameter {
+  string key = 1; // Name descriptor of the setting
+  SettingType value_type = 2; // The type of setting
+	ValidValues valid_values = 3; // Optionally constrain the possible values to a given collection
+  bool optional = 4; // Set based on whether this setting is optional or required
+}
+
+message AnalyzerSetting {
+  string key = 1; // Name descriptor of the setting
+  AnalyzerSettingValue value = 2; // The value of the setting
+}
+
+message AnalyzerSettingValue {
+	oneof setting_value {
+		double number_value = 1;
+		string string_value = 2;
+	}
+}
+
+message ValidValues {
+	oneof value_collection {
+		input.StringList string_values = 1;
+		input.NumberList number_values = 2;
+	}
+}
+
+enum SettingType {
+	UNSPECIFIED = 0;
+	STRING = 1;
+	NUMBER = 2;
+}
+
+message AnalyzerCapabilities {
+  int64 timeout_seconds = 1; // The timeout, in seconds, that ARES will wait to receive a response from the service
+  repeated AnalyzerSettingParameter settings = 2; // The settings associated with this adapter. Used to tell ARES what settings are available. Can be empty.
+}
