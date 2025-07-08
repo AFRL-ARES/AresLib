@@ -11,7 +11,6 @@ public class SequentialStepExecutor : StepExecutor
 
   public override async Task<StepExecutionSummary> Execute(ExecutionControlToken token)
   {
-    var token = tokenSource.Token;
     var startTime = DateTime.UtcNow;
     var commandSummaries = new List<CommandExecutionSummary>();
     foreach (var command in CommandExecutors)

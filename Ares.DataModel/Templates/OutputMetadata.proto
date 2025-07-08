@@ -3,10 +3,11 @@
 package ares.messaging;
 
 import "google/protobuf/wrappers.proto";
+import "AresDataType.proto";
 
 message OutputMetadata {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this metadata
-	string full_name = 2; // Name of the return message type including the namespace
+	AresDataType data_type = 2; // the type of data we should be expecting from this command
 	string description = 3; // Provides a human readable text describing the output
 	int64 index = 4; // Index of the collection in which executed this template
 }

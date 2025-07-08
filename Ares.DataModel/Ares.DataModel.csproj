@@ -55,8 +55,4 @@
     <Protobuf Update="Planning\AresPlanner.proto" GrpcServices="Client" />
     <Protobuf Update="Planning\ares_planner.proto" GrpcServices="Client" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Analyzing\Input\" />
-  </ItemGroup>
 </Project>

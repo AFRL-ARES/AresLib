@@ -36,7 +36,6 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
   public CommandExecutionStatus Status => _stateSubject.Value;
   public async Task<CommandExecutionSummary> Execute(ExecutionControlToken token)
   {
-    var token = tokenSource.Token;
 
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
@@ -54,7 +53,7 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
       Status.State = ExecutionState.Failed;
       _stateSubject.OnNext(Status);
       _stateSubject.OnCompleted();
-      return ExecutorSummaryHelpers.CreateCommandExecutionSummary(Template.UniqueId, null, DateTime.UtcNow, DateTime.UtcNow);
+      return ExecutorSummaryHelpers.CreateCommandExecutionSummary(Template, null, DateTime.UtcNow, DateTime.UtcNow);
     }
 
     var timeStarted = DateTime.UtcNow;
@@ -63,7 +62,7 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     execInfo.TimeFinished = DateTime.UtcNow.ToTimestamp();
 
     if(result.AwaitUserInput)
-      AwaitUserInput(tokenSource);
+      AwaitUserInput(token);
 
 
     else if(result.Success)
@@ -75,7 +74,7 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     _stateSubject.OnNext(Status);
     _stateSubject.OnCompleted();
 
-    return ExecutorSummaryHelpers.CreateCommandExecutionSummary(Template.UniqueId, result, timeStarted, DateTime.UtcNow);
+    return ExecutorSummaryHelpers.CreateCommandExecutionSummary(Template, result, timeStarted, DateTime.UtcNow);
   }
 
   private async Task<DeviceCommandResult> InternalExecute(CancellationToken token)
@@ -92,13 +91,13 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     }
   }
 
-  private void AwaitUserInput(ExecutionControlTokenSource tokenSource)
+  private void AwaitUserInput(ExecutionControlToken executionToken)
   {
-    tokenSource.Pause();
+    executionToken.Pause();
     Status.State = ExecutionState.AwaitingUser;
     _stateSubject.OnNext(Status);
     var ct = new CancellationToken();
-    tokenSource.WaitForResume(ct);
+    executionToken.WaitForResume(ct);
     Status.State = ExecutionState.Succeeded;
   }
 }

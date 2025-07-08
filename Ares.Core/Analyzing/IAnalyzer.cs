@@ -1,30 +1,42 @@
-﻿using Ares.Core.Validation;
-using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
+﻿using Ares.Messaging;
+using Ares.Messaging.Analyzing;
+using Ares.Messaging.Analyzing.Remote;
 
 namespace Ares.Core.Analyzing;
 
 public interface IAnalyzer
 {
   /// <summary>
-  /// Optional name for the analyzer (can be useful when multiple analyzers of same type and version have to be used)
+  /// Ares user given name for the analyzer (can be useful when multiple analyzers of same type have to be used)
   /// </summary>
   string Name { get; set; }
 
   /// <summary>
-  /// Version of the analyzer
+  /// The analyzer itself should have a type name that it reports regardless of what name the user has given it.
+  /// So for example the type could be "BoraasPlanner" while the user calls it "My Amazing Planner"
   /// </summary>
-  Version Version { get; set; }
+  string Type { get; }
 
   /// <summary>
-  /// The address for reaching this analyzer. Defaults to localhost.
+  /// Version of the analyzer, provided directly by the analyzer and not set by user.
   /// </summary>
-  string Address { get; set; }
+  string Version { get; }
 
   /// <summary>
   /// The unique id for identifying the analyzer.
   /// </summary>
-  string UniqueId { get; set; }
+  string UniqueId { get; }
+
+  /// <summary>
+  /// Optional description of the analyzer.
+  /// </summary>
+  string Description { get; }
+
+  /// <summary>
+  /// Provides a way for any initialization logic to be run upon the creation of the analyzer if there's a need
+  /// </summary>
+  /// <returns></returns>
+  Task Init();
 
   /// <summary>
   /// Provides an observable for the <see cref="AnalyzerState" />
@@ -37,17 +49,45 @@ public interface IAnalyzer
   /// </summary>
   AnalyzerState AnalyzerState { get; }
 
-  Task<ValidationResult> ValidateInput(AnalyzerInputValidationRequest validationRequest);
-
-  Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputValidationRequest> validationRequests);
-
-  Task<RequestedAnalysisData[]> GetSupportedInputs();
+  /// <summary>
+  /// We give an option for analyzer to receive descriptions of inputs that ARES plans on sending it, and then
+  /// the analyzer can let ARES know ahead of time if it's capable of dealing with the given inputs.
+  /// That way we don't start an experiment and fail because ARES sent an input that was incompatible
+  /// </summary>
+  /// <param name="inputSchema">The inputs we plan to send to the analyzer</param>
+  /// <returns>Result of the validation along with a message if there is an error</returns>
+  Task<ParameterValidationResult> ValidateInputs(AresDataSchemaSimplified inputSchema, CancellationToken cancellationToken = default);
 
   /// <summary>
-  /// Returns the values for the given parameter metadata
+  /// Returns supported parameters that ARES should provide. Some are optional, some required.
   /// </summary>
-  /// <param name="inputs">The experiment outputs to analyze in the form of the <see cref="AnalyzerInput" /> proto message</param>
+  /// <returns></returns>
+  Task<AresDataSchema> GetParameters(CancellationToken cancellationToken = default);
+
+  /// <summary>
+  /// This will return some custom settings that the analyzer supports in addition to the parameters.
+  /// One of the built-in settings is the timeout that can tell ARES to wait a little longer in case analysis is going
+  /// to take a while.
+  /// Other settings are analyzer-specific and provided to ARES as descriptions. The user can then fill out the settings
+  /// and send them back during analysis.
+  /// </summary>
+  /// <returns></returns>
+  Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken = default);
+
+  /// <summary>
+  /// Does the actual analysis work.
+  /// </summary>
+  /// <param name="inputs">The experiment outputs to analyze in the form of the <see cref="AnalysisInput" /> proto message</param>
   /// <param name="cancellationToken"></param>
-  /// <returns><see cref="Analysis" /> which has the result as well as the metadata about the analyzer.</returns>
-  Task<Analysis> Analyze(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken);
+  /// <param name="settings">Optional list of settings to influence the analysis</param>
+  /// <returns><see cref="Analysis" /> which is the outcome of the analysis performed.</returns>
+  Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken = default);
+
+  /// <summary>
+  /// Does the actual analysis work.
+  /// </summary>
+  /// <param name="inputs">The experiment outputs to analyze in the form of the <see cref="AnalysisInput" /> proto message</param>
+  /// <param name="cancellationToken"></param>
+  /// <returns><see cref="Analysis" /> which is the outcome of the analysis performed.</returns>
+  Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken);
 }

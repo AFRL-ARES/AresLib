@@ -1,5 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using Ares.Messaging;
+using Ares.Messaging.Analyzing;
 
 namespace Ares.Core.Analyzing;
 

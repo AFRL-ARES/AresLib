@@ -1,6 +1,4 @@
-﻿using DynamicData;
-
-namespace Ares.Core.Planning;
+﻿namespace Ares.Core.Planning;
 
 public interface IPlannerManager
 {

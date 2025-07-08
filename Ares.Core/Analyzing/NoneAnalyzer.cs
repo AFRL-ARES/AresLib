@@ -1,5 +1,5 @@
 ﻿using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
+using Ares.Messaging.Analyzing;
 
 namespace Ares.Core.Analyzing;
 
@@ -9,29 +9,35 @@ namespace Ares.Core.Analyzing;
 /// </summary>
 internal class NoneAnalyzer : AnalyzerBase
 {
-  public NoneAnalyzer() : base("NONE", new Version(1, 0))
+  public NoneAnalyzer() : base("NONE", "NONE :)", "1.0.0")
   {
   }
 
-  public override Task<RequestedAnalysisData[]> GetSupportedInputs()
+  public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
   {
-    return Task.FromResult(Array.Empty<RequestedAnalysisData>());
+    return Analyze(inputs, cancellationToken);
   }
 
-  protected override Task<Analysis> AnalyzeInputs(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
+  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct _settings, CancellationToken cancellationToken)
   {
     var analysis = new Analysis
     {
-      UniqueId = Guid.NewGuid().ToString(),
-      Analyzer = new AnalyzerInfo
-      {
-        Name = Name,
-        UniqueId = Guid.NewGuid().ToString(),
-        Version = Version.ToString()
-      },
+      Success = true,
       Result = 0
     };
 
     return Task.FromResult(analysis);
+  }
+
+  public override Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken)
+  {
+    var capability = new AnalyzerCapabilities { TimeoutSeconds = long.MaxValue };
+
+    return Task.FromResult(capability);
+  }
+
+  public override Task<AresDataSchema> GetParameters(CancellationToken cancellationToken)
+  {
+    return Task.FromResult(new AresDataSchema());
   }
 }

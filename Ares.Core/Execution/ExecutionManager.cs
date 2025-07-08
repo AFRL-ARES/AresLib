@@ -81,7 +81,9 @@ public class ExecutionManager : IExecutionManager
     if(!EnsureParameterAssignment())
       return "The campaign has errors in it's parameter assignments, please resolve these before starting your campaign.";
 
-    var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
+    var startConditionResultTasks = _startConditions.Select(condition => condition.CanStart());
+    var startConditionResults = await Task.WhenAll(startConditionResultTasks);
+    startConditionResults = startConditionResults.Where(result => result is not null && !result.Success).ToArray();
     if(startConditionResults.Any())
       return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}";
 

@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Ares.Messaging;
+using Ares.Messaging.Analyzing;
 using Ares.Messaging.Device;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<PlannerTransaction> PlannerTransactions => Set<PlannerTransaction>();
   public DbSet<CampaignExecutionSummary> CampaignExecutionSummaries => Set<CampaignExecutionSummary>();
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
-  public DbSet<AnalyzerInfo> Analyzers => Set<AnalyzerInfo>();
+  public DbSet<AnalyzerConfig> Analyzers => Set<AnalyzerConfig>();
   public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)

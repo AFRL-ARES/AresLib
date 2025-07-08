@@ -3,7 +3,6 @@ syntax = "proto3";
 package ares.messaging;
 
 import "Templates/StepTemplate.proto";
-import "Analyzing/AnalyzerInfo.proto";
 import "Templates/OutputCommandSelection.proto";
 import "google/protobuf/wrappers.proto";
 
@@ -15,6 +14,6 @@ message ExperimentTemplate {
 	string name = 5; // Name of the experiment, most likely automatically generated relative to the campaign name
 	int64 index = 6; // Index of the collection in which executed this template
 	repeated OutputCommandSelection output_commands = 7; // the commands that will provide the output for the experiment as a whole
-	analyzing.AnalyzerInfo analyzer = 8; // the analyzer assigned to this template
+	google.protobuf.StringValue analyzer_id = 8; // the analyzer assigned to this template
 	bool resolved = 9; // Inidcates whether or not this template has been processed and thus should not have any metadata, only executable stuff. 
 }

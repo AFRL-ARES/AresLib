@@ -55,7 +55,7 @@ internal class CampaignExecutorTests
     var startupScriptComposer = new StartupComposer(stepComposer);
     var closeoutScriptComposer = new CloseoutComposer(stepComposer);
 
-    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _variableManager, _analysisRepo);
+    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, Array.Empty<INotificationHandler>(), _analyzerRepo, _variableManager);
   }
 
   [SetUp]
@@ -70,6 +70,6 @@ internal class CampaignExecutorTests
     var controlTokenSource = new ExecutionControlTokenSource();
     var stopCondition = new NumExperimentsRun(_executionReportStore, 1);
     _campaignExecutor.StopConditions.Add(stopCondition);
-    Assert.DoesNotThrowAsync(() => _campaignExecutor.Execute(controlTokenSource));
+    Assert.DoesNotThrowAsync(() => _campaignExecutor.Execute(controlTokenSource.Token));
   }
 }

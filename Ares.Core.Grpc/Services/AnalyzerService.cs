@@ -1,28 +1,28 @@
-﻿using Ares.Core.Analyzing;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Ares.Core.Analyzing;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Ares.Core.Grpc.Services;
-public class AnalyzerService : AresAnalyzerService.AresAnalyzerServiceBase
+public class AnalyzerService : AresAnalyzerManagementService.AresAnalyzerManagementServiceBase
 {
-  private IAnalyzerManager _analyzerManager;
+  private IAnalyzerRepo _analyzerRepo;
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
 
-  public AnalyzerService(IAnalyzerManager analyzerManager, IDbContextFactory<CoreDatabaseContext> coreContextFactory)
+  public AnalyzerService(IAnalyzerRepo analyzerManager, IDbContextFactory<CoreDatabaseContext> coreContextFactory)
   {
-    _analyzerManager = analyzerManager;
+    _analyzerRepo = analyzerManager;
     _coreContextFactory = coreContextFactory;
   }
 
   public override Task<GetAvailableAnalyzersResponse> GetAvailableAnalyzers(Empty request, ServerCallContext context)
   {
     var response = new GetAvailableAnalyzersResponse();
-    var availableAnalyzers = _analyzerManager.AvailableAnalyzers;
+    var availableAnalyzers = _analyzerRepo.AvailableAnalyzers;
 
     foreach(var analyzer in availableAnalyzers)
     {
@@ -37,17 +37,17 @@ public class AnalyzerService : AresAnalyzerService.AresAnalyzerServiceBase
 
   public override async Task<Empty> UpdateAnalzyer(GenericAnalyzer request, ServerCallContext context)
   {
-    var existingAnalyzer = _analyzerManager.GetAnalyzerByName(request.Name);
+    var existingAnalyzer = _analyzerRepo.GetAnalyzerByName(request.Name);
     await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
 
     if(existingAnalyzer is null || existingAnalyzer.Name == request.Name && existingAnalyzer.Address == request.Address)
       return new Empty();
 
-    await _analyzerManager.UnregisterAnalyzer(existingAnalyzer);
+    _analyzerRepo.UnregisterAnalyzer(existingAnalyzer);
 
     var updatedAnalyzer = new AresAnalyzer.AresAnalyzer(request.Name, new Uri(request.Address));
     updatedAnalyzer.Init();
-    await _analyzerManager.RegisterAnalyzer(updatedAnalyzer);
+    await _analyzerRepo.RegisterAnalyzer(updatedAnalyzer);
     await RemoveAnalyzerFromDb(existingAnalyzer.Name, context);
     await AddAnalyzerToDb(updatedAnalyzer, context);
     return new Empty();
@@ -55,25 +55,25 @@ public class AnalyzerService : AresAnalyzerService.AresAnalyzerServiceBase
 
   public override async Task<Empty> AddAnalyzer(GenericAnalyzer request, ServerCallContext context)
   {
-    if(_analyzerManager.AvailableAnalyzers.Any(a => a.Name == request.Name))
+    if(_analyzerRepo.AvailableAnalyzers.Any(a => a.Name == request.Name))
       return new Empty();
 
     var uri = new Uri(request.Address);
     var analyzer = new AresAnalyzer.AresAnalyzer(request.Name, uri);
     analyzer.Init();
-    await _analyzerManager.RegisterAnalyzer(analyzer);
+    await _analyzerRepo.RegisterAnalyzer(analyzer);
     await AddAnalyzerToDb(analyzer, context);
     return new Empty();
   }
 
   public override async Task<Empty> RemoveAnalyzer(RemoveAnalyzerRequest request, ServerCallContext context)
   {
-    var analyzer = _analyzerManager.GetAnalyzerByName(request.Name);
+    var analyzer = _analyzerRepo.GetAnalyzerByName(request.Name);
 
     if(analyzer is null)
       return new Empty();
 
-    await _analyzerManager.UnregisterAnalyzer(analyzer);
+    _analyzerRepo.UnregisterAnalyzer(analyzer);
     await RemoveAnalyzerFromDb(request.Name, context);
     return new Empty();
   }

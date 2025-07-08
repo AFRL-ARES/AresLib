@@ -9,13 +9,14 @@ namespace Ares.Core.Tests;
 
 internal class AnalyzerManagerTests
 {
-  private IAnalyzerRepo _analyzerRepo = new AnalyzerRepo();
+  private IAnalyzerRepo _analyzerRepo;
 
 
   [SetUp]
   public void SetUp()
   {
-    _analyzerRepo = new AnalyzerRepo();
+    var dbCtxFactory = new Mock<IDbContextFactory<CoreDatabaseContext>>();
+    _analyzerRepo = new AnalyzerRepo(dbCtxFactory.Object);
   }
 
   [Test]
@@ -54,12 +55,12 @@ internal class AnalyzerManagerTests
     public Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken)
       => throw new NotImplementedException();
 
-    public Task<ValidationResult> ValidateInput(AnalyzerInputValidationRequest validationRequest)
+    public Task<ValidationResult> ValidateInput(AnalyzerInputDescription validationRequest)
     {
       throw new NotImplementedException();
     }
 
-    public Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputValidationRequest> validationRequests)
+    public Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputDescription> validationRequests)
     {
       throw new NotImplementedException();
     }

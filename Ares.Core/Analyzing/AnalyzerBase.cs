@@ -1,82 +1,106 @@
 ﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using Ares.Core.Validation;
 using Ares.Messaging;
+using Ares.Messaging.Analyzing;
+using Ares.Messaging.Analyzing.Remote;
 
 namespace Ares.Core.Analyzing;
 
+/// <summary>
+/// A base implementation of the analyzer interface featuring some basic parameter validation.
+/// The validation just checks to make sure all the required inputs are filled and the requested vs given types match
+/// </summary>
 public abstract class AnalyzerBase : IAnalyzer
 {
   protected readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
 
-  public AnalyzerBase(string name, Version version, string address = "https://localhost")
+  public AnalyzerBase(string name, string type, string version)
   {
     Name = name;
+    Type = type;
     Version = version;
-    Address = address;
     AnalyzerStateObservable = _analyzerStateSubject.AsObservable();
   }
 
+  public AnalyzerBase(string name, string type, string version, string uniqueId)
+  {
+    Name = name;
+    Type = type;
+    Version = version;
+    AnalyzerStateObservable = _analyzerStateSubject.AsObservable();
+    UniqueId = uniqueId;
+  }
+
   public string Name { get; set; }
-  public Version Version { get; set; }
-  public string Address { get; set; }
-  public string UniqueId { get; set; } = Guid.NewGuid().ToString();
+  public string Version { get; protected set; }
+  public string Type { get; protected set; }
+  public string UniqueId { get; protected set; } = Guid.NewGuid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 
-  public virtual Task<Analysis> Analyze(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
-  {
-    var inputsArr = inputs.ToArray();
-    if(!inputsArr.Any())
-      return Task.FromResult(GetDefaultResult());
+  public string Description { get; protected set; } = "";
 
-    return AnalyzeInputs(summary, inputs, cancellationToken);
+  public abstract Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken);
+
+  public abstract Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken);
+
+  public abstract Task<AresDataSchema> GetParameters(CancellationToken cancellationToken);
+
+  private static ParameterValidationResult ValidateParameterTypes(KeyValuePair<string, SchemaEntry> inputDescription, AresDataSchema parameters)
+  {
+    var result = new ParameterValidationResult();
+    var matchingAnalysisParameter = parameters.Fields.GetValueOrDefault(inputDescription.Key);
+    if(matchingAnalysisParameter is null)
+    {
+      result.Success = false;
+      result.Messages.Add($"Analyzer does not support with key of {inputDescription.Key}.");
+      return result;
+    }
+
+    if(matchingAnalysisParameter.Type != inputDescription.Value.Type)
+    {
+      result.Success = false;
+      result.Messages
+        .Add(
+          $"Parameter type mismatch. The provided input {inputDescription.Key} has a type of {inputDescription.Value.Type.ToString()} which doesn't match the type expected by the analyzer which is {matchingAnalysisParameter.Type.ToString()}");
+    }
+
+    result.Success = true;
+    return result;
   }
 
-  protected Analysis GetDefaultResult()
+  private static ParameterValidationResult ValidateRequiredParams(AresDataSchemaSimplified inputDescriptions, AresDataSchema parameters)
   {
-    return new Analysis
+    var requiredParams = parameters.Fields.Where(p => !p.Value.Optional).ToArray();
+    var unfulfilledParams = requiredParams.Where(rp => !inputDescriptions.Fields.Any(input => input.Key == rp.Key && input.Value == rp.Value.Type));
+
+    var messages = unfulfilledParams.Select(up => $"No value provided for the required parameter {up.Key}.").ToArray();
+    var result = new ParameterValidationResult
     {
-      UniqueId = Guid.NewGuid().ToString(),
-      Analyzer = new AnalyzerInfo { Name = Name, UniqueId = Guid.NewGuid().ToString(), Version = Version.ToString() },
-      Result = 0
+      Success = !messages.Any()
     };
+    result.Messages.AddRange(messages);
+
+    return result;
   }
 
-  protected abstract Task<Analysis> AnalyzeInputs(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken);
-
-  public abstract Task<RequestedAnalysisData[]> GetSupportedInputs();
-
-  public async Task<ValidationResult> ValidateInput(AnalyzerInputValidationRequest validationRequest)
+  public virtual async Task<ParameterValidationResult> ValidateInputs(AresDataSchemaSimplified inputSchema, CancellationToken cancellationToken)
   {
-    var inputs = await GetSupportedInputs();
-    return ValidateInputHelper(validationRequest, inputs);
+    var analysisSchema = await GetParameters(cancellationToken);
+    var paramValidationResults = analysisSchema.Fields.Select(inputDesc => ValidateParameterTypes(inputDesc, analysisSchema)).ToArray();
+    var requiredValidationResult = ValidateRequiredParams(inputSchema, analysisSchema);
+    var allValidationResults = paramValidationResults.Append(requiredValidationResult);
+
+    var result = new ParameterValidationResult { Success = allValidationResults.All(r => r.Success) };
+    result.Messages.AddRange(allValidationResults.SelectMany(r => r.Messages));
+
+    return result;
   }
 
-  private ValidationResult ValidateInputHelper(AnalyzerInputValidationRequest validationRequest, IEnumerable<RequestedAnalysisData> supportedAnalysisInputs)
+  public abstract Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken);
+
+  public virtual Task Init()
   {
-    var requestedInput = supportedAnalysisInputs.FirstOrDefault(i => i.Key == validationRequest.Key);
-    if(requestedInput is null)
-    {
-      return new ValidationResult(
-        false,
-        $"Input with key of {validationRequest.Key} is unsupported.");
-    }
-
-    if(requestedInput.Type != validationRequest.TypeName)
-    {
-      return new ValidationResult(
-        false,
-        $"Input type mismatch. Input {requestedInput.Key} expects type of {requestedInput.Key} but received {validationRequest.TypeName}");
-    }
-
-    return new ValidationResult(true);
-  }
-
-  public async Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputValidationRequest> validationRequests)
-  {
-    var inputs = await GetSupportedInputs();
-    var validationResults = validationRequests.Select(vr => ValidateInputHelper(vr, inputs)).ToArray();
-    return new ValidationResult(validationResults);
+    return Task.CompletedTask;
   }
 }

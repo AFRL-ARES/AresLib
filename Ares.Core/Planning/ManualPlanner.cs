@@ -1,7 +1,8 @@
-﻿using Ares.Messaging;
-using Ares.Messaging.Planning;
-using System.Reactive.Linq;
+﻿using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Ares.Messaging;
+using Ares.Messaging.Analyzing;
+using Ares.Messaging.Planning;
 
 namespace Ares.Core.Planning;
 
@@ -20,11 +21,11 @@ public class ManualPlanner : IPlanner
   public string Name { get; set; } = "Manual Planner";
   public Version Version { get; set; } = new(1, 0);
 
-  public string Address { get; set; }
+  public string Address { get; set; } = "INTERNAL";
 
   public string UniqueId { get; set; } = new Guid().ToString();
 
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
+  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<CompletedExperiment> _, IEnumerable<Analysis> __, CancellationToken ___)
   {
     try
     {

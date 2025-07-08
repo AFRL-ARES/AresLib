@@ -44,7 +44,7 @@ internal static class ExecutorSummaryHelpers
   {
     return new StepExecutionSummary { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
   }
-  public static CommandExecutionSummary CreateCommandExecutionSummary(string commandId,
+  public static CommandExecutionSummary CreateCommandExecutionSummary(CommandTemplate template,
     DeviceCommandResult? deviceResult,
     DateTime startTime,
     DateTime endTime)

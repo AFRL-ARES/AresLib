@@ -38,12 +38,12 @@ public class CloseoutScriptExecutor : IExecutor<Empty, CampaignCloseoutStatus>
   public ExperimentTemplate Template { get; set; }
 
 
-    public async Task<Empty> Execute(ExecutionControlTokenSource executionTokenSource)
+  public async Task<Empty> Execute(ExecutionControlToken executionToken)
+  {
+    foreach(var closeoutStep in CloseoutStepExecutors)
     {
-      foreach(var closeoutStep in CloseoutStepExecutors)
-      {
-        if(executionTokenSource.Token.IsCancelled)
-          break;
+      if(executionToken.IsCancelled)
+        break;
 
       var stepResult = await closeoutStep.Execute(executionToken);
 

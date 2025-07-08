@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Ares.Core.EntityConfigurations;
 
-internal class AnalysisEntityConfiguration : AresEntityTypeBaseConfiguration<Analysis>
+public class AnalyzerConfigEntityConfiguration : AresEntityTypeBaseConfiguration<AnalyzerConfig>
 {
-  public override void Configure(EntityTypeBuilder<Analysis> builder)
+  public override void Configure(EntityTypeBuilder<AnalyzerConfig> builder)
   {
     base.Configure(builder);
-    builder.ToTable("Analyses");
+    builder.ToTable("Analyzers");
   }
 }

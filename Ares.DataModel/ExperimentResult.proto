@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+import "AresStruct.proto";
+
+message ExperimentResult {
+	string key = 1;
+	AresValue data = 2;
+}

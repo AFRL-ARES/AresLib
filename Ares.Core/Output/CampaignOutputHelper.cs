@@ -1,5 +1,6 @@
-﻿using Ares.Messaging;
-using System.Reflection;
+﻿using System.Reflection;
+using Ares.Core.Analyzing;
+using Ares.Messaging;
 
 namespace Ares.Core.Output;
 
@@ -68,15 +69,14 @@ public static class CampaignOutputHelper
     return fullPath;
   }
 
-  public static async Task OutputVersionFile(string campaignPath, CampaignTemplate template)
+  public static async Task OutputVersionFile(string campaignPath, CampaignTemplate template, IAnalyzer? analyzer)
   {
     var versionedItems = new Dictionary<string, string>();
     var path = Path.Combine(campaignPath, "Version.txt");
     var experimentTemplate = template.ExperimentTemplates.First();
-    var analyzerInfo = experimentTemplate.Analyzer;
 
-    if(analyzerInfo is not null)
-      versionedItems.Add(analyzerInfo.Name, analyzerInfo.Version);
+    if(analyzer is not null)
+      versionedItems.Add(analyzer.Name, analyzer.Version);
 
     foreach(var allocation in template.PlannerAllocations)
     {

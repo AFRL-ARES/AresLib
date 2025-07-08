@@ -1,5 +1,5 @@
 using Ares.Messaging;
-using Google.Protobuf;
+using Ares.Messaging.Analyzing;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Planning;
@@ -16,6 +16,7 @@ public class PlanningHelper : IPlanningHelper
   public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
     IEnumerable<Parameter> parameters,
     IEnumerable<Analysis> seedAnalyses,
+    IEnumerable<CompletedExperiment> seedExperiments,
     CancellationToken cancellationToken)
   {
     var parameterArray = parameters.ToArray();
@@ -35,7 +36,7 @@ public class PlanningHelper : IPlanningHelper
     foreach(var grouping in planGroup)
     {
       var planner = grouping.Key;
-      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedAnalysesArr, cancellationToken);
+      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedExperiments, seedAnalysesArr, cancellationToken);
       var results = resultsEnumerable.ToArray();
       if(!results.Any())
         return false;

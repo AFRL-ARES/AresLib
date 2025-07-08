@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Ares.Messaging.Analyzing;
 
 namespace Ares.Core.Analyzing;
 
@@ -10,30 +11,44 @@ internal class AnalysisHelper
     _analyzerRepo = analyzerRepo;
   }
 
-  public async Task<Analysis> Analyze(AnalyzerInfo? analyzerInfo, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
+  public async Task<Analysis> Analyze(string? analyzerId, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
   {
-    var analyzer = GetAnalyzer(analyzerInfo);
+    var analyzer = GetAnalyzer(analyzerId);
 
-    var analyzerInputs = ToAnalyzerInputs(experimentSummary.CompletedExperiment.Results);
-    var analysis = await analyzer.Analyze(experimentSummary, analyzerInputs, cancellationToken);
-    analysis.CompletedExperiment = experimentSummary.CompletedExperiment;
+    var analyzerInputs = ToAnalysisInputs(experimentSummary.CompletedExperiment.Results);
+    // TODO: Add support for settings
+    var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
     experimentSummary.CompletedExperiment.AnalysisResult = analysis.Result;
     return analysis;
   }
 
-  private IAnalyzer GetAnalyzer(AnalyzerInfo? analyzerInfo)
+  private IAnalyzer GetAnalyzer(string? analyzerId)
   {
-    if (analyzerInfo is null)
+    if(analyzerId is null)
     {
-      return _analyzerRepo.GetAnalyzer<NoneAnalyzer>();
+      var noneAnalyzer = _analyzerRepo.GetAnalyzerByName("NONE");
+      if(noneAnalyzer is null)
+      {
+        throw new InvalidOperationException(
+          "No analyzer provided and the default NONE analyzer was not found.");
+      }
+
+      return noneAnalyzer;
     }
 
     return _analyzerRepo
-    .GetAnalyzer(analyzerInfo) ?? throw new InvalidOperationException($"Could not find desired Analyzer! {analyzerInfo.Name}");
+    .GetAnalyzerById(analyzerId) ?? throw new InvalidOperationException($"Could not find desired analyzer with id {analyzerId}");
   }
 
-  private static IEnumerable<AnalyzerInput> ToAnalyzerInputs(IEnumerable<ExperimentResult> experimentResults)
+  private static AresStruct ToAnalysisInputs(IEnumerable<ExperimentResult> experimentResults)
   {
-    return experimentResults.Select(er => new AnalyzerInput { Key = er.Key, Data = er.Data });
+    var aresStruct = new AresStruct();
+    foreach(var result in experimentResults)
+    {
+      aresStruct.Fields[result.Key] = result.Data;
+    }
+    ;
+
+    return aresStruct;
   }
 }

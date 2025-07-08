@@ -18,6 +18,7 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   private readonly AresVariableManager _variableManager;
   readonly AnalysisHelper _analysisHelper;
   readonly AnalysisRepo _analysisRepo;
+  readonly IAnalyzerRepo _analyzerRepo;
 
   internal CampaignComposer(AnalysisHelper analysisHelper,
     ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
@@ -27,9 +28,11 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
     IExecutionReporter executionReporter,
     IEnumerable<IExecutionSummaryHandler> resultHandlers,
     AnalysisRepo analysisRepo,
+    IAnalyzerRepo analyzerRepo,
     IEnumerable<INotificationHandler> notificationHandlers,
     AresVariableManager variableManager)
   {
+    _analyzerRepo = analyzerRepo;
     _analysisRepo = analysisRepo;
     _analysisHelper = analysisHelper;
     _variableManager = variableManager;
@@ -43,5 +46,5 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   }
 
   public ICampaignExecutor Compose(CampaignTemplate template)
-    => new CampaignExecutor(_experimentComposer, _startupScriptComposer, _closeoutScriptComposer, _planningHelper, _executionReporter, _analyzerManager, template, _resultHandlers, _notificationHandlers, _variableManager);
+    => new CampaignExecutor(_experimentComposer, _startupScriptComposer, _closeoutScriptComposer, _planningHelper, _executionReporter, _analysisHelper, template, _resultHandlers, _analysisRepo, _notificationHandlers, _analyzerRepo, _variableManager);
 }

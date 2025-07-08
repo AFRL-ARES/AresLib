@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+// This is ares simple struct containing keys and values whose type should correspond with and related AresDataSchema
+// This is similar to the built-in protobuf struct, but we do not allow nesting for simplicity and easier adherence
+// to the schema
+message AresStruct {
+	map<string, AresValue> fields = 1;
+}
+
+message AresValue {
+	oneof kind {
+		NullValue null_value = 1;
+		bool bool_value = 2;
+		string string_value = 3;
+		double number_value = 4;
+		StringList string_list_value = 5;
+		NumberList number_list_value = 6;
+		bytes bytes_value = 7;
+	}
+}
+
+enum NullValue {
+	NULL_VALUE = 0;
+}
+
+message StringList {
+	repeated string strings = 1;
+}
+
+message NumberList {
+	repeated double numbers = 2;
+}

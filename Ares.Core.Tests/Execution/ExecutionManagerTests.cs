@@ -44,11 +44,8 @@ internal class ExecutionManagerTests
   {
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());
-    var stopCondition = new Mock<IStopCondition>();
-    stopCondition.Setup(cond => cond.ShouldStop()).Returns(false);
     var executionManager = new ExecutionManager(Array.Empty<IStartCondition>(), _contextFactory, mockTemplateStore.Object, _campaignComposer);
-    executionManager.CampaignStopConditions.Add(stopCondition.Object);
-    Assert.DoesNotThrowAsync(executionManager.Start);
+    Assert.DoesNotThrowAsync(() => executionManager.Start(string.Empty, new List<string>()));
   }
 
   [Test]
@@ -66,11 +63,8 @@ internal class ExecutionManagerTests
     var mockTemplateStore = new Mock<IActiveCampaignTemplateStore>();
     mockTemplateStore.Setup(store => store.CampaignTemplate).Returns(new CampaignTemplate());
     var falseCondition = new Mock<IStartCondition>();
-    falseCondition.Setup(condition => condition.CanStart()).ReturnsAsync(new StartConditionResult(false));
-    var stopCondition = new Mock<IStopCondition>();
-    stopCondition.Setup(condition => condition.ShouldStop()).Returns(false);
+    falseCondition.Setup(condition => condition.CanStart()).Returns(Task.FromResult(new StartConditionResult(false)));
     var executionManager = new ExecutionManager(new[] { falseCondition.Object }, _contextFactory, mockTemplateStore.Object, _campaignComposer);
-    executionManager.CampaignStopConditions.Add(stopCondition.Object);
-    Assert.ThrowsAsync<InvalidOperationException>(executionManager.Start);
+    Assert.ThrowsAsync<InvalidOperationException>(() => executionManager.Start(string.Empty, new List<string>()));
   }
 }

@@ -21,4 +21,9 @@ public readonly struct ExecutionControlToken
   {
     _tokenSource.WaitForResume(ct);
   }
+
+  public void Pause()
+  {
+    _tokenSource.Pause();
+  }
 }

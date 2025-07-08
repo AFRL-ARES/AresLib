@@ -1,8 +1,9 @@
-﻿using Ares.Messaging;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Ares.Messaging;
+using Ares.Messaging.Analyzing;
 using AresPlanner;
 using Google.Protobuf.WellKnownTypes;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning.AresPlanner;
 
@@ -20,11 +21,11 @@ public class AresPlanner : IPlanner
     UniqueId = Guid.NewGuid().ToString();
   }
 
-  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> experimentAnalyses, CancellationToken cancellationToken)
+  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<CompletedExperiment> completedExperiments, IEnumerable<Analysis> _experimentAnalyses, CancellationToken cancellationToken)
   {
     var client = ClientStore.AresPlanningClient;
     var planRequest = new PlanRequest();
-    planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, experimentAnalyses)));
+    planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, completedExperiments)));
     var result = await client.PlanAsync(planRequest, deadline: DateTime.UtcNow.AddSeconds(30));
     return ToPlanResults(result, plannableParameters);
   }
@@ -54,13 +55,15 @@ public class AresPlanner : IPlanner
     return planResults;
   }
 
-  public PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<Analysis> experimentAnalyses)
+  public PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<CompletedExperiment> experimentHistory)
   {
-    var relevantInfo = experimentAnalyses.SelectMany(analysis => analysis.CompletedExperiment.Parameters.Where(param => param.PlanningMetadata.Name == metadata.Name));
-    var parameter = new PlanningParameter();
-    parameter.ParameterName = metadata.Name;
-    parameter.IsPlanned = true;
-    parameter.DataType = metadata.GetType().ToString();
+    var relevantInfo = experimentHistory.SelectMany(experiment => experiment.Parameters.Where(param => param.PlanningMetadata.Name == metadata.Name));
+    var parameter = new PlanningParameter
+    {
+      ParameterName = metadata.Name,
+      IsPlanned = true,
+      DataType = metadata.GetType().ToString()
+    };
     parameter.ParameterHistory.AddRange(relevantInfo.Select(param => double.Parse(param.Value.Value.Unpack<StringValue>().Value)));
 
     if(metadata.Constraints.Any())

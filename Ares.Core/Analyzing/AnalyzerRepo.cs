@@ -1,152 +1,38 @@
-﻿using Ares.Messaging;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 
 namespace Ares.Core.Analyzing;
 
 public class AnalyzerRepo : IAnalyzerRepo
 {
-  private readonly IList<IAnalyzer> _analyzerStore = new List<IAnalyzer>();
-  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
-  readonly AnalysisRepo _analyses;
+  private readonly IList<IAnalyzer> _analyzerStore = [];
 
   public AnalyzerRepo()
   {
-    _dbContextFactory = dbContextFactory;
     var manualAnalyzer = new NoneAnalyzer();
-    _ = RegisterAnalyzer(manualAnalyzer);
-  }
-
-  public T GetAnalyzer<T>(Version version) where T : IAnalyzer
-  {
-    var typedAnalyzers = _analyzerStore.OfType<T>().ToArray();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {typeof(T).Name} in the registry.");
-
-    var analyzer = typedAnalyzers.FirstOrDefault(p => p.Version == version);
-    if(analyzer is null)
-      throw new KeyNotFoundException($"Unable to find analyzer {typeof(T).Name} with version {version} in the registry.");
-
-    return analyzer;
+    RegisterAnalyzer(manualAnalyzer);
   }
 
   public IAnalyzer? GetAnalyzerByName(string name) => _analyzerStore.FirstOrDefault(analyzer => analyzer.Name == name);
 
-  public T GetAnalyzer<T>(string name, Version version) where T : IAnalyzer
-  {
-    var typedAnalyzers = _analyzerStore.OfType<T>().ToArray();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {typeof(T).Name} in the registry.");
-
-    var versionedAnalyzers = typedAnalyzers.Where(p => p.Name == name);
-    if(versionedAnalyzers is null)
-      throw new KeyNotFoundException($"Unable to find analyzer of type {typeof(T).Name} named {name} in the registry.");
-
-    var analyzer = versionedAnalyzers.FirstOrDefault(p => p.Version == version);
-    if(analyzer is null)
-      throw new KeyNotFoundException($"Unable to find analyzer of type {typeof(T).Name} named {name} with version {version} in the registry.");
-
-    return analyzer;
-  }
-
-  public IAnalyzer GetAnalyzerByType(string type)
-  {
-    var typedAnalyzers = _analyzerStore.Where(p => p.GetType().Name == type).ToList();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {type} in the registry.");
-
-    return typedAnalyzers.OrderByDescending(analyzer => analyzer.Version).First();
-  }
-
-  public IAnalyzer GetAnalyzer(string type, Version version)
-  {
-    var typedAnalyzers = _analyzerStore.Where(p => p.GetType().Name == type).ToArray();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {type} in the registry.");
-
-    var analyzer = typedAnalyzers.FirstOrDefault(p => p.Version == version);
-    if(analyzer is null)
-      throw new KeyNotFoundException($"Unable to find analyzer {type} with version {version} in the registry.");
-
-    return analyzer;
-  }
-
-  public IAnalyzer GetAnalyzer(string type, string name, Version version)
-  {
-    var typedAnalyzers = _analyzerStore.Where(p => p.GetType().Name == type).ToArray();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {type} in the registry.");
-
-    var versionedAnalyzers = typedAnalyzers.Where(p => p.Name == name);
-    if(versionedAnalyzers is null)
-      throw new KeyNotFoundException($"Unable to find analyzer of type {type} named {name} in the registry.");
-
-    var analyzer = versionedAnalyzers.FirstOrDefault(p => p.Version == version);
-    if(analyzer is null)
-      throw new KeyNotFoundException($"Unable to find analyzer of type {type} named {name} with version {version} in the registry.");
-
-    return analyzer;
-  }
-
-  public IAnalyzer GetAnalyzer(string type, string name)
-  {
-    var typedAnalyzers = _analyzerStore.Where(p => p.GetType().Name == type).ToArray();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {type} in the registry.");
-
-    var versionedAnalyzers = typedAnalyzers.Where(p => p.Name == name).ToList();
-    if(versionedAnalyzers is null)
-      throw new KeyNotFoundException($"Unable to find analyzer of type {type} named {name} in the registry.");
-
-
-    return versionedAnalyzers.OrderByDescending(analyzer => analyzer.Version).First();
-  }
-
-  public IAnalyzer GetAnalyzer(AnalyzerInfo info)
-  {
-    if(!string.IsNullOrEmpty(info.Type) && string.IsNullOrEmpty(info.Name) && string.IsNullOrEmpty(info.Version))
-      return GetAnalyzer(info.Type);
-
-    if(!string.IsNullOrEmpty(info.Type) && string.IsNullOrEmpty(info.Name) && !string.IsNullOrEmpty(info.Version))
-      return GetAnalyzer(info.Type, Version.Parse(info.Version));
-
-    if(!string.IsNullOrEmpty(info.Type) && !string.IsNullOrEmpty(info.Name) && !string.IsNullOrEmpty(info.Version))
-      return GetAnalyzer(info.Type, info.Name, Version.Parse(info.Version));
-
-    if(!string.IsNullOrEmpty(info.Type) && !string.IsNullOrEmpty(info.Name) && string.IsNullOrEmpty(info.Version))
-      return GetAnalyzer(info.Type, info.Name);
-
-    throw new KeyNotFoundException($"Unable to find an analyzer with the description: {info}");
-  }
-
-  public T GetAnalyzer<T>() where T : IAnalyzer
-  {
-    var typedAnalyzers = _analyzerStore.OfType<T>().ToList();
-    if(!typedAnalyzers.Any())
-      throw new KeyNotFoundException($"Unable to find any analyzers of type {typeof(T).Name} in the registry.");
-
-    return typedAnalyzers.OrderByDescending(analyzer => analyzer.Version).First();
-  }
-
-  public Task RegisterAnalyzer(IAnalyzer analyzer)
+  public void RegisterAnalyzer(IAnalyzer analyzer)
   {
     var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
     if(analyzerExists)
       throw new InvalidOperationException($"Analyzer {analyzer.Name}{analyzer.Version} of type {analyzer.GetType().Name} already registered");
 
     _analyzerStore.Add(analyzer);
-    return Task.CompletedTask;
   }
 
-  public Task UnregisterAnalyzer(IAnalyzer analyzer)
+  public void UnregisterAnalyzer(IAnalyzer analyzer)
   {
     var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
     if(!analyzerExists)
-      return Task.CompletedTask;
+      return;
 
     _analyzerStore.Remove(analyzer);
-    return Task.CompletedTask;
   }
+
+  public IAnalyzer? GetAnalyzerById(string id) => _analyzerStore.FirstOrDefault(analyzer => analyzer.UniqueId == id);
 
   public IEnumerable<IAnalyzer> AvailableAnalyzers => new ReadOnlyCollection<IAnalyzer>(_analyzerStore);
 }

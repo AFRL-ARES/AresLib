@@ -1,5 +1,4 @@
 ﻿using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

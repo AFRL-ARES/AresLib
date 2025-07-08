@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package ares.messaging;
+
+enum AresDataType {
+	UNSPECIFIED_TYPE = 0;
+	NULL = 1;
+	BOOLEAN = 2;
+	STRING = 3;
+	NUMBER = 4;
+	STRING_LIST = 5;
+	NUMBER_LIST = 6;
+	BYTE_ARRAY = 7;
+}

@@ -1,80 +1,8 @@
-﻿using Ares.Messaging;
-
-namespace Ares.Core.Analyzing;
+﻿namespace Ares.Core.Analyzing;
 
 public interface IAnalyzerRepo
 {
   IEnumerable<IAnalyzer> AvailableAnalyzers { get; }
-
-  /// <summary>
-  /// Gets a analyzer from the registry
-  /// </summary>
-  /// <typeparam name="T">Type of analyzer that implements IAnalyzer</typeparam>
-  /// <returns>Analyzer of the given type</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  T GetAnalyzer<T>() where T : IAnalyzer;
-
-  /// <summary>
-  /// Gets a analyzer with a specific version from the registry
-  /// </summary>
-  /// <param name="version">Specific version of the analyzer type to get</param>
-  /// <typeparam name="T">Type of analyzer that implements IAnalyzer</typeparam>
-  /// <returns>Analyzer of the given type and version</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  T GetAnalyzer<T>(Version version) where T : IAnalyzer;
-
-  /// <summary>
-  /// Gets a named analyzer with a specific version from the registry
-  /// </summary>
-  /// <param name="name">Name of the analyzer</param>
-  /// <param name="version">Specific version of the analyzer type to get</param>
-  /// <typeparam name="T">Type of analyzer that implements IAnalyzer</typeparam>
-  /// <returns>Analyzer of the given type, version, and name</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  T GetAnalyzer<T>(string name, Version version) where T : IAnalyzer;
-
-  /// <summary>
-  /// Gets a analyzer from the registry
-  /// </summary>
-  /// <param name="type">The type name of the analyzer</param>
-  /// <returns>Analyzer of the given type</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  IAnalyzer GetAnalyzerByType(string type);
-
-  /// <summary>
-  /// Gets a analyzer with a specific version from the registry
-  /// </summary>
-  /// <param name="type">The type name of the analyzer</param>
-  /// <param name="version">Specific version of the analyzer type to get</param>
-  /// <returns>Analyzer of the given type and version</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  IAnalyzer GetAnalyzer(string type, Version version);
-
-  /// <summary>
-  /// Gets a named analyzer with a specific version from the registry
-  /// </summary>
-  /// <param name="type">The type name of the analyzer</param>
-  /// <param name="name">Name of the analyzer</param>
-  /// <param name="version">Specific version of the analyzer type to get</param>
-  /// <returns>Analyzer of the given type, version, and name</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  IAnalyzer GetAnalyzer(string type, string name, Version version);
-
-  /// <summary>
-  /// Gets a named analyzer of the latest version from the registry
-  /// </summary>
-  /// <param name="type">The type name of the analyzer</param>
-  /// <param name="name">Name of the analyzer</param>
-  /// <returns>Analyzer of the given type and name</returns>
-  /// <exception cref="KeyNotFoundException">Thrown if the analyzer is not found</exception>
-  IAnalyzer GetAnalyzer(string type, string name);
-
-  /// <summary>
-  /// Gets a named analyzer based on the given <see cref="AnalyzerInfo" /> object
-  /// </summary>
-  /// <param name="info"></param>
-  /// <returns></returns>
-  IAnalyzer? GetAnalyzer(AnalyzerInfo info);
 
   /// <summary>
   /// Gets a named analyzer based on the given analyzer name/> object
@@ -84,8 +12,22 @@ public interface IAnalyzerRepo
   IAnalyzer? GetAnalyzerByName(string name);
 
   /// <summary>
+  /// Gets a named analyzer based on the given analyzer id/> object
+  /// </summary>
+  /// <param name="id">The id of the analyzer requested</param>
+  /// <returns>The analyzer or null if none is found </returns>
+  IAnalyzer? GetAnalyzerById(string id);
+
+
+  /// <summary>
   /// Adds an analyzer to the registry so that it can later be used by experiment execution
   /// </summary>
   /// <param name="analyzer">The analyzer to register</param>
   void RegisterAnalyzer(IAnalyzer analyzer);
+
+  /// <summary>
+  /// Removed an analyzer from the registry
+  /// </summary>
+  /// <param name="analyzer">The analyzer to remove</param>
+  void UnregisterAnalyzer(IAnalyzer analyzer);
 }
