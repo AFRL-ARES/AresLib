@@ -32,9 +32,9 @@ public interface IPlanner
   IList<Planner> AvailablePlanners { get; }
 
   /// <summary>
-  /// A list of settings custom to this planner
+  /// A list of settings custom to this adapter
   /// </summary>
-  IDictionary<string, List<PlannerSetting>> PlannerSettings { get; }
+  IList<PlannerSetting> AdapterSettings { get; }
 
   /// <summary>
   /// Id used to uniquely identify this instance of the planner

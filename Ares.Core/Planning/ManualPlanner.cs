@@ -144,5 +144,5 @@ public class ManualPlanner : IPlanner
   public string Address { get; set; } = string.Empty;
   public string UniqueId { get; set; } = new Guid().ToString();
   public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
-  public IDictionary<string, List<PlannerSetting>> PlannerSettings { get; } = new Dictionary<string, List<PlannerSetting>>();
+  public IList<PlannerSetting> AdapterSettings { get; } = new List<PlannerSetting>();
 }

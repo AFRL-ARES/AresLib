@@ -2,7 +2,7 @@
 
 package ares.messaging.planning;
 
-import "PlannerInfo.proto";
+import "PlannerAdapterInfo.proto";
 import "Planning/ManualPlanner.proto";
 import "Planning/ares_planner.proto";
 import "Planning/PlannerStatus.proto";
@@ -27,7 +27,7 @@ service AresPlanning {
 }
 
 message GetAllPlannersResponse {
-	repeated PlannerInfo planners = 1; // gets all currently registered planners
+	repeated PlannerAdapterInfo planners = 1; // gets all currently registered planners
 }
 
 message CapabilitiesRequest {
@@ -52,10 +52,16 @@ message PlannerSettingsResponse {
 }
 
 message CapabilitiesResponse {
-	repeated string planner_capability = 1;
+	repeated PlannerOption planner_capability = 1;
 }
 
 message GenericPlanner {
 	string name = 1;
 	google.protobuf.StringValue address = 2;
+}
+
+message PlannerOption {
+	string name = 1;
+	string description = 2;
+	string version = 3;
 }

@@ -99,14 +99,10 @@ public class AresPlanner : IPlanner
     }
 
     AvailablePlanners.Clear();
-    PlannerSettings.Clear();
+    AdapterSettings.Clear();
 
     AvailablePlanners.AddRange(response.AvailablePlanners);
-    foreach(var planner in response.AvailablePlanners)
-    {
-      if(planner.Settings.Any())
-        PlannerSettings.Add(planner.PlannerName, planner.Settings.ToList());
-    }
+    AdapterSettings.AddRange(response.AdapterSettings);
 
     Timeout = TimeSpan.FromSeconds(response.TimeoutSeconds);
     await Task.Delay(TimeSpan.FromSeconds(0.5));
@@ -118,7 +114,7 @@ public class AresPlanner : IPlanner
   public Version Version { get; set; } = new Version(1, 0);
   public PlannerStatus Status { get; protected set; }
   public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
-  public IDictionary<string, List<PlannerSetting>> PlannerSettings { get; } = new Dictionary<string, List<PlannerSetting>>();
+  public IList<PlannerSetting> AdapterSettings { get; } = new List<PlannerSetting>();
   public string Address { get; set; }
   public string UniqueId { get; set; }
   public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);

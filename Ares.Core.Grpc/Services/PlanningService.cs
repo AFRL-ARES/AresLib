@@ -30,7 +30,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
   public override Task<GetAllPlannersResponse> GetAllPlanners(Empty request, ServerCallContext context)
   {
     var response = new GetAllPlannersResponse();
-    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerInfo { AdapterName = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name, Address = planner.Address });
+    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerAdapterInfo { AdapterName = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name, Address = planner.Address });
     response.Planners.AddRange(planners);
     return Task.FromResult(response);
   }
@@ -41,7 +41,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
     var response = new CapabilitiesResponse();
 
     if(planner is not null)
-      response.PlannerCapability.AddRange(planner.AvailablePlanners.Select(p => p.PlannerName));
+      response.PlannerCapability.AddRange(planner.AvailablePlanners.Select(p => new PlannerOption() { Name = p.PlannerName, Description = p.Description, Version = p.Version }));
 
     return Task.FromResult(response);
   }
@@ -75,11 +75,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
     if(planner is null)
       return Task.FromResult(response);
 
-    var found = planner.PlannerSettings.TryGetValue(request.PlannerName, out var settings);
-
-    if(found)
-      response.Settings.AddRange(settings);
-
+    response.Settings.AddRange(planner.AdapterSettings);
     return Task.FromResult(response);
   }
 
@@ -166,7 +162,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
   {
     try
     {
-      var info = new PlannerInfo()
+      var info = new PlannerAdapterInfo()
       {
         AdapterName = planner.Name,
         Address = planner.Address,

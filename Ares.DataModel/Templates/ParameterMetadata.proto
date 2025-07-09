@@ -15,6 +15,6 @@ message ParameterMetadata {
 	bool not_plannable = 6; // Set based on whether or not the parameter is meant to be plannable by external planner
 	bool use_default = 7; // Set based on whether or not the parameter should utilize its default value
 	string planner_name = 8; // Name descriptor of the planner used to plan for this parameter 
-	string adapter_name = 9; // Name descriptor of the planning adapter used for this parameter
+	string planner_description = 9 ; // Descriptor of the planner used
 	google.protobuf.Any extra_info = 10; //It's a pain
 	}
