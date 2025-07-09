@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using Ares.Core.Exceptions;
 
 namespace Ares.Core.Analyzing;
 
@@ -12,7 +13,16 @@ public class AnalyzerRepo : IAnalyzerRepo
     RegisterAnalyzer(manualAnalyzer);
   }
 
-  public IAnalyzer? GetAnalyzerByName(string name) => _analyzerStore.FirstOrDefault(analyzer => analyzer.Name == name);
+  public IAnalyzer GetAnalyzerByName(string name)
+  {
+    var analyzer = _analyzerStore.FirstOrDefault(analyzer => analyzer.Name == name);
+    if(analyzer is null)
+    {
+      throw new ItemNotFoundException(name, typeof(IAnalyzer));
+    }
+
+    return analyzer;
+  }
 
   public void RegisterAnalyzer(IAnalyzer analyzer)
   {
@@ -32,7 +42,27 @@ public class AnalyzerRepo : IAnalyzerRepo
     _analyzerStore.Remove(analyzer);
   }
 
-  public IAnalyzer? GetAnalyzerById(string id) => _analyzerStore.FirstOrDefault(analyzer => analyzer.UniqueId == id);
+  public IAnalyzer GetAnalyzerById(string id)
+  {
+    var analyzer = _analyzerStore.FirstOrDefault(analyzer => analyzer.UniqueId == id);
+    if(analyzer is null)
+    {
+      throw new ItemNotFoundException(id, typeof(IAnalyzer));
+    }
+
+    return analyzer;
+  }
+
+  public void UnregisterAnalyzer(string analyzerId)
+  {
+    var analyzer = _analyzerStore.FirstOrDefault(analyzer => analyzer.UniqueId == analyzerId);
+    if(analyzer is null)
+    {
+      return;
+    }
+
+    _analyzerStore.Remove(analyzer);
+  }
 
   public IEnumerable<IAnalyzer> AvailableAnalyzers => new ReadOnlyCollection<IAnalyzer>(_analyzerStore);
 }

@@ -1,38 +1,40 @@
 ﻿using Ares.Core.Analyzing;
 using Ares.Messaging;
-using Ares.Test;
+using Ares.Messaging.Analyzing;
 
 namespace Ares.Core.Tests.Data.Analyzer;
 
 public class TestReplyAnalyzer : AnalyzerBase
 {
-  public TestReplyAnalyzer() : base("Test Analyzer", new Version(1, 0))
+  public TestReplyAnalyzer() : base("Test Analyzer", "TestAnalyzer", "1.0")
   {
   }
 
-  public override Task<RequestedAnalysisData[]> GetSupportedInputs()
+  public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
   {
-    throw new NotImplementedException();
-  }
-
-  protected override Task<Analysis> AnalyzeInputs(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
-  {
-    var firstData = inputs.First().Data;
-    var reply = firstData.Unpack<TestReply>();
-
-    var analysis = new Analysis
-    {
-      Analyzer = new AnalyzerInfo
-      {
-        Name = Name,
-        Type = nameof(TestReplyAnalyzer),
-        UniqueId = Guid.NewGuid().ToString(),
-        Version = Version.ToString()
-      },
-      Result = reply.Number,
-      UniqueId = Guid.NewGuid().ToString()
-    };
+    var firstData = inputs.Fields["TestReply"];
+    var analysis = new Analysis() { Result = (float)firstData.NumberValue, Success = true };
 
     return Task.FromResult(analysis);
+  }
+
+  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken)
+  {
+    return Analyze(inputs, cancellationToken);
+  }
+
+  public override Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken)
+  {
+    return Task.FromResult(new AnalyzerCapabilities());
+  }
+
+  public override Task<AresDataSchema> GetParameters(CancellationToken cancellationToken)
+  {
+    var schema = new AresDataSchema();
+    var testReplySchema = new SchemaEntry() { Optional = false, Type = AresDataType.Number };
+
+    schema.Fields["TestReply"] = testReplySchema;
+
+    return Task.FromResult(schema);
   }
 }

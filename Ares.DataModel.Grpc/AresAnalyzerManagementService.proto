@@ -11,7 +11,7 @@ import "google/protobuf/wrappers.proto";
 service AresAnalyzerManagementService {
 	rpc GetAllAnalyzers(google.protobuf.Empty) returns (GetAllAnalyzersResponse);
 	rpc AddRemoteAnalyzer(AddRemoteAnalyzerRequest) returns (AddRemoteAnalyzerResponse);
-	rpc UpdateRemoteAnalyzer(UpdateRemoteAnalyzerRequest) returns (google.protobuf.Empty);
+	rpc UpdateRemoteAnalyzer(UpdateRemoteAnalyzerRequest) returns (UpdateRemoteAnalyzerResponse);
 	rpc RemoveRemoteAnalyzer(RemoveRemoteAnalyzerRequest) returns (google.protobuf.Empty);
 	rpc GetState(AnalyzerStateRequest) returns (AnalyzerStateResponse);
 	rpc GetInfo(AnalyzerInfoRequest) returns (AnalyzerInfoResponse);
@@ -27,7 +27,9 @@ message AddRemoteAnalyzerRequest {
 }
 
 message AddRemoteAnalyzerResponse {
-	string analyzer_id = 1;
+	google.protobuf.StringValue analyzer_id = 1;
+	bool success = 2;
+	google.protobuf.StringValue error_message = 3;
 }
 
 message UpdateRemoteAnalyzerRequest {
@@ -38,8 +40,15 @@ message UpdateRemoteAnalyzerRequest {
 	google.protobuf.StringValue url = 3;
 }
 
+message UpdateRemoteAnalyzerResponse {
+	bool success = 1;
+	google.protobuf.StringValue error_message = 2;
+}
+
 message RemoveRemoteAnalyzerRequest {
-	string analyzer_id = 1;
+	google.protobuf.StringValue analyzer_id = 1;
+	bool success = 2;
+	google.protobuf.StringValue error_message = 3;
 }
 
 message AnalyzerStateRequest {

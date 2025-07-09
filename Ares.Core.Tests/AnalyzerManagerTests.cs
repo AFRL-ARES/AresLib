@@ -1,7 +1,6 @@
 ﻿using Ares.Core.Analyzing;
-using Ares.Core.Validation;
 using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
+using Ares.Messaging.Analyzing;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
@@ -16,61 +15,31 @@ internal class AnalyzerManagerTests
   public void SetUp()
   {
     var dbCtxFactory = new Mock<IDbContextFactory<CoreDatabaseContext>>();
-    _analyzerRepo = new AnalyzerRepo(dbCtxFactory.Object);
+    _analyzerRepo = new AnalyzerRepo();
   }
 
-  [Test]
-  public void Manager_Should_Get_Typed_Analyzer_By_Version()
+  private class TempAnalyzer : AnalyzerBase
   {
-    var analyzer = new TempAnalyzer("Test", new Version(1, 0));
-    _analyzerRepo.RegisterAnalyzer(analyzer);
-    var returnedAnalyzer = _analyzerRepo.GetAnalyzer<TempAnalyzer>(new Version(1, 0));
-    Assert.That(analyzer, Is.SameAs(returnedAnalyzer));
-  }
-
-  [Test]
-  public void Manager_Should_Throw_When_No_Analyzer_By_Version()
-  {
-    Assert.Throws<KeyNotFoundException>(() => _analyzerRepo.GetAnalyzer<TempAnalyzer>(new Version(1, 0)));
-  }
-
-  private class TempAnalyzer : IAnalyzer
-  {
-    public TempAnalyzer(string name, Version version)
+    public TempAnalyzer(string name, string version) : base(name, "TempAnalyzer", version)
     {
-      Name = name;
-      Version = version;
     }
 
-    public string Name { get; set; }
-    public Version Version { get; set; }
-    public string Address { get; set; }
-    public string UniqueId { get; set; } = new Guid().ToString();
-    public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
-    public AnalyzerState AnalyzerState { get; }
-
-    public bool InputsSupported(string fullTypeName)
-      => true;
-
-    public Task<Analysis> Analyze(ExperimentResult result, Any input, CancellationToken cancellationToken)
-      => throw new NotImplementedException();
-
-    public Task<ValidationResult> ValidateInput(AnalyzerInputDescription validationRequest)
+    public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
     }
 
-    public Task<ValidationResult> ValidateInputs(IEnumerable<AnalyzerInputDescription> validationRequests)
+    public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
     }
 
-    public Task<RequestedAnalysisData[]> GetSupportedInputs()
+    public override Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
     }
 
-    public Task<Analysis> Analyze(ExperimentExecutionSummary summary, IEnumerable<AnalyzerInput> inputs, CancellationToken cancellationToken)
+    public override Task<AresDataSchema> GetParameters(CancellationToken cancellationToken)
     {
       throw new NotImplementedException();
     }

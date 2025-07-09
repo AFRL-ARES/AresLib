@@ -5,7 +5,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
 
 namespace Ares.Core.Analyzing;
-internal class RemoteAnalyzer(string name, Uri address) : AnalyzerBase(name, "", "_._._")
+public class RemoteAnalyzer(string name, Uri address) : AnalyzerBase(name, "", "_._._")
 {
   private readonly GrpcChannel _channel = GrpcChannel.ForAddress(address);
 

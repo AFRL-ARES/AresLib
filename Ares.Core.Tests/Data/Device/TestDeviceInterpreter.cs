@@ -32,8 +32,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
           return Task.FromResult(result);
         }
 
-        reply.Number = floatValue;
-        result.Result = Any.Pack(reply);
+        result.Result = new AresValue { NumberValue = floatValue };
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();
         return Task.FromResult(result);
@@ -59,7 +58,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
       OutputMetadata = new OutputMetadata
       {
         UniqueId = Guid.NewGuid().ToString(),
-        FullName = typeof(TestReply).FullName,
+        DataType = AresDataType.Number,
         Description = "A test response for the test command",
         Index = idx
       }

@@ -2,104 +2,129 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Ares.Core.Analyzing;
+using Ares.Core.Exceptions;
 using Ares.Messaging;
+using Ares.Messaging.Analyzing;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
-using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Grpc.Services;
-public class AnalyzerService : AresAnalyzerManagementService.AresAnalyzerManagementServiceBase
-{
-  private IAnalyzerRepo _analyzerRepo;
-  private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
 
-  public AnalyzerService(IAnalyzerRepo analyzerManager, IDbContextFactory<CoreDatabaseContext> coreContextFactory)
+public class AnalyzerService(IAnalyzerRepo analyzerRepo) : AresAnalyzerManagementService.AresAnalyzerManagementServiceBase
+{
+  private IAnalyzerRepo _analyzerRepo = analyzerRepo;
+
+  public override async Task<GetAllAnalyzersResponse> GetAllAnalyzers(Empty request, ServerCallContext context)
   {
-    _analyzerRepo = analyzerManager;
-    _coreContextFactory = coreContextFactory;
+    var response = new GetAllAnalyzersResponse();
+    var availableAnalyzers = _analyzerRepo.AvailableAnalyzers;
+    var infos = await Task.WhenAll(availableAnalyzers.Select(GetInfo));
+    response.Analyzers.AddRange(infos);
+
+    return response;
   }
 
-  public override Task<GetAvailableAnalyzersResponse> GetAvailableAnalyzers(Empty request, ServerCallContext context)
+  private async Task<AnalyzerInfo> GetInfo(IAnalyzer analyzer)
   {
-    var response = new GetAvailableAnalyzersResponse();
-    var availableAnalyzers = _analyzerRepo.AvailableAnalyzers;
-
-    foreach(var analyzer in availableAnalyzers)
+    var info = new AnalyzerInfo
     {
-      var protoAnalzyer = new GenericAnalyzer();
-      protoAnalzyer.Name = analyzer.Name;
-      protoAnalzyer.Address = analyzer.Address;
-      response.Analyzers.Add(protoAnalzyer);
+      Name = analyzer.Name,
+      Version = analyzer.Version,
+      UniqueId = analyzer.UniqueId,
+      Capabilities = await analyzer.GetCapabilities(),
+      Location = analyzer is RemoteAnalyzer ? AnalyzerLocation.Remote : AnalyzerLocation.Internal
+    };
+
+    return info;
+  }
+
+  public override Task<AddRemoteAnalyzerResponse> AddRemoteAnalyzer(
+    AddRemoteAnalyzerRequest request,
+    ServerCallContext context)
+  {
+    var response = new AddRemoteAnalyzerResponse();
+    var uriValid = Uri.TryCreate(request.Url, UriKind.Absolute, out var uri);
+    if(!uriValid || uri is null)
+    {
+      response.Success = false;
+      response.ErrorMessage = $"Failed to add analyzer due to the url {request.Url} being invalid";
+      return Task.FromResult(response);
     }
+
+    var analyzer = new RemoteAnalyzer(request.Name, uri);
+    _analyzerRepo.RegisterAnalyzer(analyzer);
+
+    response.Success = true;
+    response.AnalyzerId = analyzer.UniqueId;
 
     return Task.FromResult(response);
   }
 
-  public override async Task<Empty> UpdateAnalzyer(GenericAnalyzer request, ServerCallContext context)
+  public override Task<UpdateRemoteAnalyzerResponse> UpdateRemoteAnalyzer(
+    UpdateRemoteAnalyzerRequest request,
+    ServerCallContext context)
   {
-    var existingAnalyzer = _analyzerRepo.GetAnalyzerByName(request.Name);
-    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-
-    if(existingAnalyzer is null || existingAnalyzer.Name == request.Name && existingAnalyzer.Address == request.Address)
-      return new Empty();
-
-    _analyzerRepo.UnregisterAnalyzer(existingAnalyzer);
-
-    var updatedAnalyzer = new AresAnalyzer.AresAnalyzer(request.Name, new Uri(request.Address));
-    updatedAnalyzer.Init();
-    await _analyzerRepo.RegisterAnalyzer(updatedAnalyzer);
-    await RemoveAnalyzerFromDb(existingAnalyzer.Name, context);
-    await AddAnalyzerToDb(updatedAnalyzer, context);
-    return new Empty();
-  }
-
-  public override async Task<Empty> AddAnalyzer(GenericAnalyzer request, ServerCallContext context)
-  {
-    if(_analyzerRepo.AvailableAnalyzers.Any(a => a.Name == request.Name))
-      return new Empty();
-
-    var uri = new Uri(request.Address);
-    var analyzer = new AresAnalyzer.AresAnalyzer(request.Name, uri);
-    analyzer.Init();
-    await _analyzerRepo.RegisterAnalyzer(analyzer);
-    await AddAnalyzerToDb(analyzer, context);
-    return new Empty();
-  }
-
-  public override async Task<Empty> RemoveAnalyzer(RemoveAnalyzerRequest request, ServerCallContext context)
-  {
-    var analyzer = _analyzerRepo.GetAnalyzerByName(request.Name);
-
-    if(analyzer is null)
-      return new Empty();
-
-    _analyzerRepo.UnregisterAnalyzer(analyzer);
-    await RemoveAnalyzerFromDb(request.Name, context);
-    return new Empty();
-  }
-
-  private async Task AddAnalyzerToDb(AresAnalyzer.AresAnalyzer analyzer, ServerCallContext context)
-  {
-    var info = new AnalyzerInfo()
+    try
     {
-      Name = analyzer.Name,
-      Address = analyzer.Address,
-      Type = analyzer.GetType().ToString(),
-      Version = analyzer.Version.ToString(),
-      UniqueId = analyzer.UniqueId
-    };
-
-    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    await dbContext.Analyzers.AddAsync(info);
-    await dbContext.SaveChangesAsync(context.CancellationToken);
+      var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+      var response = UpdateAnalyzer(analyzer, request);
+      response.Success = true;
+      return Task.FromResult(response);
+    }
+    catch(ItemNotFoundException e)
+    {
+      var response = new UpdateRemoteAnalyzerResponse();
+      response.Success = false;
+      response.ErrorMessage = e.Message;
+      return Task.FromResult(response);
+    }
   }
 
-  private async Task RemoveAnalyzerFromDb(string name, ServerCallContext context)
+  private static UpdateRemoteAnalyzerResponse UpdateAnalyzer(IAnalyzer analyzer, UpdateRemoteAnalyzerRequest request)
   {
-    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
-    if(oldInfo != null)
-      dbContext.Analyzers.Remove(oldInfo);
-    await dbContext.SaveChangesAsync(context.CancellationToken);
+    var response = new UpdateRemoteAnalyzerResponse();
+    response.Success = true;
+    if(!string.IsNullOrEmpty(request.Name))
+    {
+      analyzer.Name = request.Name;
+    }
+
+    if(!string.IsNullOrEmpty(request.Url))
+    {
+      var uriValid = Uri.TryCreate(request.Url, UriKind.Absolute, out var uri);
+      if(!uriValid || uri is null)
+      {
+        response.Success = false;
+        response.ErrorMessage = $"Failed to update analyzer URL {request.Url} due to it being invalid";
+      }
+    }
+
+    return response;
+  }
+
+  public override Task<Empty> RemoveRemoteAnalyzer(RemoveRemoteAnalyzerRequest request, ServerCallContext context)
+  {
+    _analyzerRepo.UnregisterAnalyzer(request.AnalyzerId);
+
+    return Task.FromResult(new Empty());
+  }
+
+  public override Task<AnalyzerStateResponse> GetState(AnalyzerStateRequest request, ServerCallContext context)
+  {
+    var response = new AnalyzerStateResponse();
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+
+    response.State = analyzer.AnalyzerState;
+
+    return Task.FromResult(response);
+  }
+
+  public override async Task<AnalyzerInfoResponse> GetInfo(AnalyzerInfoRequest request, ServerCallContext context)
+  {
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+    var info = await GetInfo(analyzer);
+    var response = new AnalyzerInfoResponse { Info = info };
+
+    return response;
   }
 }

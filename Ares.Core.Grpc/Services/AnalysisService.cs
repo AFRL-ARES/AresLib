@@ -1,13 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Ares.Core.Analyzing;
 using Ares.Messaging;
 using Grpc.Core;
 
 namespace Ares.Core.Grpc.Services;
 
-class AnalysisService : AresAnalysis.AresAnalysisBase
+class AnalysisService : AresAnalysisService.AresAnalysisServiceBase
 {
   private readonly IAnalyzerRepo _analyzerRepo;
 
@@ -16,18 +14,31 @@ class AnalysisService : AresAnalysis.AresAnalysisBase
     _analyzerRepo = analyzerRepo;
   }
 
-  public override Task<GetAllAnalyzersResponse> GetAllAnalyzers(
-    GetAllAnalyzersRequest request,
-    ServerCallContext context)
+  public override async Task<AnalyzerParametersResponse> GetAnalyzerParameters(AnalyzerParametersRequest request, ServerCallContext context)
   {
-    var response = new GetAllAnalyzersResponse();
-    var analyzers = _analyzerRepo.AvailableAnalyzers.Select(analyzer => new AnalyzerInfo { Name = analyzer.Name, Type = analyzer.GetType().Name, Version = analyzer.Version.ToString(), UniqueId = Guid.NewGuid().ToString() });
-    response.Analyzers.AddRange(analyzers);
-    return Task.FromResult(response);
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+
+    var analysisSchema = await analyzer.GetParameters();
+    var response = new AnalyzerParametersResponse
+    {
+      AnalysisSchema = analysisSchema
+    };
+
+    return response;
   }
 
-  public override Task<RequestedAnalysisDataResponse> GetRequestedAnalysisData(RequestedAnalysisDataRequest request, ServerCallContext context)
+  public override async Task<ValidationResult> ValidateInputs(InputValidationRequest request, ServerCallContext context)
   {
-    return base.GetRequestedAnalysisData(request, context);
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+
+    var validation = await analyzer.ValidateInputs(request.InputSchema);
+
+    var validationResult = new ValidationResult
+    {
+      Success = validation.Success
+    };
+    validationResult.Messages.AddRange(validation.Messages);
+
+    return validationResult;
   }
 }

@@ -14,7 +14,7 @@ service AresValidation {
 }
 
 message AnalyzerValidationRequest {
-	analyzing.AnalyzerInfo analyzer = 1;
+	string analyzer_id = 1;
 	ExperimentTemplate experiment_template = 2;
 }
 

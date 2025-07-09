@@ -24,12 +24,12 @@ public class ValidationService : AresValidation.AresValidationBase
 
   public override async Task<ValidationResponse> ValidateAnalyzerSelection(AnalyzerValidationRequest request, ServerCallContext context)
   {
-    var analyzer = _analyzerRepo.GetAnalyzer(request.Analyzer);
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
     if(request.ExperimentTemplate is null)
       throw new InvalidOperationException("No command metadata specified");
 
     if(analyzer is null)
-      throw new InvalidOperationException($"Could not find analyzer {request.Analyzer} to validate {request.ExperimentTemplate.Name}");
+      throw new InvalidOperationException($"Could not find analyzer with id {request.AnalyzerId} to validate {request.ExperimentTemplate.Name}");
 
     var response = new ValidationResponse();
 

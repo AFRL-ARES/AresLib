@@ -11,8 +11,6 @@ using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
-using Ares.Device;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace Ares.Core.Tests.Execution;
@@ -30,12 +28,14 @@ internal class CampaignExecutorTests
   private AnalysisHelper _analysisHelper;
   private AnalysisRepo _analysisRepo;
 
+  private IAnalyzer _replyAnalyzer;
+
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
     _analyzerRepo = new AnalyzerRepo();
-    var replyAnalyzer = new TestReplyAnalyzer();
-    _analyzerRepo.RegisterAnalyzer(replyAnalyzer);
+    _replyAnalyzer = new TestReplyAnalyzer();
+    _analyzerRepo.RegisterAnalyzer(_replyAnalyzer);
     _analysisRepo = new AnalysisRepo();
     _analysisHelper = new AnalysisHelper(_analyzerRepo);
     _executionReportStore = new ExecutionReportStore();
@@ -55,13 +55,13 @@ internal class CampaignExecutorTests
     var startupScriptComposer = new StartupComposer(stepComposer);
     var closeoutScriptComposer = new CloseoutComposer(stepComposer);
 
-    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, Array.Empty<INotificationHandler>(), _analyzerRepo, _variableManager);
+    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, _analyzerRepo, Array.Empty<INotificationHandler>(), _variableManager);
   }
 
   [SetUp]
   public void SetUp()
   {
-    _campaignExecutor = _campaignComposer.Compose(TestCampaignProvider.GetSampleCampaignTemplate());
+    _campaignExecutor = _campaignComposer.Compose(TestCampaignProvider.GetSampleCampaignTemplate(_replyAnalyzer));
   }
 
   [Test]

@@ -12,7 +12,7 @@ namespace Ares.Core.Analyzing;
 /// </summary>
 public abstract class AnalyzerBase : IAnalyzer
 {
-  protected readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.Disconnected);
+  protected readonly ISubject<AnalyzerState> _analyzerStateSubject = new BehaviorSubject<AnalyzerState>(AnalyzerState.UnspecifiedState);
 
   public AnalyzerBase(string name, string type, string version)
   {

@@ -1,5 +1,4 @@
 ﻿using Ares.Core.Analyzing;
-using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
 using Ares.Messaging;
 using Ares.Test;
@@ -9,10 +8,9 @@ namespace Ares.Core.Tests.Data;
 
 internal class TestCampaignProvider
 {
-  public static CampaignTemplate GetSampleCampaignTemplate()
+  public static CampaignTemplate GetSampleCampaignTemplate(IAnalyzer analyzer)
   {
     var device = new TestDevice();
-    var analyzer = new TestReplyAnalyzer();
     var commandTemplate1 = GetCommandTemplate(0, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "10", 0));
     var commandTemplate2 = GetCommandTemplate(1, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "20", 0));
     var commandTemplate3 = GetCommandTemplate(2, GetCommandMetadata(TestDeviceCommand.Record.ToString(), device.Name, GetOutputMetadata(typeof(TestReply).FullName)), GetParameter(TestDeviceCommandParameter.ReplyParameter.ToString(), "30", 0));
@@ -62,20 +60,20 @@ internal class TestCampaignProvider
     return parameter;
   }
 
-  public static ExperimentTemplate GetExperimentTemplate(AnalyzerInfo analyzer,
+  public static ExperimentTemplate GetExperimentTemplate(string analyzerId,
     string name,
     string outputCommand,
     params StepTemplate[] stepTemplates)
   {
     var experimentTemplate = new ExperimentTemplate
     {
-      Analyzer = analyzer,
+      AnalyzerId = analyzerId,
       Name = name,
       Resolved = true,
       UniqueId = Guid.NewGuid().ToString(),
     };
 
-    var outputCmd = new OutputCommandSelection() { CommandId = outputCommand, Key = "TestKey" };
+    var outputCmd = new OutputCommandSelection() { CommandId = outputCommand, Key = "TestReply" };
     experimentTemplate.OutputCommands.Add(outputCmd);
 
     experimentTemplate.StepTemplates.AddRange(stepTemplates);
@@ -88,15 +86,7 @@ internal class TestCampaignProvider
     string outputCommand,
     params StepTemplate[] stepTemplates)
   {
-    var analyzerInfo = new AnalyzerInfo
-    {
-      Name = analyzer.Name,
-      Type = analyzer.GetType().Name,
-      UniqueId = Guid.NewGuid().ToString(),
-      Version = analyzer.Version.ToString()
-    };
-
-    return GetExperimentTemplate(analyzerInfo, name, outputCommand, stepTemplates);
+    return GetExperimentTemplate(analyzer.UniqueId, name, outputCommand, stepTemplates);
   }
 
   public static CommandTemplate GetCommandTemplate(int idx, CommandMetadata metadata, params Parameter[] parameters)
@@ -138,7 +128,7 @@ internal class TestCampaignProvider
   public static OutputMetadata GetOutputMetadata(string typeName, int idx = 0)
     => new()
     {
-      FullName = typeName,
+      DataType = AresDataType.Number,
       Index = idx,
       UniqueId = Guid.NewGuid().ToString()
     };
