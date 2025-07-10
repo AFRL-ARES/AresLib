@@ -49,6 +49,7 @@ public static class ServiceCollectionExtensions
     services.AddTransient<IStartCondition, AllPlannersAssignedStartCondition>();
     services.AddTransient<IStartCondition, GoodAnalyzerForExperimentOutputCondition>();
     services.AddTransient<IStartCondition, RequiredDeviceInterpretersStartCondition>();
+    services.AddTransient<IStartCondition, AssignedPlannersActiveStartCondition>();
   }
 
   private static void BindComposers(this IServiceCollection services)
