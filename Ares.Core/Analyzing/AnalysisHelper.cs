@@ -15,7 +15,7 @@ internal class AnalysisHelper
   {
     var analyzer = GetAnalyzer(analyzerId);
 
-    var analyzerInputs = ToAnalysisInputs(experimentSummary.CompletedExperiment.Results);
+    var analyzerInputs = experimentSummary.CompletedExperiment.Result;
     // TODO: Add support for settings
     var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
     experimentSummary.CompletedExperiment.AnalysisResult = analysis.Result;
@@ -38,17 +38,5 @@ internal class AnalysisHelper
 
     return _analyzerRepo
     .GetAnalyzerById(analyzerId) ?? throw new InvalidOperationException($"Could not find desired analyzer with id {analyzerId}");
-  }
-
-  private static AresStruct ToAnalysisInputs(IEnumerable<ExperimentResult> experimentResults)
-  {
-    var aresStruct = new AresStruct();
-    foreach(var result in experimentResults)
-    {
-      aresStruct.Fields[result.Key] = result.Data;
-    }
-    ;
-
-    return aresStruct;
   }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Reactive.Linq;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Extensions;
+using Ares.Core.Helpers;
 using Ares.Messaging;
 
 namespace Ares.Core.Execution.Executors;
@@ -82,10 +83,16 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
           })
         .Where(anon => anon.Key is not null);
 
-      var results = keyedCommandSummaries
-        .Select(a => new ExperimentResult() { Key = a.Key, Data = a.Summary.Result.Result });
 
-      completedExperiment.Results.AddRange(results);
+      var experimentResult = new AresStruct();
+
+      foreach(var summary in keyedCommandSummaries)
+      {
+        var cmdResult = summary.Summary.Result.Result;
+        experimentResult.AddValue(summary.Key!, cmdResult);
+      }
+
+      completedExperiment.Result = experimentResult;
     }
 
     return ExecutorSummaryHelpers.CreateExperimentExecutionSummary(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepSummaries);

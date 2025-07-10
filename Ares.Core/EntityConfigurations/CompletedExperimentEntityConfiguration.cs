@@ -26,8 +26,9 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
-    builder.HasMany(experiment => experiment.Results)
-      .WithOne()
-      .OnDelete(DeleteBehavior.ClientCascade);
+    // TODO: revisit this one, might be broken at the moment
+    //builder.HasOne(experiment => experiment.Result)
+    //  .WithOne()
+    //  .OnDelete(DeleteBehavior.ClientCascade);
   }
 }
