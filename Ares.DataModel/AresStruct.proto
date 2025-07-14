@@ -15,9 +15,10 @@ message AresValue {
 		bool bool_value = 2;
 		string string_value = 3;
 		double number_value = 4;
-		StringList string_list_value = 5;
-		NumberList number_list_value = 6;
+		StringArray string_array_value = 5;
+		NumberArray number_array_value = 6;
 		bytes bytes_value = 7;
+		BoolArray bool_array_value = 8;
 	}
 }
 
@@ -25,10 +26,14 @@ enum NullValue {
 	NULL_VALUE = 0;
 }
 
-message StringList {
+message StringArray {
 	repeated string strings = 1;
 }
 
-message NumberList {
+message NumberArray {
 	repeated double numbers = 2;
+}
+
+message BoolArray {
+	repeated bool bools = 3;
 }

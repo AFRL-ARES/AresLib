@@ -12,11 +12,11 @@ public static class AresSchemaHelper
   public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<string> stringOptions)
   {
     var entry = new SchemaEntry() { Type = type, Optional = optional };
-    if(type != AresDataType.String && type != AresDataType.StringList)
+    if(type != AresDataType.String && type != AresDataType.StringArray)
     {
       throw new InvalidOperationException($"Cannot provide string options to a datatype that is {type}");
     }
-    entry.StringChoices = new StringList();
+    entry.StringChoices = new StringArray();
     entry.StringChoices.Strings.AddRange(stringOptions);
     schema.Fields[name] = entry;
   }
@@ -24,11 +24,11 @@ public static class AresSchemaHelper
   public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<double> numOptions)
   {
     var entry = new SchemaEntry() { Type = type, Optional = optional };
-    if(type != AresDataType.Number && type != AresDataType.NumberList)
+    if(type != AresDataType.Number && type != AresDataType.NumberArray)
     {
       throw new InvalidOperationException($"Cannot provide number options to a datatype that is {type}");
     }
-    entry.NumberChoices = new NumberList();
+    entry.NumberChoices = new NumberArray();
     entry.NumberChoices.Numbers.AddRange(numOptions);
     schema.Fields[name] = entry;
   }

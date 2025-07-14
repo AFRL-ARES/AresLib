@@ -22,7 +22,7 @@ message SchemaEntry {
 	// an optional list of either available string or number choices in case the input needs to be constrained.
 	// the list of choices should match the specified type
 	oneof available_choices {
-		StringList string_choices = 5;
-		NumberList number_choices = 6;
+		StringArray string_choices = 5;
+		NumberArray number_choices = 6;
 	}
 }

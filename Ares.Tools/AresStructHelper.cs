@@ -28,24 +28,24 @@ public static class AresStructHelper
     aresStruct.Fields[key] = AresValueHelper.CreateNull();
   }
 
-  public static void AddStringList(this AresStruct aresStruct, string key, IEnumerable<string> values)
+  public static void AddStringArray(this AresStruct aresStruct, string key, IEnumerable<string> values)
   {
-    aresStruct.Fields[key] = AresValueHelper.CreateStringList(values);
+    aresStruct.Fields[key] = AresValueHelper.CreateStringArray(values);
   }
 
-  public static void AddNumberList(this AresStruct aresStruct, string key, IEnumerable<int> values)
+  public static void AddNumberArray(this AresStruct aresStruct, string key, IEnumerable<int> values)
   {
-    aresStruct.Fields[key] = AresValueHelper.CreateNumberList(values);
+    aresStruct.Fields[key] = AresValueHelper.CreateNumberArray(values);
   }
 
-  public static void AddNumberList(this AresStruct aresStruct, string key, IEnumerable<double> values)
+  public static void AddNumberArray(this AresStruct aresStruct, string key, IEnumerable<double> values)
   {
-    aresStruct.Fields[key] = AresValueHelper.CreateNumberList(values);
+    aresStruct.Fields[key] = AresValueHelper.CreateNumberArray(values);
   }
 
-  public static void AddNumberList(this AresStruct aresStruct, string key, IEnumerable<float> values)
+  public static void AddNumberArray(this AresStruct aresStruct, string key, IEnumerable<float> values)
   {
-    aresStruct.Fields[key] = AresValueHelper.CreateNumberList(values);
+    aresStruct.Fields[key] = AresValueHelper.CreateNumberArray(values);
   }
 
   public static void AddBool(this AresStruct aresStruct, string key, bool value)

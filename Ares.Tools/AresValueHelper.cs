@@ -24,34 +24,34 @@ public static class AresValueHelper
     return new AresValue { StringValue = value, };
   }
 
-  public static AresValue CreateNumberList(IEnumerable<int> values)
+  public static AresValue CreateNumberArray(IEnumerable<int> values)
   {
-    var val = new AresValue { NumberListValue = new NumberList() };
-    val.NumberListValue.Numbers.AddRange(values.Select(num => (double)num));
+    var val = new AresValue { NumberArrayValue = new NumberArray() };
+    val.NumberArrayValue.Numbers.AddRange(values.Select(num => (double)num));
 
     return val;
   }
 
-  public static AresValue CreateNumberList(IEnumerable<double> values)
+  public static AresValue CreateNumberArray(IEnumerable<double> values)
   {
-    var val = new AresValue { NumberListValue = new NumberList() };
-    val.NumberListValue.Numbers.AddRange(values.Select(num => num));
+    var val = new AresValue { NumberArrayValue = new NumberArray() };
+    val.NumberArrayValue.Numbers.AddRange(values.Select(num => num));
 
     return val;
   }
 
-  public static AresValue CreateNumberList(IEnumerable<float> values)
+  public static AresValue CreateNumberArray(IEnumerable<float> values)
   {
-    var val = new AresValue { NumberListValue = new NumberList() };
-    val.NumberListValue.Numbers.AddRange(values.Select(num => (double)num));
+    var val = new AresValue { NumberArrayValue = new NumberArray() };
+    val.NumberArrayValue.Numbers.AddRange(values.Select(num => (double)num));
 
     return val;
   }
 
-  public static AresValue CreateStringList(IEnumerable<string> values)
+  public static AresValue CreateStringArray(IEnumerable<string> values)
   {
-    var val = new AresValue { StringListValue = new StringList() };
-    val.StringListValue.Strings.AddRange(values);
+    var val = new AresValue { StringArrayValue = new StringArray() };
+    val.StringArrayValue.Strings.AddRange(values);
 
     return val;
   }
