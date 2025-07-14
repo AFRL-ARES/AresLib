@@ -70,4 +70,12 @@ public static class AresValueHelper
   {
     return new AresValue { BytesValue = ByteString.CopyFrom(bytes) };
   }
+
+  public static AresValue CreateBoolArray(IEnumerable<bool> values)
+  {
+    var val = new AresValue { BoolArrayValue = new BoolArray() };
+    val.BoolArrayValue.Bools.AddRange(values);
+
+    return val;
+  }
 }
