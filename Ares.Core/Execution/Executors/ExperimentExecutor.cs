@@ -69,32 +69,6 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
 
     completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
 
-
-
-    if(Template.OutputCommands.Any())
-    {
-      var keyedCommandSummaries = stepSummaries
-        .SelectMany(stepSummary => stepSummary.CommandSummaries)
-        .Select(
-          (summary) => new
-          {
-            Summary = summary,
-            Template.OutputCommands.FirstOrDefault(oc => oc.CommandId == summary.CommandId)?.Key
-          })
-        .Where(anon => anon.Key is not null);
-
-
-      var experimentResult = new AresStruct();
-
-      foreach(var summary in keyedCommandSummaries)
-      {
-        var cmdResult = summary.Summary.Result.Result;
-        experimentResult.AddValue(summary.Key!, cmdResult);
-      }
-
-      completedExperiment.Result = experimentResult;
-    }
-
     return ExecutorSummaryHelpers.CreateExperimentExecutionSummary(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepSummaries);
   }
 }

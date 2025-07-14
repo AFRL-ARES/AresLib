@@ -46,33 +46,35 @@ public abstract class AnalyzerBase : IAnalyzer
 
   public abstract Task<AresDataSchema> GetParameters(CancellationToken cancellationToken);
 
-  private static ParameterValidationResult ValidateParameterTypes(KeyValuePair<string, SchemaEntry> inputDescription, AresDataSchema parameters)
+  private static ParameterValidationResult ValidateParameterTypes(KeyValuePair<string, SchemaEntry> analyzerField, AresDataSchema parameters)
   {
     var result = new ParameterValidationResult();
-    var matchingAnalysisParameter = parameters.Fields.GetValueOrDefault(inputDescription.Key);
+    var matchingAnalysisParameter = parameters.Fields.GetValueOrDefault(analyzerField.Key);
     if(matchingAnalysisParameter is null)
     {
       result.Success = false;
-      result.Messages.Add($"Analyzer does not support with key of {inputDescription.Key}.");
+      result.Messages.Add($"Analyzer does not support with key of {analyzerField.Key}.");
       return result;
     }
 
-    if(matchingAnalysisParameter.Type != inputDescription.Value.Type)
+    if(matchingAnalysisParameter.Type != analyzerField.Value.Type)
     {
       result.Success = false;
       result.Messages
         .Add(
-          $"Parameter type mismatch. The provided input {inputDescription.Key} has a type of {inputDescription.Value.Type.ToString()} which doesn't match the type expected by the analyzer which is {matchingAnalysisParameter.Type.ToString()}");
+          $"Parameter type mismatch. The provided input {analyzerField.Key} has a type of " +
+          $"{analyzerField.Value.Type.ToString()} which doesn't match the type expected by the analyzer which is " +
+          $"{matchingAnalysisParameter.Type.ToString()}");
     }
 
     result.Success = true;
     return result;
   }
 
-  private static ParameterValidationResult ValidateRequiredParams(AresDataSchemaSimplified inputDescriptions, AresDataSchema parameters)
+  private static ParameterValidationResult ValidateRequiredParams(AresDataSchemaSimplified inputSchema, AresDataSchema parameters)
   {
     var requiredParams = parameters.Fields.Where(p => !p.Value.Optional).ToArray();
-    var unfulfilledParams = requiredParams.Where(rp => !inputDescriptions.Fields.Any(input => input.Key == rp.Key && input.Value == rp.Value.Type));
+    var unfulfilledParams = requiredParams.Where(rp => !inputSchema.Fields.Any(input => input.Key == rp.Key && input.Value == rp.Value.Type));
 
     var messages = unfulfilledParams.Select(up => $"No value provided for the required parameter {up.Key}.").ToArray();
     var result = new ParameterValidationResult
@@ -87,7 +89,7 @@ public abstract class AnalyzerBase : IAnalyzer
   public virtual async Task<ParameterValidationResult> ValidateInputs(AresDataSchemaSimplified inputSchema, CancellationToken cancellationToken)
   {
     var analysisSchema = await GetParameters(cancellationToken);
-    var paramValidationResults = analysisSchema.Fields.Select(inputDesc => ValidateParameterTypes(inputDesc, analysisSchema)).ToArray();
+    var paramValidationResults = analysisSchema.Fields.Select(analyzerField => ValidateParameterTypes(analyzerField, analysisSchema)).ToArray();
     var requiredValidationResult = ValidateRequiredParams(inputSchema, analysisSchema);
     var allValidationResults = paramValidationResults.Append(requiredValidationResult);
 

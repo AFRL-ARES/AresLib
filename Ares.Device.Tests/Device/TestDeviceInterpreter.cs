@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Ares.Tools;
 
 namespace Ares.Device.Tests.Device;
 
@@ -44,7 +45,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
       OutputMetadata = new OutputMetadata
       {
         UniqueId = Guid.NewGuid().ToString(),
-        DataType = AresDataType.Number,
+        DataSchema = AresSchemaHelper.CreateSchema("TestDeviceInterpreter", AresDataType.Number),
         Description = "A test response for the test command",
         Index = idx
       }

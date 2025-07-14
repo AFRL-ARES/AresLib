@@ -3,7 +3,7 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Extensions;
 
-internal static class ExperimentTemplateExtensions
+public static class ExperimentTemplateExtensions
 {
   /// <summary>
   /// Gets all the <see cref="Parameter" />s from an <see cref="ExperimentTemplate" />
@@ -14,6 +14,16 @@ internal static class ExperimentTemplateExtensions
     => template.StepTemplates
       .SelectMany(stepTemplate => stepTemplate.CommandTemplates)
       .SelectMany(commandTemplate => commandTemplate.Parameters);
+
+  /// <summary>
+  /// Gets all the <see cref="CommandTemplate"/>s that are mapped to provide output />
+  /// </summary>
+  /// <param name="template"></param>
+  /// <returns></returns>
+  public static CommandTemplate[] GetAllOutputCommands(this ExperimentTemplate template)
+    => template.StepTemplates
+    .SelectMany(step => step.CommandTemplates)
+    .Where(command => command.UserOutputKeyMap.Any()).ToArray();
 
   /// <summary>
   /// Gets all the <see cref="Parameter" />s from an <see cref="ExperimentTemplate"/>
@@ -79,16 +89,7 @@ internal static class ExperimentTemplateExtensions
       foreach(var commandTemplate in stepTemplate.CommandTemplates)
       {
         var cmdTemplateId = Guid.NewGuid().ToString();
-        var outputCmd = template.OutputCommands.FirstOrDefault(oc => oc.CommandId == commandTemplate.UniqueId);
-        if(outputCmd is not null)
-        {
-          var newOutputCommand = new OutputCommandSelection() 
-          { 
-            CommandId = cmdTemplateId, 
-            Key = outputCmd.Key 
-          };
-          newTemplate.OutputCommands.Add(newOutputCommand);
-        }
+        var outputCmd = template.GetAllOutputCommands().FirstOrDefault(oc => oc.UniqueId == commandTemplate.UniqueId);
 
         commandTemplate.Metadata.UniqueId = Guid.NewGuid().ToString();
         commandTemplate.UniqueId = cmdTemplateId;

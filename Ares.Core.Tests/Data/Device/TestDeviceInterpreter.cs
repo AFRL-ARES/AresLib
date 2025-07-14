@@ -1,6 +1,7 @@
 ﻿using Ares.Device;
 using Ares.Messaging;
 using Ares.Test;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Tests.Data.Device;
@@ -58,7 +59,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
       OutputMetadata = new OutputMetadata
       {
         UniqueId = Guid.NewGuid().ToString(),
-        DataType = AresDataType.Number,
+        DataSchema = AresSchemaHelper.CreateSchema("TestOutput", AresDataType.Number),
         Description = "A test response for the test command",
         Index = idx
       }

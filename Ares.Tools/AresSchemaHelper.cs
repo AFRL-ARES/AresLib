@@ -42,4 +42,16 @@ public static class AresSchemaHelper
   {
     schema.AddEntry(name, type, optional, numOptions.Select(n => (double)n));
   }
+
+  public static AresDataSchemaSimplified CreateSchema(string name, AresDataType type)
+  {
+    var schema = new AresDataSchemaSimplified();
+    schema.AddEntry(name, type);
+    return schema;
+  }
+
+  public static void AddEntry(this AresDataSchemaSimplified schema, string name, AresDataType type)
+  {
+    schema.Fields[name] = type;
+  }
 }

@@ -2,6 +2,7 @@
 using Ares.Core.Tests.Data.Device;
 using Ares.Messaging;
 using Ares.Test;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Tests.Data;
@@ -73,9 +74,6 @@ internal class TestCampaignProvider
       UniqueId = Guid.NewGuid().ToString(),
     };
 
-    var outputCmd = new OutputCommandSelection() { CommandId = outputCommand, Key = "TestReply" };
-    experimentTemplate.OutputCommands.Add(outputCmd);
-
     experimentTemplate.StepTemplates.AddRange(stepTemplates);
 
     return experimentTemplate;
@@ -128,7 +126,7 @@ internal class TestCampaignProvider
   public static OutputMetadata GetOutputMetadata(string typeName, int idx = 0)
     => new()
     {
-      DataType = AresDataType.Number,
+      DataSchema = AresSchemaHelper.CreateSchema("testCampaignProvider", AresDataType.Number),
       Index = idx,
       UniqueId = Guid.NewGuid().ToString()
     };

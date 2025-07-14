@@ -1,8 +1,0 @@
-﻿syntax = "proto3";
-
-package ares.messaging;
-
-message OutputCommandSelection {
-  string command_id = 1;
-  string key = 2;
-}
