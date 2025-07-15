@@ -3,13 +3,15 @@
 namespace Ares.Tools;
 public static class AresSchemaHelper
 {
-  public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional)
+  public static AresDataSchema AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional)
   {
     var entry = new SchemaEntry() { Type = type, Optional = optional };
     schema.Fields[name] = entry;
+
+    return schema;
   }
 
-  public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<string> stringOptions)
+  public static AresDataSchema AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<string> stringOptions)
   {
     var entry = new SchemaEntry() { Type = type, Optional = optional };
     if(type != AresDataType.String && type != AresDataType.StringArray)
@@ -19,9 +21,11 @@ public static class AresSchemaHelper
     entry.StringChoices = new StringArray();
     entry.StringChoices.Strings.AddRange(stringOptions);
     schema.Fields[name] = entry;
+
+    return schema;
   }
 
-  public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<double> numOptions)
+  public static AresDataSchema AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<double> numOptions)
   {
     var entry = new SchemaEntry() { Type = type, Optional = optional };
     if(type != AresDataType.Number && type != AresDataType.NumberArray)
@@ -31,16 +35,22 @@ public static class AresSchemaHelper
     entry.NumberChoices = new NumberArray();
     entry.NumberChoices.Numbers.AddRange(numOptions);
     schema.Fields[name] = entry;
+
+    return schema;
   }
 
-  public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<int> numOptions)
+  public static AresDataSchema AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<int> numOptions)
   {
     schema.AddEntry(name, type, optional, numOptions.Select(n => (double)n));
+
+    return schema;
   }
 
-  public static void AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<float> numOptions)
+  public static AresDataSchema AddEntry(this AresDataSchema schema, string name, AresDataType type, bool optional, IEnumerable<float> numOptions)
   {
     schema.AddEntry(name, type, optional, numOptions.Select(n => (double)n));
+
+    return schema;
   }
 
   public static AresDataSchemaSimplified CreateSchema(string name, AresDataType type)
@@ -50,8 +60,10 @@ public static class AresSchemaHelper
     return schema;
   }
 
-  public static void AddEntry(this AresDataSchemaSimplified schema, string name, AresDataType type)
+  public static AresDataSchemaSimplified AddEntry(this AresDataSchemaSimplified schema, string name, AresDataType type)
   {
     schema.Fields[name] = type;
+
+    return schema;
   }
 }
