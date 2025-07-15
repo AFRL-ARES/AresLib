@@ -20,7 +20,7 @@ public class CampaignComposer : ICommandComposer<CampaignTemplate, ICampaignExec
   readonly AnalysisRepo _analysisRepo;
   readonly IAnalyzerRepo _analyzerRepo;
 
-  internal CampaignComposer(AnalysisHelper analysisHelper,
+  public CampaignComposer(AnalysisHelper analysisHelper,
     ICommandComposer<ExperimentTemplate, ExperimentExecutor> experimentComposer,
     ICommandComposer<ExperimentTemplate, StartupScriptExecutor> startupScriptComposer,
     ICommandComposer<ExperimentTemplate, CloseoutScriptExecutor> closeoutScriptComposer,

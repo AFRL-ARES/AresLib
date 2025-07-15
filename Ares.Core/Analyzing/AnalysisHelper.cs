@@ -3,7 +3,7 @@ using Ares.Messaging.Analyzing;
 
 namespace Ares.Core.Analyzing;
 
-internal class AnalysisHelper
+public class AnalysisHelper
 {
   readonly IAnalyzerRepo _analyzerRepo;
   public AnalysisHelper(IAnalyzerRepo analyzerRepo)

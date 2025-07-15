@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.AresEnvironment;
@@ -30,11 +31,11 @@ public class AresVariableManager
       if(variableValue is null)
         return false;
 
-        var val = new ParameterValue
-        {
-          UniqueId = Guid.NewGuid().ToString(),
-          Value = Any.Pack(new StringValue() { Value = variableValue })
-        };
+      var val = new ParameterValue
+      {
+        UniqueId = Guid.NewGuid().ToString(),
+        Value = AresValueHelper.CreateString(variableValue)
+      };
 
       parameter.Value = val;
     }
@@ -61,18 +62,18 @@ public class AresVariableManager
 
     var fullPath = Path.Combine(campaignPath, folderName);
 
-      //TODO: Make this not like this? This is a temporary fix to ensure our analyzer is capable of forwarding the image path forward.
-      //realistically we should actually be saving this somewhere in the campaign as a result piece and then forwarding it to the analyzer that way.
-      if(Directory.Exists(fullPath))
-      {
-        AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, fullPath);
-        return fullPath;
-      }
+    //TODO: Make this not like this? This is a temporary fix to ensure our analyzer is capable of forwarding the image path forward.
+    //realistically we should actually be saving this somewhere in the campaign as a result piece and then forwarding it to the analyzer that way.
+    if(Directory.Exists(fullPath))
+    {
+      AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, fullPath);
+      return fullPath;
+    }
 
     else
     {
       var path = AresEnvironment.GetEnvironmentVariable(VariableType.CampaignMiscFolder);
-      AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, path ?? "");
+      AresEnvironment.SetEnvironmentVariable(VariableType.PreviousExperimentPath, path ?? string.Empty);
       return path;
     }
 

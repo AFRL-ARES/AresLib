@@ -19,7 +19,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
         var result = new DeviceCommandResult();
         var param = parameters.First(parameter => parameter.Metadata.Name == TestDeviceCommandParameter.ReplyParameter.ToString());
         result = AresDeviceHelpers.ParseCommandParameterToDouble(param, out var parsedParam);
-        result.Result = new AresValue { NumberValue = parsedParam };
+        result.Result = AresStructHelper.CreateNumberStruct("Test", parsedParam);
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();
         return Task.FromResult(result);

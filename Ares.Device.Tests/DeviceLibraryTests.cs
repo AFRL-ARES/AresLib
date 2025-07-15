@@ -1,5 +1,6 @@
 ﻿using Ares.Device.Tests.Device;
 using Ares.Messaging;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 using Moq;
 using Moq.Protected;
@@ -37,7 +38,7 @@ internal class DeviceLibraryTests
     parameter.Value = new ParameterValue
     {
       UniqueId = Guid.NewGuid().ToString(),
-      Value = Any.Pack(new StringValue() { Value = "12345" })
+      Value = AresValueHelper.CreateString("12345")
     };
 
     command.Parameters.Add(parameter);
@@ -46,8 +47,8 @@ internal class DeviceLibraryTests
     var result = await resultGetter(CancellationToken.None);
 
     Assert.That(result.Success);
-    var num = result.Result.NumberValue;
-    Assert.That(num, Is.EqualTo(12345));
+    var num = result.Result.Fields.FirstOrDefault(field => field.Key == "Test");
+    Assert.That(num.Value.StringValue, Is.EqualTo("12345"));
   }
 
   [Test]

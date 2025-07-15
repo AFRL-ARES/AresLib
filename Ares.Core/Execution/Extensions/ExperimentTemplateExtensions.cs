@@ -65,8 +65,7 @@ public static class ExperimentTemplateExtensions
 
     foreach(var para in parameters)
     {
-      var unpacked = para.Value.Value.TryUnpack<StringValue>(out var stringValue);
-      if(unpacked && stringValue.Value == string.Empty)
+      if(para.Value.Value.StringValue == string.Empty)
         resolved = false;
     }
 

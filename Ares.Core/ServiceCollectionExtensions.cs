@@ -34,6 +34,7 @@ public static class ServiceCollectionExtensions
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
     services.AddTransient<ICampaignValidator, RequiredDeviceInterpretersValidator>();
     services.AddSingleton<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
+    services.AddSingleton<IRemoteAnalyzerManager, RemoteAnalyzerManager>();
     services.AddSingleton<AresVariableManager>();
     services.AddSingleton<AnalysisRepo>();
     services.AddSingleton<AnalysisHelper>();

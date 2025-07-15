@@ -1,5 +1,6 @@
 using Ares.Messaging;
 using Ares.Messaging.Analyzing;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Planning;
@@ -51,7 +52,7 @@ public class PlanningHelper : IPlanningHelper
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
-          Value = Any.Pack(new StringValue() { Value = result.Value })
+          Value = AresValueHelper.CreateString(result.Value)
         };
 
         parameterPlanTarget.Value = val;

@@ -61,6 +61,99 @@ public static class AresStructHelper
     }
   }
 
+  public static void AddBytes(this AresStruct aresStruct, string key, byte[] value)
+  {
+    aresStruct.Fields[key] = AresValueHelper.CreateBytes(value);
+  }
+
+  public static AresStruct CreateStringStruct(string key, string value)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateString(value);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNumberStruct(string key, int value)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNumber(value);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNumberStruct(string key, double value)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNumber(value);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNumberStruct(string key, float value)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNumber(value);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNullStruct(string key)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNull();
+    return newStruct;
+  }
+
+  public static AresStruct CreateStringArrayStruct(string key, IEnumerable<string> values)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateStringArray(values);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNumberArrayStruct(string key, IEnumerable<int> values)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNumberArray(values);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNumberArrayStruct(string key, IEnumerable<double> values)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNumberArray(values);
+    return newStruct;
+  }
+
+  public static AresStruct CreateNumberArrayStruct(string key, IEnumerable<float> values)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateNumberArray(values);
+    return newStruct;
+  }
+
+  public static AresStruct CreateBoolStruct(string key, bool value)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateBool(value);
+    return newStruct;
+  }
+
+  public static AresStruct CreateStructAndAppend(AresStruct otherStruct)
+  {
+    AresStruct newStruct = new AresStruct();
+    foreach(var field in otherStruct.Fields)
+    {
+      newStruct.Fields[field.Key] = field.Value;
+    }
+    return newStruct;
+  }
+
+  public static AresStruct CreateBytesStruct(string key, byte[] value)
+  {
+    AresStruct newStruct = new AresStruct();
+    newStruct.Fields[key] = AresValueHelper.CreateBytes(value);
+    return newStruct;
+  }
+
+
   /// <summary>
   /// 
   /// </summary>

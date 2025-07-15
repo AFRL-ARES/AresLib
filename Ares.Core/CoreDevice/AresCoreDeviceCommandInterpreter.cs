@@ -57,17 +57,9 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
         return result;
 
       case AresCoreDeviceCommand.WaitForUser:
-        var messageParam = parameters[0];
-        var unpacked = messageParam.Value.Value.TryUnpack<StringValue>(out var stringValue);
+        var param = parameters[0];
 
-        if(!unpacked)
-        {
-          result.Success = false;
-          result.Error = "Failed to unpack message parameter in WaitForUser command!";
-          return result;
-        }
-
-        await Device.WaitForUser(stringValue.Value);
+        await Device.WaitForUser(param.Value.Value.StringValue);
         result.Success = true;
         result.AwaitUserInput = true;
         return result;

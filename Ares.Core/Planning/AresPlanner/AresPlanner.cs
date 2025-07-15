@@ -1,9 +1,9 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
-using Ares.Messaging;
+﻿using Ares.Messaging;
 using Ares.Messaging.Analyzing;
 using AresPlanner;
 using Google.Protobuf.WellKnownTypes;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning.AresPlanner;
 
@@ -64,7 +64,7 @@ public class AresPlanner : IPlanner
       IsPlanned = true,
       DataType = metadata.GetType().ToString()
     };
-    parameter.ParameterHistory.AddRange(relevantInfo.Select(param => double.Parse(param.Value.Value.Unpack<StringValue>().Value)));
+    parameter.ParameterHistory.AddRange(relevantInfo.Select(param => double.Parse(param.Value.Value.StringValue)));
 
     if(metadata.Constraints.Any())
     {
