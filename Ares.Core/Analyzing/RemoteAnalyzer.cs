@@ -12,12 +12,16 @@ public class RemoteAnalyzer : AnalyzerBase
   public RemoteAnalyzer(string name, Uri address, string id) : base(name, "", "_._._", id)
   {
     _channel = GrpcChannel.ForAddress(address);
+    Address = address;
   }
 
   public RemoteAnalyzer(string name, Uri address) : base(name, "", "_._._")
   {
     _channel = GrpcChannel.ForAddress(address);
+    Address = address;
   }
+
+  public Uri Address { get; }
 
   public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken = default)
   {

@@ -11,4 +11,5 @@ message AnalyzerInfo {
 	string name = 2; // name of the analyzer
 	string version = 3; // version of the analyzer
 	AnalyzerCapabilities capabilities = 4; // any info that might be used to describe what the analyzer needs and/or is capable of
+	google.protobuf.StringValue url = 5; // the remote address of the analyzer if it's a remote analyzer
 }
