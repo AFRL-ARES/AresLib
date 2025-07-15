@@ -14,8 +14,5 @@ internal class ParameterMetadataEntityConfiguration : AresEntityTypeBaseConfigur
 
     builder.Navigation(parameterMetadata => parameterMetadata.Constraints)
       .AutoInclude();
-
-		builder.Navigation(parameterMetadata => parameterMetadata.ExtraInfo)
-			.AutoInclude();
   }
 }

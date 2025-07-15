@@ -4,7 +4,7 @@ package ares.messaging;
 
 import "Limits.proto";
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/any.proto";
+import "AresDataType.proto";
 
 message ParameterMetadata {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this metadata
@@ -13,7 +13,6 @@ message ParameterMetadata {
 	repeated Limits constraints = 4; // Collection of limits for the argument/parameter formatted to be easily converted into planner requests.
 	int64 index = 5; // Index of the collection in which executed this template
 	bool not_plannable = 6; // Set based on whether or not the parameter is meant to be plannable by external planner
-	bool has_default = 7; // Set based on whether a parameter has a default value available
-	bool use_default = 8; // Set based on whether or not the parameter should utilize its default value
-	google.protobuf.Any extra_info = 9; //It's a pain
+	bool use_default = 7; // Set based on whether or not the parameter should utilize its default value
+	AresDataType data_type = 8; // The data type of the parameter
 	}
