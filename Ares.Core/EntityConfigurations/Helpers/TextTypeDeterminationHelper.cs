@@ -34,4 +34,20 @@ public static class TextTypeDeterminationHelper
         v => JsonSerializer.Deserialize<AresValue>(v, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresValue())
       .HasColumnType(DetermineColumnType());
   }
+
+  public static PropertyBuilder<AresDataSchemaSimplified> HasDataSchemaSimplified(this PropertyBuilder<AresDataSchemaSimplified> schema)
+  {
+    return schema.HasConversion(
+      s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
+      s => JsonSerializer.Deserialize<AresDataSchemaSimplified>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresDataSchemaSimplified())
+      .HasColumnType(DetermineColumnType());
+  }
+
+  public static PropertyBuilder<AresStruct> HasAresStruct(this PropertyBuilder<AresStruct> aresStruct)
+  {
+    return aresStruct.HasConversion(
+      s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
+      s => JsonSerializer.Deserialize<AresStruct>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresStruct())
+      .HasColumnType(DetermineColumnType());
+  }
 }

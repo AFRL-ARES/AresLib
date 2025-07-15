@@ -1,4 +1,5 @@
-﻿using Ares.Messaging;
+﻿using Ares.Core.EntityConfigurations.Helpers;
+using Ares.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -26,9 +27,7 @@ internal class CompletedExperimentEntityConfiguration : AresEntityTypeBaseConfig
     builder.Navigation(experiment => experiment.Template)
       .AutoInclude();
 
-    // TODO: revisit this one, might be broken at the moment
-    //builder.HasOne(experiment => experiment.Result)
-    //  .WithOne()
-    //  .OnDelete(DeleteBehavior.ClientCascade);
+    builder.Property(experiment => experiment.Result).HasAresStruct();
+
   }
 }
