@@ -23,17 +23,16 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
         var reply = new TestReply();
         var param = parameters.First(parameter => parameter.Metadata.Name == TestDeviceCommandParameter.ReplyParameter.ToString());
         reply.Message = $"Device received {param.Value.Value}";
-        var unpacked = param.Value.Value.TryUnpack<StringValue>(out var stringValueParam);
-        var parsed = float.TryParse(stringValueParam.Value, out var floatValue);
+        var parsed = float.TryParse(param.Value.Value.StringValue, out var floatValue);
 
-        if(!unpacked || !parsed)
+        if(!parsed)
         {
           result.Error = "Test device failed to parse number!";
           result.Success = false;
           return Task.FromResult(result);
         }
 
-        result.Result = new AresValue { NumberValue = floatValue };
+        result.Result = AresStructHelper.CreateNumberStruct("Test", floatValue);
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();
         return Task.FromResult(result);

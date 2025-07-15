@@ -48,7 +48,7 @@ internal class TestCampaignProvider
     parameter.Value = new ParameterValue
     {
       UniqueId = Guid.NewGuid().ToString(),
-      Value = Any.Pack(new StringValue() { Value = value })
+      Value = AresValueHelper.CreateString(value)
     };
 
     parameter.Metadata = new ParameterMetadata
