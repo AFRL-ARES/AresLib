@@ -10,9 +10,10 @@ using Grpc.Core;
 
 namespace Ares.Core.Grpc.Services;
 
-public class AnalyzerService(IAnalyzerRepo analyzerRepo) : AresAnalyzerManagementService.AresAnalyzerManagementServiceBase
+public class AnalyzerService(IAnalyzerRepo analyzerRepo, IRemoteAnalyzerManager remoteAnalyzerManager) : AresAnalyzerManagementService.AresAnalyzerManagementServiceBase
 {
-  private IAnalyzerRepo _analyzerRepo = analyzerRepo;
+  private readonly IAnalyzerRepo _analyzerRepo = analyzerRepo;
+  private readonly IRemoteAnalyzerManager _remoteAnalyzerManager = remoteAnalyzerManager;
 
   public override async Task<GetAllAnalyzersResponse> GetAllAnalyzers(Empty request, ServerCallContext context)
   {
@@ -31,80 +32,64 @@ public class AnalyzerService(IAnalyzerRepo analyzerRepo) : AresAnalyzerManagemen
       Name = analyzer.Name,
       Version = analyzer.Version,
       UniqueId = analyzer.UniqueId,
-      Capabilities = await analyzer.GetCapabilities(),
-      Location = analyzer is RemoteAnalyzer ? AnalyzerLocation.Remote : AnalyzerLocation.Internal
+      Capabilities = await analyzer.GetCapabilities()
     };
 
     return info;
   }
 
-  public override Task<AddRemoteAnalyzerResponse> AddRemoteAnalyzer(
+  public override async Task<AddRemoteAnalyzerResponse> AddRemoteAnalyzer(
     AddRemoteAnalyzerRequest request,
     ServerCallContext context)
   {
-    var response = new AddRemoteAnalyzerResponse();
-    var uriValid = Uri.TryCreate(request.Url, UriKind.Absolute, out var uri);
-    if(!uriValid || uri is null)
+    try
     {
-      response.Success = false;
-      response.ErrorMessage = $"Failed to add analyzer due to the url {request.Url} being invalid";
-      return Task.FromResult(response);
+      await _remoteAnalyzerManager.CreateAnalyzer(request.Name, request.Url);
+      var response = new AddRemoteAnalyzerResponse
+      {
+        Success = true
+      };
+      return response;
     }
-
-    var analyzer = new RemoteAnalyzer(request.Name, uri);
-    _analyzerRepo.RegisterAnalyzer(analyzer);
-
-    response.Success = true;
-    response.AnalyzerId = analyzer.UniqueId;
-
-    return Task.FromResult(response);
+    catch(Exception e)
+    {
+      var response = new AddRemoteAnalyzerResponse
+      {
+        Success = false,
+        ErrorMessage = e.Message
+      };
+      return response;
+    }
   }
 
-  public override Task<UpdateRemoteAnalyzerResponse> UpdateRemoteAnalyzer(
+  public override async Task<UpdateRemoteAnalyzerResponse> UpdateRemoteAnalyzer(
     UpdateRemoteAnalyzerRequest request,
     ServerCallContext context)
   {
     try
     {
-      var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
-      var response = UpdateAnalyzer(analyzer, request);
-      response.Success = true;
-      return Task.FromResult(response);
+      var analyzerConfig = new AnalyzerConfig { UniqueId = request.AnalyzerId, Name = request.Name, Url = request.Url };
+      await _remoteAnalyzerManager.UpdateAnalyzer(analyzerConfig);
+      var response = new UpdateRemoteAnalyzerResponse
+      {
+        Success = true
+      };
+      return response;
     }
     catch(ItemNotFoundException e)
     {
-      var response = new UpdateRemoteAnalyzerResponse();
-      response.Success = false;
-      response.ErrorMessage = e.Message;
-      return Task.FromResult(response);
-    }
-  }
-
-  private static UpdateRemoteAnalyzerResponse UpdateAnalyzer(IAnalyzer analyzer, UpdateRemoteAnalyzerRequest request)
-  {
-    var response = new UpdateRemoteAnalyzerResponse();
-    response.Success = true;
-    if(!string.IsNullOrEmpty(request.Name))
-    {
-      analyzer.Name = request.Name;
-    }
-
-    if(!string.IsNullOrEmpty(request.Url))
-    {
-      var uriValid = Uri.TryCreate(request.Url, UriKind.Absolute, out var uri);
-      if(!uriValid || uri is null)
+      var response = new UpdateRemoteAnalyzerResponse
       {
-        response.Success = false;
-        response.ErrorMessage = $"Failed to update analyzer URL {request.Url} due to it being invalid";
-      }
+        Success = false,
+        ErrorMessage = e.Message
+      };
+      return response;
     }
-
-    return response;
   }
 
   public override Task<Empty> RemoveRemoteAnalyzer(RemoveRemoteAnalyzerRequest request, ServerCallContext context)
   {
-    _analyzerRepo.UnregisterAnalyzer(request.AnalyzerId);
+    _remoteAnalyzerManager.RemoveAnalyzer(request.AnalyzerId);
 
     return Task.FromResult(new Empty());
   }

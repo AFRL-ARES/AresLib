@@ -34,7 +34,7 @@ public abstract class AnalyzerBase : IAnalyzer
   public string Name { get; set; }
   public string Version { get; protected set; }
   public string Type { get; protected set; }
-  public string UniqueId { get; protected set; } = Guid.NewGuid().ToString();
+  public string UniqueId { get; set; } = Guid.NewGuid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
   public AnalyzerState AnalyzerState { get; protected set; }
 

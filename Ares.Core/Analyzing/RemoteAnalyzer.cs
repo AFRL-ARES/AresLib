@@ -5,9 +5,19 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Net.Client;
 
 namespace Ares.Core.Analyzing;
-public class RemoteAnalyzer(string name, Uri address) : AnalyzerBase(name, "", "_._._")
+public class RemoteAnalyzer : AnalyzerBase
 {
-  private readonly GrpcChannel _channel = GrpcChannel.ForAddress(address);
+  private readonly GrpcChannel _channel;
+
+  public RemoteAnalyzer(string name, Uri address, string id) : base(name, "", "_._._", id)
+  {
+    _channel = GrpcChannel.ForAddress(address);
+  }
+
+  public RemoteAnalyzer(string name, Uri address) : base(name, "", "_._._")
+  {
+    _channel = GrpcChannel.ForAddress(address);
+  }
 
   public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken = default)
   {

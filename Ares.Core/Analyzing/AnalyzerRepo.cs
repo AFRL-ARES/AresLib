@@ -10,7 +10,7 @@ public class AnalyzerRepo : IAnalyzerRepo
   public AnalyzerRepo()
   {
     var manualAnalyzer = new NoneAnalyzer();
-    RegisterAnalyzer(manualAnalyzer);
+    AddAnalyzer(manualAnalyzer);
   }
 
   public IAnalyzer GetAnalyzerByName(string name)
@@ -24,18 +24,18 @@ public class AnalyzerRepo : IAnalyzerRepo
     return analyzer;
   }
 
-  public void RegisterAnalyzer(IAnalyzer analyzer)
+  public void AddAnalyzer(IAnalyzer analyzer)
   {
-    var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
+    var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.Type == p.Type));
     if(analyzerExists)
       throw new InvalidOperationException($"Analyzer {analyzer.Name}{analyzer.Version} of type {analyzer.GetType().Name} already registered");
 
     _analyzerStore.Add(analyzer);
   }
 
-  public void UnregisterAnalyzer(IAnalyzer analyzer)
+  public void RemoveAnalyzer(IAnalyzer analyzer)
   {
-    var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.GetType() == p.GetType()));
+    var analyzerExists = _analyzerStore.Any(p => p == analyzer || (p.Name == analyzer.Name && p.Version == analyzer.Version && analyzer.Type == p.Type));
     if(!analyzerExists)
       return;
 
@@ -53,7 +53,7 @@ public class AnalyzerRepo : IAnalyzerRepo
     return analyzer;
   }
 
-  public void UnregisterAnalyzer(string analyzerId)
+  public void RemoveAnalyzer(string analyzerId)
   {
     var analyzer = _analyzerStore.FirstOrDefault(analyzer => analyzer.UniqueId == analyzerId);
     if(analyzer is null)

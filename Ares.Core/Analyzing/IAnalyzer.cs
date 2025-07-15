@@ -25,7 +25,7 @@ public interface IAnalyzer
   /// <summary>
   /// The unique id for identifying the analyzer.
   /// </summary>
-  string UniqueId { get; }
+  string UniqueId { get; internal set; }
 
   /// <summary>
   /// Optional description of the analyzer.

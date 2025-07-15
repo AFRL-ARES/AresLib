@@ -4,13 +4,11 @@ package ares.messaging.analyzing;
 
 import "google/protobuf/wrappers.proto";
 import "Analyzing/AnalyzerCapabilities.proto";
-import "Analyzing/AnalyzerLocation.proto";
 
 
 message AnalyzerInfo {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this analyzer
 	string name = 2; // name of the analyzer
 	string version = 3; // version of the analyzer
-	AnalyzerLocation location = 4; // whether the analyzer is built into ares or needs to be contacted remotely
-	AnalyzerCapabilities capabilities = 5; // any info that might be used to describe what the analyzer needs and/or is capable of
+	AnalyzerCapabilities capabilities = 4; // any info that might be used to describe what the analyzer needs and/or is capable of
 }

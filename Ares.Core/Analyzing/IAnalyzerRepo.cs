@@ -23,17 +23,17 @@ public interface IAnalyzerRepo
   /// Adds an analyzer to the registry so that it can later be used by experiment execution
   /// </summary>
   /// <param name="analyzer">The analyzer to register</param>
-  void RegisterAnalyzer(IAnalyzer analyzer);
+  internal void AddAnalyzer(IAnalyzer analyzer);
 
   /// <summary>
   /// Removes an analyzer from the registry
   /// </summary>
   /// <param name="analyzer">The analyzer to remove</param>
-  void UnregisterAnalyzer(IAnalyzer analyzer);
+  internal void RemoveAnalyzer(IAnalyzer analyzer);
 
   /// <summary>
   /// Removes an analyzer from the registry based on the id
   /// </summary>
   /// <param name="analyzerId">The id of the analyzer to be removed</param>
-  void UnregisterAnalyzer(string analyzerId);
+  internal void RemoveAnalyzer(string analyzerId);
 }

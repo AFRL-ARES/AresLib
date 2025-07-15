@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package ares.messaging.analyzing;
-
-enum AnalyzerLocation {
-	UNSPECIFIED_LOC = 0;
-	INTERNAL = 1;
-	REMOTE = 2;
-}

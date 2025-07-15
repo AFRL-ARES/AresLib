@@ -35,7 +35,7 @@ internal class CampaignExecutorTests
   {
     _analyzerRepo = new AnalyzerRepo();
     _replyAnalyzer = new TestReplyAnalyzer();
-    _analyzerRepo.RegisterAnalyzer(_replyAnalyzer);
+    _analyzerRepo.AddAnalyzer(_replyAnalyzer);
     _analysisRepo = new AnalysisRepo();
     _analysisHelper = new AnalysisHelper(_analyzerRepo);
     _executionReportStore = new ExecutionReportStore();

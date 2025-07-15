@@ -3,12 +3,10 @@ syntax = "proto3";
 package ares.messaging.analyzing;
 
 import "google/protobuf/wrappers.proto";
-import "Analyzing/AnalyzerLocation.proto";
 
 
 message AnalyzerConfig {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this analyzer
 	string name = 2; // name of the analyzer
-	AnalyzerLocation location = 3; // whether the analyzer is built into ares or needs to be contacted remotely
-	google.protobuf.StringValue url = 4; // if location is remote, then we need to know how to contact it
+	string url = 3; // the connection url of the analyzer
 }
