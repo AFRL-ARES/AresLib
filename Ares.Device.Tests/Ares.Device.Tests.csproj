@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ares.Tools" Version="2025.7.15.171352" />
+    <PackageReference Include="Ares.Tools" Version="2025.7.21.80833" />
     <PackageReference Include="Grpc.Tools" Version="2.58.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
