@@ -9,8 +9,8 @@ public class AnalyzerRepo : IAnalyzerRepo
 
   public AnalyzerRepo()
   {
-    var manualAnalyzer = new NoneAnalyzer();
-    AddAnalyzer(manualAnalyzer);
+    var defaultAnalyzer = new NoneAnalyzer();
+    AddAnalyzer(defaultAnalyzer);
   }
 
   public IAnalyzer GetAnalyzerByName(string name)

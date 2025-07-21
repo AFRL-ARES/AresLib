@@ -11,6 +11,7 @@ internal class NoneAnalyzer : AnalyzerBase
 {
   public NoneAnalyzer() : base("NONE", "NONE :)", "1.0.0")
   {
+    UniqueId = "NONE-ANALYZER";
   }
 
   public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
