@@ -189,7 +189,7 @@ public abstract class AresSerialConnection : IAresSerialConnection
         while (!_listenerCancellationTokenSource.Token.IsCancellationRequested)
           ProcessBufferCore();
       }
-      // TODO maybe there's a cleaner way to do this
+      // TODO maybe there's a cleaner way to do this 
       catch (ObjectDisposedException)
       {
       }

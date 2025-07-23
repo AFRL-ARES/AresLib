@@ -59,8 +59,9 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
     }
 
     ctx.Remove(analyzer);
-
     await ctx.SaveChangesAsync();
+
+    _analyzerRepo.RemoveAnalyzer(analyzerId);
   }
 
   public async Task UpdateAnalyzer(AnalyzerConfig config)

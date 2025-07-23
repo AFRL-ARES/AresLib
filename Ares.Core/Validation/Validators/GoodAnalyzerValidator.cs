@@ -2,7 +2,6 @@
 using Ares.Core.Execution.Extensions;
 using Ares.Messaging;
 using Ares.Tools;
-using System.Security.Cryptography;
 
 namespace Ares.Core.Validation.Validators;
 
@@ -33,14 +32,14 @@ public static class GoodAnalyzerValidator
 
     foreach(var map in experimentTemplate.AnalyzerMaps)
     {
-      var matchingCommand = outputCommands.FirstOrDefault(cmd => cmd.UserOutputKeyMap.ContainsKey(map.Key));
+      var matchingCommand = outputCommands.FirstOrDefault(cmd => cmd.UserOutputKeyMap.Values.Contains(map.Key));
 
       if(matchingCommand is null)
         continue;
 
-      var whatever = matchingCommand.UserOutputKeyMap.FirstOrDefault(userMap => userMap.Value == map.Value);
-      var whatevertwopointoh = matchingCommand.Metadata.OutputMetadata.DataSchema.Fields.FirstOrDefault(field => field.Key == whatever.Key);
-      inputSchema.AddEntry(whatevertwopointoh.Key, whatevertwopointoh.Value);
+      var matchingMap = matchingCommand.UserOutputKeyMap.FirstOrDefault(userMap => userMap.Value == map.Key);
+      var outputSchemaEntry = matchingCommand.Metadata.OutputMetadata.DataSchema.Fields.FirstOrDefault(field => field.Key == matchingMap.Key);
+      inputSchema.AddEntry(map.Value, outputSchemaEntry.Value);
     }
 
     var result = await analyzer.ValidateInputs(inputSchema);

@@ -1,6 +1,6 @@
 ﻿using Ares.Device;
 using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
+using Ares.Tools;
 using UnitsNet.Units;
 
 namespace Ares.Core.CoreDevice;
@@ -12,8 +12,8 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
 
   protected override CommandMetadata[] CommandsToMetadatas()
   {
-    return new CommandMetadata[]
-    {
+    return
+    [
       new CommandMetadata
       {
         DeviceName = Device.Name,
@@ -25,7 +25,8 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
             {
               Name = AresCoreDeviceCommandParameter.Duration.ToString(),
               Index = 0,
-              Unit = $"{DurationUnit.Millisecond}s"
+              Unit = $"{DurationUnit.Millisecond}s",
+              Schema = AresSchemaHelper.CreateSchemaEntry(AresDataType.Number, false)
             }
           }
       },
@@ -36,7 +37,7 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
         Name = AresCoreDeviceCommand.WaitForUser.ToString(),
         Description = "ARES will request user confirmation before continuing."
       }
-    };
+    ];
   }
 
   protected override async Task<DeviceCommandResult> ParseAndPerformDeviceAction(AresCoreDeviceCommand deviceCommandEnum, Parameter[] parameters, CancellationToken cancellationToken)
@@ -46,12 +47,8 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
     {
       case AresCoreDeviceCommand.Sleep:
         var durationParam = parameters[0];
-        var parseResult = AresDeviceHelpers.ParseCommandParameterToDouble(durationParam, out var doubleValue);
 
-        if(!parseResult.Success)
-          return parseResult;
-
-        var duration = UnitsNet.Duration.FromMilliseconds(doubleValue);
+        var duration = UnitsNet.Duration.FromMilliseconds(durationParam.Value.Value.NumberValue);
         await Device.Sleep(duration.ToTimeSpan());
         result.Success = true;
         return result;

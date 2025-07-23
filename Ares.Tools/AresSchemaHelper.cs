@@ -66,4 +66,59 @@ public static class AresSchemaHelper
 
     return schema;
   }
+
+  public static SchemaEntry CreateSchemaEntry(AresDataType dataType, bool optional)
+  {
+    return new SchemaEntry() { Type = dataType, Optional = optional };
+  }
+
+  public static SchemaEntry CreateSchemaEntry(AresDataType dataType, bool optional, IEnumerable<string> stringChoices)
+  {
+    if(dataType != AresDataType.String && dataType != AresDataType.StringArray)
+    {
+      throw new InvalidOperationException($"String choices were provided, but the data type was of type {dataType}");
+    }
+
+    var entry = new SchemaEntry
+    {
+      Type = dataType,
+      Optional = optional,
+      StringChoices = new StringArray()
+    };
+    entry.StringChoices.Strings.AddRange(stringChoices);
+
+    return entry;
+  }
+
+  public static SchemaEntry CreateSchemaEntry(AresDataType dataType, bool optional, IEnumerable<double> numberChoices)
+  {
+    if(dataType != AresDataType.Number && dataType != AresDataType.NumberArray)
+    {
+      throw new InvalidOperationException($"Number choices were provided, but the data type was of type {dataType}");
+    }
+
+    var entry = new SchemaEntry
+    {
+      Type = dataType,
+      Optional = optional,
+      NumberChoices = new NumberArray()
+    };
+    entry.NumberChoices.Numbers.AddRange(numberChoices);
+
+    return entry;
+  }
+
+  public static SchemaEntry CreateSchemaEntry(AresDataType dataType, bool optional, IEnumerable<int> numberChoices)
+  {
+    var doubles = numberChoices.Select(num => (double)num);
+
+    return CreateSchemaEntry(dataType, optional, doubles);
+  }
+
+  public static SchemaEntry CreateSchemaEntry(AresDataType dataType, bool optional, IEnumerable<float> numberChoices)
+  {
+    var doubles = numberChoices.Select(num => (double)num);
+
+    return CreateSchemaEntry(dataType, optional, doubles);
+  }
 }

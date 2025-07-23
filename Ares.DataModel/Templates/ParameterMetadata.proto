@@ -4,7 +4,7 @@ package ares.messaging;
 
 import "Limits.proto";
 import "google/protobuf/wrappers.proto";
-import "AresDataType.proto";
+import "AresDataSchema.proto";
 
 message ParameterMetadata {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this metadata
@@ -14,5 +14,5 @@ message ParameterMetadata {
 	int64 index = 5; // Index of the collection in which executed this template
 	bool not_plannable = 6; // Set based on whether or not the parameter is meant to be plannable by external planner
 	bool use_default = 7; // Set based on whether or not the parameter should utilize its default value
-	AresDataType data_type = 8; // The data type of the parameter
+	SchemaEntry schema = 8; // The schema describing the type of this parameter
 	}

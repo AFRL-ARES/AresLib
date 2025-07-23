@@ -1,5 +1,4 @@
 ﻿using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Device;
 
@@ -27,7 +26,7 @@ public static class AresDeviceHelpers
     return result;
   }
 
-  public static DeviceCommandResult ParseCommandParameterToDouble(Parameter param, out double parsedParam)
+  public static DeviceCommandResult ParseStringCommandParameterToDouble(Parameter param, out double parsedParam)
   {
     var result = new DeviceCommandResult();
     var parsed = double.TryParse(param.Value.Value.StringValue, out var doubleParam);
