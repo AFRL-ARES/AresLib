@@ -28,7 +28,8 @@ public class RemoteAnalyzer : AnalyzerBase
     var client = GetClient();
     var analysisRequest = new AnalysisRequest
     {
-      Inputs = inputs
+      Inputs = inputs,
+      Settings = new AresStruct()
     };
     return client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken).ResponseAsync;
   }

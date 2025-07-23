@@ -149,12 +149,13 @@ public class CampaignExecutor : ICampaignExecutor
       if(experimentSummary.StepSummaries.Any(step => step.CommandSummaries.Any(cmd => !cmd.Result.Success)) || !experimentSummary.StepSummaries.Any())
         break;
 
+
       // if the execution was canceled, the experiment may not have executed the command to provide the output
       // and thus sending a null result to the analyzer might break it depending on the analyzer
       if(!token.IsCancelled)
       {
         var analysis = await _analysisHelper.Analyze(
-          experimentExecutor.Template.AnalyzerId,
+          experimentExecutor.Template,
           experimentSummary,
           token.CancellationToken);
         analyses.Add(analysis);

@@ -1,7 +1,7 @@
-﻿using Ares.Messaging;
+﻿using System.Text.Json;
+using Ares.Messaging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Text.Json;
 
 namespace Ares.Core.EntityConfigurations.Helpers;
 
@@ -48,6 +48,14 @@ public static class TextTypeDeterminationHelper
     return aresStruct.HasConversion(
       s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
       s => JsonSerializer.Deserialize<AresStruct>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresStruct())
+      .HasColumnType(DetermineColumnType());
+  }
+
+  public static PropertyBuilder<SchemaEntry> HasAresSchemaEntry(this PropertyBuilder<SchemaEntry> schemaEntry)
+  {
+    return schemaEntry.HasConversion(
+      s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
+      s => JsonSerializer.Deserialize<SchemaEntry>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new SchemaEntry())
       .HasColumnType(DetermineColumnType());
   }
 }

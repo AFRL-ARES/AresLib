@@ -1,7 +1,7 @@
-﻿using Ares.Core.Execution.ControlTokens;
+﻿using System.Reactive.Linq;
+using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Extensions;
 using Ares.Messaging;
-using System.Reactive.Linq;
 
 namespace Ares.Core.Execution.Executors;
 
@@ -63,10 +63,12 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
 
     var completedExperiment = new CompletedExperiment
     {
-      Template = Template
+      Template = Template,
+      Result = ResultGenerator.GenerateExperimentResult(stepSummaries, Template.StepTemplates)
     };
 
     completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
+
 
     return ExecutorSummaryHelpers.CreateExperimentExecutionSummary(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepSummaries);
   }

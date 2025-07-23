@@ -11,11 +11,12 @@ public class AnalysisHelper
     _analyzerRepo = analyzerRepo;
   }
 
-  public async Task<Analysis> Analyze(string? analyzerId, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
+  public async Task<Analysis> Analyze(ExperimentTemplate template, ExperimentExecutionSummary experimentSummary, CancellationToken cancellationToken)
   {
-    var analyzer = GetAnalyzer(analyzerId);
-
-    var analyzerInputs = experimentSummary.CompletedExperiment.Result;
+    var analyzer = GetAnalyzer(template.AnalyzerId);
+    var analyzerInputs = ExperimentOutputToAnalyzerInputs(
+      experimentSummary.CompletedExperiment.Result,
+      template.AnalyzerMaps);
     // TODO: Add support for settings
     var analysis = await analyzer.Analyze(analyzerInputs, cancellationToken);
     experimentSummary.CompletedExperiment.AnalysisResult = analysis.Result;
@@ -38,5 +39,17 @@ public class AnalysisHelper
 
     return _analyzerRepo
     .GetAnalyzerById(analyzerId) ?? throw new InvalidOperationException($"Could not find desired analyzer with id {analyzerId}");
+  }
+
+  private AresStruct ExperimentOutputToAnalyzerInputs(AresStruct experimentResult, IDictionary<string, string> analyzerMappings)
+  {
+    var mappedStruct = new AresStruct();
+    foreach(var expResultField in experimentResult.Fields)
+    {
+      var analyzerInputKey = analyzerMappings[expResultField.Key];
+      mappedStruct.Fields[analyzerInputKey] = expResultField.Value;
+    }
+
+    return mappedStruct;
   }
 }
