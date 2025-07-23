@@ -157,6 +157,7 @@ message CampaignExecutionSummaryMetadata {
 	string campaign_name = 1;
 	google.protobuf.Timestamp completion_time = 2;
 	string summary_id = 3;
+	int64 num_experiments = 4;
 }
 
 message CampaignExecutionSummaryRequest {

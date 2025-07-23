@@ -6,7 +6,6 @@ using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Threading.Tasks;
 using Ares.Core.Analyzing;
-using Ares.Core.EntityConfigurations.Helpers;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
@@ -448,6 +447,24 @@ public class AutomationService : AresAutomation.AresAutomationBase
     }
 
     response.AvailableTags.AddRange(tags);
+    return response;
+  }
+
+  public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummaries(Empty request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var summaries = await dbContext.CampaignExecutionSummaries.AsNoTracking().ToArrayAsync(context.CancellationToken);
+    var response = new AvailableCampaignExecutionSummariesResponse();
+    response.AvailableCampaignSummaries
+      .AddRange(summaries
+      .Select(summary => new CampaignExecutionSummaryMetadata
+      {
+        CampaignName = summary.CampaignName,
+        CompletionTime = summary.ExecutionInfo.TimeFinished,
+        SummaryId = summary.UniqueId,
+        NumExperiments = summary.ExperimentSummaries.Count
+      }));
+
     return response;
   }
 
