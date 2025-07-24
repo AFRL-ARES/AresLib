@@ -57,6 +57,7 @@ message AnalyzerStateRequest {
 
 message AnalyzerStateResponse {
 	analyzing.AnalyzerState state = 1;
+	string state_message = 2;
 }
 
 message AnalyzerInfoRequest {

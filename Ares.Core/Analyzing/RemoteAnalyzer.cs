@@ -2,12 +2,14 @@
 using Ares.Messaging.Analyzing;
 using Ares.Messaging.Analyzing.Remote;
 using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
 using Grpc.Net.Client;
 
 namespace Ares.Core.Analyzing;
 public class RemoteAnalyzer : AnalyzerBase
 {
   private readonly GrpcChannel _channel;
+  private bool _initialized = false;
 
   public RemoteAnalyzer(string name, Uri address, string id) : base(name, "", "_._._", id)
   {
@@ -45,30 +47,74 @@ public class RemoteAnalyzer : AnalyzerBase
     return client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken).ResponseAsync;
   }
 
-  public override Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken = default)
+  public override async Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken = default)
   {
     var client = GetClient();
-    return client.GetAnalyzerCapabilitiesAsync(
-      new Empty(),
-      cancellationToken: cancellationToken)
-      .ResponseAsync;
+    try
+    {
+      var capabilities = await client.GetAnalyzerCapabilitiesAsync(new Empty(), cancellationToken: cancellationToken);
+      return capabilities;
+    }
+    catch(RpcException)
+    {
+      return new AnalyzerCapabilities();
+    }
 
   }
 
   public override async Task<AresDataSchema> GetParameters(CancellationToken cancellationToken)
   {
     var client = GetClient();
-    var response = await client.GetAnalysisParametersAsync(new Empty(), cancellationToken: cancellationToken);
-    return response.ParameterSchema;
+    try
+    {
+      var response = await client.GetAnalysisParametersAsync(new Empty(), cancellationToken: cancellationToken);
+      return response.ParameterSchema;
+    }
+    catch(RpcException)
+    {
+      return new AresDataSchema();
+    }
   }
 
   public override async Task Init()
   {
+    await UpdateInfo();
+    await UpdateState();
+  }
+
+  internal async Task UpdateInfo()
+  {
     var client = GetClient();
-    var info = await client.GetInfoAsync(new Empty());
-    Type = info.Name;
-    Version = info.Version;
-    Description = info.Description;
+    try
+    {
+      var info = await client.GetInfoAsync(new Empty());
+      Type = info.Name;
+      Version = info.Version;
+      Description = info.Description;
+    }
+    catch(RpcException)
+    {
+      Type = "Unknown";
+      Version = "Unknown";
+      Description = "Failed to retrieve analyzer information";
+    }
+  }
+
+  internal async Task UpdateState()
+  {
+    var client = GetClient();
+    try
+    {
+      var state = await client.GetStateAsync(new Empty());
+      AnalyzerState = state.State;
+      StateMessage = state.StateMessage;
+      _initialized = true;
+    }
+    catch(RpcException e)
+    {
+      AnalyzerState = AnalyzerState.Inactive;
+      StateMessage = $"Failed to connect to analyzer: {e.Message}";
+    }
   }
 
   private AresRemoteAnalyzerService.AresRemoteAnalyzerServiceClient GetClient()

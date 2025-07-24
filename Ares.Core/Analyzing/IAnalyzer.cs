@@ -50,6 +50,11 @@ public interface IAnalyzer
   AnalyzerState AnalyzerState { get; }
 
   /// <summary>
+  /// If any reasoning needs to be provided for the current <see cref="AnalyzerState"/>
+  /// </summary>
+  string StateMessage { get; }
+
+  /// <summary>
   /// We give an option for analyzer to receive descriptions of inputs that ARES plans on sending it, and then
   /// the analyzer can let ARES know ahead of time if it's capable of dealing with the given inputs.
   /// That way we don't start an experiment and fail because ARES sent an input that was incompatible
