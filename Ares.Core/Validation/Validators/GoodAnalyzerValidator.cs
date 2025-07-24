@@ -16,6 +16,11 @@ public static class GoodAnalyzerValidator
     if(analyzer is null)
       return new ValidationResult(false, $"Unable to find analyzer with id of {experimentTemplate.AnalyzerId}");
 
+    if(analyzer.AnalyzerState != Messaging.Analyzing.AnalyzerState.Active)
+    {
+      return new ValidationResult(false, $"Unable to use analyzer {analyzer.Name} as it is is not currently active.\n{analyzer.StateMessage}");
+    }
+
     var outputCommands = experimentTemplate.GetAllOutputCommands();
 
     var analysisParameterSchema = await analyzer.GetParameters();
