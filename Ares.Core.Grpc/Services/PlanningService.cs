@@ -142,9 +142,9 @@ public class PlanningService : AresPlanning.AresPlanningBase
     try
     {
       await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-      var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
+      var oldInfo = await dbContext.Planners.FirstOrDefaultAsync(a => a.Name == name);
       if(oldInfo != null)
-        dbContext.Analyzers.Remove(oldInfo);
+        dbContext.Planners.Remove(oldInfo);
       await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 

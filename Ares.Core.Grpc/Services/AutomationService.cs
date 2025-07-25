@@ -467,22 +467,26 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return response;
   }
 
+  public override async Task<CampaignExecutionSummary> GetCampaignSummary(CampaignExecutionSummaryRequest request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var summary = await dbContext.CampaignExecutionSummaries
+      .AsNoTracking()
+      .FirstOrDefaultAsync(s => s.UniqueId == request.SummaryId, context.CancellationToken);
+
+    if(summary is null)
+      //TODO: Figure out what to do here..?
+      throw new InvalidOperationException("Couldn't locate a matching campaign summary!");
+
+    return summary;
+  }
+
   private JsonSerializerOptions CreateCustomSerializationSettings()
   {
     var options = new JsonSerializerOptions();
     options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.AddProtobufSupport();
     return options;
-
-    //var serializerSettings = new JsonSerializerSettings();
-
-    ////Add Custom Serializers
-    //serializerSettings.Converters.Add(new ByteStringConverter());
-
-    ////Set type handling
-    //serializerSettings.TypeNameHandling = TypeNameHandling.All;
-
-    //return serializerSettings;
   }
 
   private void HandleNotification(string title, string message, NotificationSeverityEnum severity)

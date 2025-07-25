@@ -58,7 +58,7 @@ public class ExecutionManager : IExecutionManager
     _executionControlTokenSource = new ExecutionControlTokenSource();
     var campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
     campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
-    PostExecution(campaignExecutionSummary);
+    await PostExecution(campaignExecutionSummary);
   }
 
   public void Stop()
@@ -121,9 +121,9 @@ public class ExecutionManager : IExecutionManager
     ReplanRate = newRate;
   }
 
-  private void PostExecution(CampaignExecutionSummary result)
+  private async Task PostExecution(CampaignExecutionSummary result)
   {
-    //await StoreCompletedCampaign(result);
+    await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
     _currentExecutor = null;
