@@ -32,6 +32,7 @@ public class AnalyzerService(IAnalyzerRepo analyzerRepo, IRemoteAnalyzerManager 
       Name = analyzer.Name,
       Type = analyzer.Type,
       Version = analyzer.Version,
+      Description = analyzer.Description,
       UniqueId = analyzer.UniqueId,
       Capabilities = await analyzer.GetCapabilities(),
       Url = analyzer is RemoteAnalyzer remoteAnalyzer ? remoteAnalyzer.Address.ToString() : null
