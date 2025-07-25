@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Ares.Core.Analyzing;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
-using Ares.Core.Grpc.Helpers;
 using Ares.Core.Notifications;
 using Ares.Messaging;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 
 namespace Ares.Core.Grpc.Services;
 
@@ -28,7 +27,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   private readonly IEnumerable<IStartCondition> _startConditions;
   private readonly IEnumerable<INotificationHandler> _notificationHandlers;
   readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
-  private JsonSerializerSettings _serializerSettings;
+  private JsonSerializerOptions _serializerSettings;
   readonly IAnalyzerRepo _analyzerRepo;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
@@ -69,7 +68,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
       try
       {
         var contents = await File.ReadAllTextAsync(file);
-        var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, _serializerSettings);
+        var campaignTemplate = JsonSerializer.Deserialize<CampaignTemplate>(contents, _serializerSettings);
         if(campaignTemplate is not null)
           campaignResponse.CampaignTemplates.Add(campaignTemplate);
 
@@ -112,7 +111,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     foreach(var file in directoryFiles)
     {
       var jsonString = File.ReadAllText(Path.Combine(AresConfig.TemplatePath, file));
-      var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
+      var templateObject = JsonSerializer.Deserialize<CampaignTemplate>(jsonString, _serializerSettings);
       if(templateObject is not null && templateObject.Name == request.CampaignName)
         return new BoolValue { Value = true };
     }
@@ -167,7 +166,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
-    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
+    var jsonString = JsonSerializer.Serialize(request.Template, _serializerSettings);
     var fullFilePath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
 
     File.WriteAllText(fullFilePath, jsonString);
@@ -187,7 +186,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
       return Task.FromResult(request.Template);
     }
 
-    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
+    var jsonString = JsonSerializer.Serialize(request.Template, _serializerSettings);
     var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
     File.WriteAllText(fullPath, jsonString);
 
@@ -202,7 +201,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     if(campaignFile is not null)
     {
       var jsonString = await File.ReadAllTextAsync(Path.Combine(AresConfig.TemplatePath, campaignFile));
-      var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
+      var campaignObject = JsonSerializer.Deserialize<CampaignTemplate>(jsonString, _serializerSettings);
 
       if(campaignObject is not null)
         return campaignObject;
@@ -468,17 +467,22 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return response;
   }
 
-  private JsonSerializerSettings CreateCustomSerializationSettings()
+  private JsonSerializerOptions CreateCustomSerializationSettings()
   {
-    var serializerSettings = new JsonSerializerSettings();
+    var options = new JsonSerializerOptions();
+    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.AddProtobufSupport();
+    return options;
 
-    //Add Custom Serializers
-    serializerSettings.Converters.Add(new ByteStringConverter());
+    //var serializerSettings = new JsonSerializerSettings();
 
-    //Set type handling
-    serializerSettings.TypeNameHandling = TypeNameHandling.All;
+    ////Add Custom Serializers
+    //serializerSettings.Converters.Add(new ByteStringConverter());
 
-    return serializerSettings;
+    ////Set type handling
+    //serializerSettings.TypeNameHandling = TypeNameHandling.All;
+
+    //return serializerSettings;
   }
 
   private void HandleNotification(string title, string message, NotificationSeverityEnum severity)
