@@ -55,6 +55,7 @@ message ConnectionStatusResponse {
 
 message AnalyzerStateResponse {
 	AnalyzerState state = 1;
+	string state_message = 2;
 }
 
 message InfoResponse {

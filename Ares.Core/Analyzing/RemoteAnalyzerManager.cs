@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Ares.Core.Analyzing;
 public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbContextFactory, IAnalyzerRepo _analyzerRepo, INotificationHandler _notificationHandler) : IRemoteAnalyzerManager
 {
+  private List<RemoteAnalyzerMonitor> _analyzerMonitors = [];
   public async Task CreateAnalyzer(string name, string url)
   {
     var config = new AnalyzerConfig { UniqueId = Guid.NewGuid().ToString(), Name = name, Url = url };
@@ -13,13 +14,16 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
       return;
 
     _analyzerRepo.AddAnalyzer(analyzer);
+    var monitor = new RemoteAnalyzerMonitor(analyzer);
+    _analyzerMonitors.Add(monitor);
+
     var ctx = _dbContextFactory.CreateDbContext();
     ctx.Analyzers.Add(config);
 
     await ctx.SaveChangesAsync();
   }
 
-  private async Task<IAnalyzer?> LoadAnalyzer(AnalyzerConfig config)
+  private async Task<RemoteAnalyzer?> LoadAnalyzer(AnalyzerConfig config)
   {
     var uriValid = Uri.TryCreate(config.Url, UriKind.Absolute, out var uri);
     if(!uriValid || uri is null)
@@ -42,10 +46,12 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
     var ctx = _dbContextFactory.CreateDbContext();
     var configs = await ctx.Analyzers.ToArrayAsync();
     var analyzers = await Task.WhenAll(configs.Select(LoadAnalyzer));
-    var nonNullAnalyzers = analyzers.OfType<IAnalyzer>().ToArray();
+    var nonNullAnalyzers = analyzers.OfType<RemoteAnalyzer>().ToArray();
     foreach(var analyzer in nonNullAnalyzers)
     {
       _analyzerRepo.AddAnalyzer(analyzer);
+      var monitor = new RemoteAnalyzerMonitor(analyzer);
+      _analyzerMonitors.Add(monitor);
     }
   }
 
@@ -62,6 +68,9 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
     await ctx.SaveChangesAsync();
 
     _analyzerRepo.RemoveAnalyzer(analyzerId);
+    var monitor = _analyzerMonitors.First(m => m.AnalyzerId == analyzerId);
+    monitor.Dispose();
+    _analyzerMonitors.Remove(monitor);
   }
 
   public async Task UpdateAnalyzer(AnalyzerConfig config)

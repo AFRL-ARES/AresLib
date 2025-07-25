@@ -30,6 +30,7 @@ public class AnalyzerService(IAnalyzerRepo analyzerRepo, IRemoteAnalyzerManager 
     var info = new AnalyzerInfo
     {
       Name = analyzer.Name,
+      Type = analyzer.Type,
       Version = analyzer.Version,
       UniqueId = analyzer.UniqueId,
       Capabilities = await analyzer.GetCapabilities(),
@@ -101,6 +102,7 @@ public class AnalyzerService(IAnalyzerRepo analyzerRepo, IRemoteAnalyzerManager 
     var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
 
     response.State = analyzer.AnalyzerState;
+    response.StateMessage = analyzer.StateMessage;
 
     return Task.FromResult(response);
   }

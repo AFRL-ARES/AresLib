@@ -9,7 +9,8 @@ import "Analyzing/AnalyzerCapabilities.proto";
 message AnalyzerInfo {
 	google.protobuf.StringValue unique_id = 1; // A unique id for this analyzer
 	string name = 2; // name of the analyzer
-	string version = 3; // version of the analyzer
-	AnalyzerCapabilities capabilities = 4; // any info that might be used to describe what the analyzer needs and/or is capable of
-	google.protobuf.StringValue url = 5; // the remote address of the analyzer if it's a remote analyzer
+	string type = 3; // the type name of the analyzer
+	string version = 4; // version of the analyzer
+	AnalyzerCapabilities capabilities = 5; // any info that might be used to describe what the analyzer needs and/or is capable of
+	google.protobuf.StringValue url = 6; // the remote address of the analyzer if it's a remote analyzer
 }
