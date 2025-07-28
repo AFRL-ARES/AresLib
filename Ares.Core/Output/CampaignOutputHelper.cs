@@ -64,9 +64,18 @@ public static class CampaignOutputHelper
   private static string CreateCampaignResultsFolder(string campaignName, DateTime startTime)
   {
     var newFolderName = $"{campaignName}_{startTime.ToString("_yyyy-MM-dd_HH-mm-ss")}";
-    var fullPath = Path.Combine(AresConfig.ResultsPath, newFolderName);
+    var validatedFolderName = EnsureValidFolderName(newFolderName);
+    var fullPath = Path.Combine(AresConfig.ResultsPath, validatedFolderName);
     Directory.CreateDirectory(fullPath);
     return fullPath;
+  }
+
+  private static string EnsureValidFolderName(string folderName)
+  {
+    foreach(var c in Path.GetInvalidFileNameChars())
+      folderName = folderName.Replace(c.ToString(), string.Empty);
+    
+    return folderName;
   }
 
   public static async Task OutputVersionFile(string campaignPath, CampaignTemplate template, IAnalyzer? analyzer)
