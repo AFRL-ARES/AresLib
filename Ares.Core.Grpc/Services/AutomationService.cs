@@ -452,7 +452,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
   public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummaries(Empty request, ServerCallContext context)
   {
     await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    var summaries = await dbContext.CampaignExecutionSummaries.AsNoTracking().ToArrayAsync(context.CancellationToken);
+    var summaries = await dbContext.CampaignExecutionSummaries.AsNoTracking().AsSplitQuery().ToArrayAsync(context.CancellationToken);
     var response = new AvailableCampaignExecutionSummariesResponse();
     response.AvailableCampaignSummaries
       .AddRange(summaries
@@ -472,6 +472,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
     var summary = await dbContext.CampaignExecutionSummaries
       .AsNoTracking()
+      .AsSplitQuery()
       .FirstOrDefaultAsync(s => s.UniqueId == request.SummaryId, context.CancellationToken);
 
     if(summary is null)
