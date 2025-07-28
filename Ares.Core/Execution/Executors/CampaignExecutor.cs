@@ -80,8 +80,12 @@ public class CampaignExecutor : ICampaignExecutor
       await CampaignOutputHelper.WriteExperimentTags(campaignPath, CampaignTags);
 
     // TODO do something about the analyzers here
-    var analyzer = _analyzerRepo.GetAnalyzerById(Template.ExperimentTemplates.First().AnalyzerId);
-    await CampaignOutputHelper.OutputVersionFile(campaignPath, Template, analyzer);
+    var analyzerId = Template.ExperimentTemplates.First().AnalyzerId;
+    if(analyzerId is not null)
+    {
+      var analyzer = _analyzerRepo.GetAnalyzerById(analyzerId);
+      await CampaignOutputHelper.OutputVersionFile(campaignPath, Template, analyzer);
+    }
 
     var experimentSummaries = new List<ExperimentExecutionSummary>();
     var analyses = new List<Analysis>();
