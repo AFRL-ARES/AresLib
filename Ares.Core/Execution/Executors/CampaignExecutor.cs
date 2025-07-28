@@ -197,6 +197,8 @@ public class CampaignExecutor : ICampaignExecutor
       CampaignId = Template.UniqueId,
       ExecutionInfo = new ExecutionInfo
       {
+        Timezone = TimeZoneInfo.Local.DisplayName,
+        LocaltimeOffset = DateTimeOffset.Now.Offset.ToString(),
         TimeFinished = DateTime.UtcNow.ToTimestamp(),
         TimeStarted = startTime.ToUniversalTime().ToTimestamp()
       }
