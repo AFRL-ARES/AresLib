@@ -16,11 +16,6 @@ internal class NoneAnalyzer : AnalyzerBase
 
   public override Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken)
   {
-    return Analyze(inputs, cancellationToken);
-  }
-
-  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct _settings, CancellationToken cancellationToken)
-  {
     var analysis = new Analysis
     {
       Success = true,
@@ -28,6 +23,11 @@ internal class NoneAnalyzer : AnalyzerBase
     };
 
     return Task.FromResult(analysis);
+  }
+
+  public override Task<Analysis> Analyze(AresStruct inputs, AresStruct _settings, CancellationToken cancellationToken)
+  {
+    return Analyze(inputs, cancellationToken);
   }
 
   public override Task<AnalyzerCapabilities> GetCapabilities(CancellationToken cancellationToken)

@@ -21,10 +21,13 @@ internal static class ResultGenerator
       .ToDictionary(group => group.Key, group => group.Last().Value);
 
     var experimentResultStruct = new AresStruct();
+
+
     foreach(var field in deviceResultStruct.Fields)
     {
-      var expOutputKey = flattenedOutputMaps[field.Key];
-      experimentResultStruct.AddValue(expOutputKey, field.Value);
+      var found = flattenedOutputMaps.TryGetValue(field.Key, out var expOutputKey);
+      if(found)
+        experimentResultStruct.AddValue(expOutputKey!, field.Value);
     }
 
     return experimentResultStruct;
