@@ -11,6 +11,11 @@ internal static class ResultGenerator
       .Where(cmd => cmd.Result is not null && cmd.Result.Success)
       .Select(cmd => cmd.Result.Result)
       .OfType<AresStruct>();
+    
+    var experimentResultStruct = new AresStruct();
+
+    if(!deviceResults.Any())
+      return experimentResultStruct;
 
     var deviceResultStruct = deviceResults.Aggregate((total, next) => total.AppendStruct(next));
 
@@ -19,9 +24,6 @@ internal static class ResultGenerator
       .SelectMany(map => map)
       .GroupBy(pair => pair.Key) // merge duplicates
       .ToDictionary(group => group.Key, group => group.Last().Value);
-
-    var experimentResultStruct = new AresStruct();
-
 
     foreach(var field in deviceResultStruct.Fields)
     {
