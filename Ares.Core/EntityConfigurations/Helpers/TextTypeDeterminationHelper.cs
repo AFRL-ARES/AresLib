@@ -29,33 +29,37 @@ public static class TextTypeDeterminationHelper
 
   public static PropertyBuilder<AresValue> HasAresValue(this PropertyBuilder<AresValue> value)
   {
+    var settings = SerializerSettingsHelper.CreateCustomSerializationSettings();
     return value.HasConversion(
-        v => JsonSerializer.Serialize(v, new JsonSerializerOptions(JsonSerializerDefaults.General)),
-        v => JsonSerializer.Deserialize<AresValue>(v, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresValue())
+        v => JsonSerializer.Serialize(v, settings),
+        v => JsonSerializer.Deserialize<AresValue>(v, settings) ?? new AresValue())
       .HasColumnType(DetermineColumnType());
   }
 
   public static PropertyBuilder<AresDataSchemaSimplified> HasDataSchemaSimplified(this PropertyBuilder<AresDataSchemaSimplified> schema)
   {
+    var settings = SerializerSettingsHelper.CreateCustomSerializationSettings();
     return schema.HasConversion(
-      s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
-      s => JsonSerializer.Deserialize<AresDataSchemaSimplified>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresDataSchemaSimplified())
+      s => JsonSerializer.Serialize(s, settings),
+      s => JsonSerializer.Deserialize<AresDataSchemaSimplified>(s, settings) ?? new AresDataSchemaSimplified())
       .HasColumnType(DetermineColumnType());
   }
 
   public static PropertyBuilder<AresStruct> HasAresStruct(this PropertyBuilder<AresStruct> aresStruct)
   {
+    var settings = SerializerSettingsHelper.CreateCustomSerializationSettings();
     return aresStruct.HasConversion(
-      s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
-      s => JsonSerializer.Deserialize<AresStruct>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new AresStruct())
+      s => JsonSerializer.Serialize(s, settings),
+      s => JsonSerializer.Deserialize<AresStruct>(s, settings) ?? new AresStruct())
       .HasColumnType(DetermineColumnType());
   }
 
   public static PropertyBuilder<SchemaEntry> HasAresSchemaEntry(this PropertyBuilder<SchemaEntry> schemaEntry)
   {
+    var settings = SerializerSettingsHelper.CreateCustomSerializationSettings();
     return schemaEntry.HasConversion(
-      s => JsonSerializer.Serialize(s, new JsonSerializerOptions(JsonSerializerDefaults.General)),
-      s => JsonSerializer.Deserialize<SchemaEntry>(s, new JsonSerializerOptions(JsonSerializerDefaults.General)) ?? new SchemaEntry())
+      s => JsonSerializer.Serialize(s, settings),
+      s => JsonSerializer.Deserialize<SchemaEntry>(s, settings) ?? new SchemaEntry())
       .HasColumnType(DetermineColumnType());
   }
 }

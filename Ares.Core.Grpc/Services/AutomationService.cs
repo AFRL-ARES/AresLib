@@ -7,11 +7,13 @@ using System.Reactive.Threading.Tasks;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Ares.Core.Analyzing;
+using Ares.Core.EntityConfigurations.Helpers;
 using Ares.Core.Execution;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Core.Notifications;
 using Ares.Messaging;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
@@ -46,7 +48,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     _executionReportStore = executionReportStore;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _startConditions = startConditions;
-    _serializerSettings = CreateCustomSerializationSettings();
+    _serializerSettings = SerializerSettingsHelper.CreateCustomSerializationSettings();
     _notificationHandlers = notificationHandlers;
   }
 
@@ -416,43 +418,55 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override async Task<TagsResponse> GetAllTags(Empty request, ServerCallContext context)
   {
-    var tags = (await File.ReadAllTextAsync(AresConfig.TagsPath)).Split(",").ToList();
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
     var response = new TagsResponse();
-    response.AvailableTags.AddRange(tags);
+    response.AvailableTags.AddRange(existingTags);
     return response;
   }
 
   public override async Task<TagsResponse> AddTag(TagRequest request, ServerCallContext context)
   {
-    var tags = await File.ReadAllTextAsync(AresConfig.TagsPath);
-    var updatedTags = $"{tags},{request.TagName}";
-    await File.WriteAllTextAsync(AresConfig.TagsPath, updatedTags);
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+
+    if(existingTags.Any(t => t.UniqueId == request.Tag.UniqueId))
+      //Duplicate tag, don't do it plz
+      throw new InvalidOperationException();
+
+    dbContext.CampaignTags.Add(request.Tag);
+    await dbContext.SaveChangesAsync();
 
     var response = new TagsResponse();
-    response.AvailableTags.AddRange(updatedTags.Split(","));
+    response.AvailableTags.AddRange(existingTags);
+    response.AvailableTags.Add(request.Tag);
     return response;
   }
 
   public override async Task<TagsResponse> RemoveTag(TagRequest request, ServerCallContext context)
   {
-    var tags = (await File.ReadAllTextAsync(AresConfig.TagsPath)).Split(",").ToList();
-    var response = new TagsResponse();
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+    var match = existingTags.FirstOrDefault(tag => tag.UniqueId == request.Tag.UniqueId);
 
-    if(tags is not null && tags.Contains(request.TagName))
+    if(match is not null)
     {
-      tags.Remove(request.TagName);
-      var tagsString = string.Join(",", tags);
-      await File.WriteAllTextAsync(AresConfig.TagsPath, tagsString);
+      dbContext.Remove(match);
+      await dbContext.SaveChangesAsync();
     }
 
-    response.AvailableTags.AddRange(tags);
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(await dbContext.CampaignTags.ToArrayAsync());
     return response;
   }
 
   public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummaries(Empty request, ServerCallContext context)
   {
     await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-    var summaries = await dbContext.CampaignExecutionSummaries.AsNoTracking().AsSplitQuery().ToArrayAsync(context.CancellationToken);
+    var summaries = await dbContext.CampaignExecutionSummaries
+      .AsNoTracking()
+      .AsSplitQuery()
+      .ToArrayAsync(context.CancellationToken);
     var response = new AvailableCampaignExecutionSummariesResponse();
     response.AvailableCampaignSummaries
       .AddRange(summaries
@@ -480,14 +494,6 @@ public class AutomationService : AresAutomation.AresAutomationBase
       throw new InvalidOperationException("Couldn't locate a matching campaign summary!");
 
     return summary;
-  }
-
-  private JsonSerializerOptions CreateCustomSerializationSettings()
-  {
-    var options = new JsonSerializerOptions();
-    options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-    options.AddProtobufSupport();
-    return options;
   }
 
   private void HandleNotification(string title, string message, NotificationSeverityEnum severity)
