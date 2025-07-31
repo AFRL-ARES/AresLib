@@ -6,6 +6,7 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 import "CompletedExperiment.proto";
 import "DeviceCommandResult.proto";
+import "AresCampaignTag.proto";
 
 message ExecutionInfo {
   google.protobuf.StringValue unique_id = 1;
@@ -21,6 +22,8 @@ message CampaignExecutionSummary {
   repeated ExperimentExecutionSummary experiment_summaries = 3;
   ExecutionInfo execution_info = 4;
   string campaign_name = 5;
+  string campaign_tags = 6;
+  string campaign_notes = 7;
 }
 
 message ExperimentExecutionSummary {

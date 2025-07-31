@@ -22,6 +22,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
   public DbSet<AnalyzerConfig> Analyzers => Set<AnalyzerConfig>();
   public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
+  public DbSet<AresCampaignTag> CampaignTags => Set<AresCampaignTag>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

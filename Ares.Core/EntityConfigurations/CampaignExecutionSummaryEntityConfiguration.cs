@@ -19,11 +19,6 @@ internal class CampaignExecutionSummaryEntityConfiguration : AresEntityTypeBaseC
       .HasForeignKey<ExecutionInfo>("CampaignExecutionSummaryId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
-    //builder.HasOne<CampaignTemplate>()
-    //  .WithMany()
-    //  .HasForeignKey(result => result.CampaignId)
-    //  .OnDelete(DeleteBehavior.ClientCascade);
-
     builder.Navigation(result => result.ExecutionInfo)
       .AutoInclude();
 

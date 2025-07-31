@@ -13,18 +13,18 @@ public class ExecutionManager : IExecutionManager
 {
   private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
   private readonly ICommandComposer<CampaignTemplate, ICampaignExecutor> _campaignComposer;
-  private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
   private ICampaignExecutor? _currentExecutor;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
-    IDbContextFactory<CoreDatabaseContext> dbContext,
+    IDbContextFactory<CoreDatabaseContext> dbContextFactory,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer)
   {
     _startConditions = startConditions;
-    _dbContext = dbContext;
+    _dbContextFactory = dbContextFactory;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _campaignComposer = campaignComposer;
   }
@@ -41,11 +41,9 @@ public class ExecutionManager : IExecutionManager
     return startConditions.All(condition => condition?.Success ?? true);
   }
 
-
-
   public int ReplanRate { get; private set; } = 1;
 
-  public async Task Start(string executionNotes, List<string> campaignTags)
+  public async Task Start(string executionNotes, List<AresCampaignTag> campaignTags)
   {
     var err = await CheckCampaignStartPrerequisites();
     if(!string.IsNullOrEmpty(err))
@@ -53,11 +51,21 @@ public class ExecutionManager : IExecutionManager
       throw new InvalidOperationException(err);
     }
     var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
+
+    if(!string.IsNullOrEmpty(executionNotes))
+      executor.UpdateExecutionNotes(executionNotes);
+
+    if(campaignTags.Any())
+      executor.UpdateCampaignTags(campaignTags);
+
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
     var campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
     campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
+    campaignExecutionSummary.CampaignNotes = executionNotes;
+    campaignExecutionSummary.CampaignTags = string.Join(",", campaignTags.Select(tag => tag.TagName).ToList());
+
     await PostExecution(campaignExecutionSummary);
   }
 
@@ -131,7 +139,7 @@ public class ExecutionManager : IExecutionManager
 
   private async Task StoreCompletedCampaign(CampaignExecutionSummary result)
   {
-    await using var context = await _dbContext.CreateDbContextAsync();
+    await using var context = _dbContextFactory.CreateDbContext();
     context.CampaignExecutionSummaries.Add(result);
     await context.SaveChangesAsync();
   }

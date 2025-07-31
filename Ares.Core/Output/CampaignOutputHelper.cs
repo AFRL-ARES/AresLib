@@ -33,10 +33,11 @@ public static class CampaignOutputHelper
     await File.WriteAllTextAsync(path, notes);
   }
 
-  public static async Task WriteExperimentTags(string campaignPath, List<string> tags)
+  public static async Task WriteExperimentTags(string campaignPath, List<AresCampaignTag> tags)
   {
+    var tag_names = tags.Select(t => t.TagName);
     var path = Path.Combine(campaignPath, "ExecutionTags.txt");
-    await File.WriteAllTextAsync(path, string.Join(",", tags));
+    await File.WriteAllTextAsync(path, string.Join(",", tag_names));
   }
 
   private static string CreateCampaignMiscellaneousFolder(string campaignPath)

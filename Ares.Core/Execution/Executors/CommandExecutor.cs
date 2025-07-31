@@ -2,6 +2,7 @@
 using System.Reactive.Subjects;
 using Ares.Core.Execution.ControlTokens;
 using Ares.Messaging;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Execution.Executors;
@@ -31,12 +32,9 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
   public CommandTemplate Template { get; set; }
 
   public IObservable<CommandExecutionStatus> ExperimentStatusObservable { get; }
-  public IObservable<CommandExecutionStatus> StartupStatusObservable { get; }
-  public IObservable<CommandExecutionStatus> CloseoutStatusObservable { get; }
   public CommandExecutionStatus Status => _stateSubject.Value;
   public async Task<CommandExecutionSummary> Execute(ExecutionControlToken token)
   {
-
     Status.State = token.IsPaused ? ExecutionState.Paused : ExecutionState.Running;
     _stateSubject.OnNext(Status);
     if(token.IsPaused)
@@ -64,9 +62,9 @@ public class CommandExecutor : IExecutor<CommandExecutionSummary, CommandExecuti
     if(result.AwaitUserInput)
       AwaitUserInput(token);
 
-
     else if(result.Success)
       Status.State = ExecutionState.Succeeded;
+
 
     else
       Status.State = ExecutionState.Failed;

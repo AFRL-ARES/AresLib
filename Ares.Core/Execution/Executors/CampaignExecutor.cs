@@ -221,7 +221,7 @@ public class CampaignExecutor : ICampaignExecutor
 
   public void UpdateExecutionNotes(string notes) => ExecutionNotes = notes;
 
-  public void UpdateCampaignTags(List<string> tags) => CampaignTags = tags;
+  public void UpdateCampaignTags(List<AresCampaignTag> tags) => CampaignTags = tags;
 
   private bool IsAwaitingResponse(ExperimentExecutionStatus status)
     => status.StepExecutionStatuses
@@ -347,7 +347,7 @@ public class CampaignExecutor : ICampaignExecutor
   public IList<IStopCondition> StopConditions { get; } = new List<IStopCondition>();
   public double ReplanRate { get; set; } = 1;
   public string? ExecutionNotes { get; set; }
-  public List<string> CampaignTags { get; set; } = new();
+  public List<AresCampaignTag> CampaignTags { get; set; } = new();
   public IObservable<CampaignExecutionStatus> ExperimentStatusObservable { get; }
   public CampaignExecutionStatus Status { get; private set; }
 }

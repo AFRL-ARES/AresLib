@@ -9,5 +9,5 @@ public interface ICampaignExecutor : IExecutor<CampaignExecutionSummary, Campaig
   double ReplanRate { get; set; }
   void UpdateExecutionNotes(string executionNotes);
 
-  void UpdateCampaignTags(List<string> campaignTags);
+  void UpdateCampaignTags(List<AresCampaignTag> campaignTags);
 }

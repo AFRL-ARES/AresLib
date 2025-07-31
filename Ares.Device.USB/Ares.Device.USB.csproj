@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ares.Device.dll" Version="2025.7.30.132144" />
+    <PackageReference Include="Ares.Device.dll" Version="2025.7.30.172439" />
   </ItemGroup>
 
   <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
