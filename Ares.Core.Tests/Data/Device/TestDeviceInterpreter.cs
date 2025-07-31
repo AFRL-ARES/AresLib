@@ -2,7 +2,6 @@
 using Ares.Messaging;
 using Ares.Test;
 using Ares.Tools;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Tests.Data.Device;
 
@@ -32,7 +31,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
           return Task.FromResult(result);
         }
 
-        result.Result = AresStructHelper.CreateNumberStruct("Test", floatValue);
+        result.Result = AresStructHelper.CreateNumberStruct("TestOutput", floatValue);
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();
         return Task.FromResult(result);

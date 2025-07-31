@@ -4,6 +4,8 @@ package ares.messaging;
 
 import "Analyzing/AnalyzerInfo.proto";
 import "Analyzing/AnalyzerState.proto";
+import "Analyzing/AnalyzerSettings.proto";
+import "AresStruct.proto";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
@@ -15,6 +17,8 @@ service AresAnalyzerManagementService {
 	rpc RemoveRemoteAnalyzer(RemoveRemoteAnalyzerRequest) returns (google.protobuf.Empty);
 	rpc GetState(AnalyzerStateRequest) returns (AnalyzerStateResponse);
 	rpc GetInfo(AnalyzerInfoRequest) returns (AnalyzerInfoResponse);
+	rpc SetAnalyzerSettings(analyzing.AnalyzerSettings) returns (google.protobuf.Empty);
+	rpc GetAnalyzerSettings(AnalyzerSettingsRequest) returns (AresStruct);
 }
 
 message GetAllAnalyzersResponse {
@@ -66,4 +70,8 @@ message AnalyzerInfoRequest {
 
 message AnalyzerInfoResponse {
 	analyzing.AnalyzerInfo info = 1;
+}
+
+message AnalyzerSettingsRequest {
+	string analyzer_id = 1;
 }

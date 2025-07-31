@@ -16,7 +16,6 @@ public class ExecutionManager : IExecutionManager
   private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
-  private ICampaignExecutor? _currentExecutor;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
     IDbContextFactory<CoreDatabaseContext> dbContextFactory,
@@ -134,7 +133,6 @@ public class ExecutionManager : IExecutionManager
     await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
-    _currentExecutor = null;
   }
 
   private async Task StoreCompletedCampaign(CampaignExecutionSummary result)

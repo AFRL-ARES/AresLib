@@ -16,4 +16,6 @@ public interface IRemoteAnalyzerManager
   Task RemoveAnalyzer(string analyzerId);
 
   Task UpdateAnalyzer(AnalyzerConfig config);
+
+  Task UpdateAnalyzerSettings(AnalyzerSettings analyzerSettings);
 }

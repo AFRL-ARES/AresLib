@@ -55,6 +55,19 @@ public interface IAnalyzer
   string StateMessage { get; }
 
   /// <summary>
+  /// Optional inputs that live on analyzers that can guide the analysis in certain directions.
+  /// Unlike parameters which are generally supposed to be different per analysis, the settings
+  /// give the ability to have constants throughout the different analyses
+  /// </summary>
+  AresStruct Settings { get; }
+
+  /// <summary>
+  /// Updates the internal settings by overwriting the existing values with the ones provided by the
+  /// passed in settings argument
+  /// </summary>
+  void UpdateSettings(AresStruct settings);
+
+  /// <summary>
   /// We give an option for analyzer to receive descriptions of inputs that ARES plans on sending it, and then
   /// the analyzer can let ARES know ahead of time if it's capable of dealing with the given inputs.
   /// That way we don't start an experiment and fail because ARES sent an input that was incompatible
@@ -95,4 +108,10 @@ public interface IAnalyzer
   /// <param name="cancellationToken"></param>
   /// <returns><see cref="Analysis" /> which is the outcome of the analysis performed.</returns>
   Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken);
+
+  /// <summary>
+  /// How long do we expect the analyzer to do its analysis before ARES decides that analyzing has failed.
+  /// This is here in case the analysis takes a few minutes
+  /// </summary>
+  TimeSpan AnalysisTimeout { get; }
 }

@@ -35,6 +35,7 @@ public abstract class AnalyzerBase : IAnalyzer
   public string Name { get; set; }
   public string Version { get; protected set; }
   public string Type { get; protected set; }
+  public AresStruct Settings { get; } = new();
   public string UniqueId { get; set; } = Guid.NewGuid().ToString();
   public IObservable<AnalyzerState> AnalyzerStateObservable { get; }
 
@@ -50,6 +51,22 @@ public abstract class AnalyzerBase : IAnalyzer
   public string Description { get; protected set; } = "";
 
   public string StateMessage { get; protected set; } = "";
+
+  public TimeSpan AnalysisTimeout { get; protected set; } = TimeSpan.FromSeconds(5);
+
+  public void UpdateSettings(AresStruct settings)
+  {
+    foreach(var setting in Settings.Fields)
+    {
+      var newValue = settings.Fields.GetValueOrDefault(setting.Key);
+      if(newValue is null)
+      {
+        continue;
+      }
+
+      Settings.Fields[setting.Key] = newValue;
+    }
+  }
 
   public abstract Task<Analysis> Analyze(AresStruct inputs, CancellationToken cancellationToken);
 

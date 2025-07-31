@@ -1,4 +1,5 @@
 ﻿using Ares.Messaging.Analyzing;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Analyzing;
 internal class RemoteAnalyzerMonitor : IDisposable
@@ -7,9 +8,11 @@ internal class RemoteAnalyzerMonitor : IDisposable
   private readonly Task _monitorTask;
   private readonly CancellationTokenSource _tokenSource;
   private AnalyzerState _lastState = AnalyzerState.UnspecifiedState;
+  readonly IAnalyzerCache _analyzerCache;
 
-  public RemoteAnalyzerMonitor(RemoteAnalyzer analyzer)
+  public RemoteAnalyzerMonitor(RemoteAnalyzer analyzer, IAnalyzerCache analyzerCache)
   {
+    _analyzerCache = analyzerCache;
     _analyzer = analyzer;
     _tokenSource = new CancellationTokenSource();
     _monitorTask = Monitor(_tokenSource.Token);
@@ -33,9 +36,13 @@ internal class RemoteAnalyzerMonitor : IDisposable
           {
             await _analyzer.UpdateState();
 
-            if((_lastState == AnalyzerState.Inactive || _lastState == AnalyzerState.Error) && _analyzer.AnalyzerState == AnalyzerState.Active)
+            if(_lastState != AnalyzerState.Active && _analyzer.AnalyzerState == AnalyzerState.Active)
             {
               await _analyzer.UpdateInfo();
+              await _analyzer.UpdateParameters();
+              await _analyzer.UpdateCapabilities();
+              await _analyzerCache.CacheAnalyzerInfo(_analyzer);
+              await _analyzerCache.CacheAnalyzerSettings(_analyzer);
             }
 
             _lastState = _analyzer.AnalyzerState;

@@ -23,11 +23,12 @@ public class AresCoreDevice : IAresDevice
     return Task.Delay(timeSpan);
   }
 
-  public async Task WaitForUser(string message)
+  public Task WaitForUser(string message)
   {
     //var confirmationHelper = _confirmationHandler.FirstOrDefault();
 
     //if(confirmationHelper is not null)
     //await confirmationHelper.RequestConfirmation(message);
+    return Task.CompletedTask;
   }
 }

@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Ares.Core.Exceptions;
 
 namespace Ares.Core.Analyzing;
 
@@ -13,13 +12,9 @@ public class AnalyzerRepo : IAnalyzerRepo
     AddAnalyzer(defaultAnalyzer);
   }
 
-  public IAnalyzer GetAnalyzerByName(string name)
+  public IAnalyzer? GetAnalyzerByName(string name)
   {
     var analyzer = _analyzerStore.FirstOrDefault(analyzer => analyzer.Name == name);
-    if(analyzer is null)
-    {
-      throw new ItemNotFoundException(name, typeof(IAnalyzer));
-    }
 
     return analyzer;
   }
@@ -42,13 +37,9 @@ public class AnalyzerRepo : IAnalyzerRepo
     _analyzerStore.Remove(analyzer);
   }
 
-  public IAnalyzer GetAnalyzerById(string id)
+  public IAnalyzer? GetAnalyzerById(string id)
   {
     var analyzer = _analyzerStore.FirstOrDefault(analyzer => analyzer.UniqueId == id);
-    if(analyzer is null)
-    {
-      throw new ItemNotFoundException(id, typeof(IAnalyzer));
-    }
 
     return analyzer;
   }

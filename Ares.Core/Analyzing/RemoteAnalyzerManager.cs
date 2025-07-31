@@ -3,18 +3,19 @@ using Ares.Messaging.Analyzing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Analyzing;
-public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbContextFactory, IAnalyzerRepo _analyzerRepo, INotificationHandler _notificationHandler) : IRemoteAnalyzerManager
+public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbContextFactory, IAnalyzerRepo _analyzerRepo, INotificationHandler _notificationHandler, IAnalyzerCache _analyzerCache) : IRemoteAnalyzerManager
 {
-  private List<RemoteAnalyzerMonitor> _analyzerMonitors = [];
+  private readonly List<RemoteAnalyzerMonitor> _analyzerMonitors = [];
+
   public async Task CreateAnalyzer(string name, string url)
   {
     var config = new AnalyzerConfig { UniqueId = Guid.NewGuid().ToString(), Name = name, Url = url };
-    var analyzer = await LoadAnalyzer(config);
+    var analyzer = ConfigToAnalyzer(config);
     if(analyzer is null)
       return;
 
     _analyzerRepo.AddAnalyzer(analyzer);
-    var monitor = new RemoteAnalyzerMonitor(analyzer);
+    var monitor = new RemoteAnalyzerMonitor(analyzer, _analyzerCache);
     _analyzerMonitors.Add(monitor);
 
     var ctx = _dbContextFactory.CreateDbContext();
@@ -23,20 +24,45 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
     await ctx.SaveChangesAsync();
   }
 
-  private async Task<RemoteAnalyzer?> LoadAnalyzer(AnalyzerConfig config)
+  private RemoteAnalyzer? ConfigToAnalyzer(AnalyzerConfig config)
   {
     var uriValid = Uri.TryCreate(config.Url, UriKind.Absolute, out var uri);
     if(!uriValid || uri is null)
     {
       _ = _notificationHandler.HandleNotification(
-        "Analyzer Add Error",
-        $"Failed to create a remote analyzer {config.Name} because the url {config.Url} is invalid.",
+        "Analyzer Load Error",
+        $"Failed to load a remote analyzer {config.Name} because the url {config.Url} is invalid.",
         NotificationSeverityEnum.Danger);
       return null;
     }
+
     var analyzer = new RemoteAnalyzer(config.Name, uri, config.UniqueId);
 
+    return analyzer;
+  }
+
+  private async Task<RemoteAnalyzer?> LoadExistingAnalyzer(AnalyzerConfig config)
+  {
+    var analyzer = ConfigToAnalyzer(config);
+    if(analyzer is null)
+      return null;
+
+    var analyzerInfo = await _analyzerCache.GetCachedAnalyzerInfo(config.UniqueId);
+    if(analyzerInfo is not null)
+    {
+      await analyzer.UpdateInfo(analyzerInfo);
+    }
+
     await analyzer.Init();
+
+    var analyzerSettings = await _analyzerCache.GetCachedAnalyzerSettings(config.UniqueId);
+    if(analyzerSettings is not null)
+    {
+      analyzer.UpdateSettings(analyzerSettings);
+    }
+
+    await _analyzerCache.CacheAnalyzerInfo(analyzer);
+    await _analyzerCache.CacheAnalyzerSettings(analyzer);
 
     return analyzer;
   }
@@ -45,12 +71,12 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
   {
     var ctx = _dbContextFactory.CreateDbContext();
     var configs = await ctx.Analyzers.ToArrayAsync();
-    var analyzers = await Task.WhenAll(configs.Select(LoadAnalyzer));
+    var analyzers = await Task.WhenAll(configs.Select(LoadExistingAnalyzer));
     var nonNullAnalyzers = analyzers.OfType<RemoteAnalyzer>().ToArray();
     foreach(var analyzer in nonNullAnalyzers)
     {
       _analyzerRepo.AddAnalyzer(analyzer);
-      var monitor = new RemoteAnalyzerMonitor(analyzer);
+      var monitor = new RemoteAnalyzerMonitor(analyzer, _analyzerCache);
       _analyzerMonitors.Add(monitor);
     }
   }
@@ -87,11 +113,33 @@ public class RemoteAnalyzerManager(IDbContextFactory<CoreDatabaseContext> _dbCon
     await ctx.SaveChangesAsync();
 
     _analyzerRepo.RemoveAnalyzer(analyzerCfg.UniqueId);
-    var analyzer = await LoadAnalyzer(analyzerCfg);
+    var monitor = _analyzerMonitors.First(m => m.AnalyzerId == analyzerCfg.UniqueId);
+    monitor.Dispose();
+    _analyzerMonitors.Remove(monitor);
+    var analyzer = await LoadExistingAnalyzer(analyzerCfg);
     if(analyzer is null)
     {
       return;
     }
+
+    monitor = new RemoteAnalyzerMonitor(analyzer, _analyzerCache);
+    _analyzerMonitors.Add(monitor);
     _analyzerRepo.AddAnalyzer(analyzer);
+  }
+
+  public Task UpdateAnalyzerSettings(AnalyzerSettings analyzerSettings)
+  {
+    var analyzer = _analyzerRepo.GetAnalyzerById(analyzerSettings.AnalyzerId);
+    if (analyzer is null)
+    {
+      return Task.CompletedTask;
+    }
+
+    analyzer.UpdateSettings(analyzerSettings.Settings);
+
+    if(analyzer is not RemoteAnalyzer remoteAnalyzer)
+      return Task.CompletedTask;
+
+    return _analyzerCache.CacheAnalyzerSettings(remoteAnalyzer);
   }
 }

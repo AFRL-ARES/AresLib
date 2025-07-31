@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Ares.Core.Analyzing;
+using Ares.Core.Exceptions;
 using Ares.Messaging;
 using Grpc.Core;
 
@@ -16,7 +17,7 @@ class AnalysisService : AresAnalysisService.AresAnalysisServiceBase
 
   public override async Task<AnalyzerParametersResponse> GetAnalyzerParameters(AnalyzerParametersRequest request, ServerCallContext context)
   {
-    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId) ?? throw new ItemNotFoundException(request.AnalyzerId, typeof(IAnalyzer), "Failed to get parameters as requested analyzer was not found");
 
     var analysisSchema = await analyzer.GetParameters();
     var response = new AnalyzerParametersResponse
@@ -29,7 +30,7 @@ class AnalysisService : AresAnalysisService.AresAnalysisServiceBase
 
   public override async Task<ValidationResult> ValidateInputs(InputValidationRequest request, ServerCallContext context)
   {
-    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId) ?? throw new ItemNotFoundException(request.AnalyzerId, typeof(IAnalyzer), "Failed to gvalidate inputs as requested analyzer was not found"); ;
 
     var validation = await analyzer.ValidateInputs(request.InputSchema);
 
