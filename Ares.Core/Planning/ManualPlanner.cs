@@ -3,6 +3,7 @@ using System.Reactive.Subjects;
 using Ares.Messaging;
 using Ares.Messaging.Analyzing;
 using Ares.Messaging.Planning;
+using Ares.Tools;
 
 namespace Ares.Core.Planning;
 
@@ -16,7 +17,11 @@ public class ManualPlanner : IPlanner
     PlannerState = _plannerStateSubject.AsObservable();
   }
 
-  public IEnumerable<IEnumerable<(string Name, string Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
+  public IEnumerable<IEnumerable<(string Name, AresValue Value)>> CurrentPlanResults => 
+    _planResultsQueue
+    .AsEnumerable()
+    .Select(results => results
+    .Select(result => (result.Name, result.value)));
 
   public string Name { get; set; } = "Manual Planner";
   public Version Version { get; set; } = new(1, 0);
@@ -49,7 +54,10 @@ public class ManualPlanner : IPlanner
       case ManualPlannerSeed.PlannerStuffOneofCase.None:
         break;
       case ManualPlannerSeed.PlannerStuffOneofCase.PlannerValues:
-        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues.Select(set => set.ParameterValues.Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
+        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues
+          .Select(set => set.ParameterValues
+          .Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
+
         foreach(var manualPlanResults in manualPlanResultCollections)
           _planResultsQueue.Enqueue(manualPlanResults);
 
@@ -131,15 +139,15 @@ public class ManualPlanner : IPlanner
 
     foreach(var argList in data)
     {
-      var planResults = argList.Select((d, i) => new ManualPlanResult(firstLineTokens[i], d));
+      var planResults = argList.Select((d, i) => new ManualPlanResult(firstLineTokens[i], AresValueHelper.CreateString(d)));
       _planResultsQueue.Enqueue(planResults);
     }
   }
 
   //
-  private record ManualPlanResult(string Name, string Value)
+  private record ManualPlanResult(string Name, AresValue value)
   {
     public PlanResult ToPlanResult(ParameterMetadata metadata)
-      => new(metadata, Value);
+      => new(metadata, value);
   }
 }

@@ -67,8 +67,7 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
       Result = ResultGenerator.GenerateExperimentResult(stepSummaries, Template.StepTemplates)
     };
 
-    completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
-
+    //completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
 
     return ExecutorSummaryHelpers.CreateExperimentExecutionSummary(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepSummaries);
   }

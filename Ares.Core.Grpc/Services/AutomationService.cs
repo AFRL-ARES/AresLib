@@ -152,7 +152,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override async Task<Empty> AddProject(Project request, ServerCallContext context)
   {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
+    using var dbContext = _coreContextFactory.CreateDbContext();
     dbContext.Projects.Add(request);
     await dbContext.SaveChangesAsync(context.CancellationToken);
     return new Empty();
@@ -167,10 +167,10 @@ public class AutomationService : AresAutomation.AresAutomationBase
   /// <returns></returns>
   public override Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
+    //Save to data directory
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
     var jsonString = JsonSerializer.Serialize(request.Template, _serializerSettings);
     var fullFilePath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
-
     File.WriteAllText(fullFilePath, jsonString);
     return Task.FromResult(new Empty());
   }
@@ -191,7 +191,6 @@ public class AutomationService : AresAutomation.AresAutomationBase
     var jsonString = JsonSerializer.Serialize(request.Template, _serializerSettings);
     var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
     File.WriteAllText(fullPath, jsonString);
-
     return Task.FromResult(request.Template);
   }
 

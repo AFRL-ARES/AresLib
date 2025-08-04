@@ -52,7 +52,7 @@ public class PlanningHelper : IPlanningHelper
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
-          Value = AresValueHelper.CreateString(result.Value)
+          Value = result.Value
         };
 
         parameterPlanTarget.Value = val;

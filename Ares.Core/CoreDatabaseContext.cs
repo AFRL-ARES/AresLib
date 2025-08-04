@@ -23,6 +23,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<AnalyzerConfig> Analyzers => Set<AnalyzerConfig>();
   public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
   public DbSet<AresCampaignTag> CampaignTags => Set<AresCampaignTag>();
+  public DbSet<Parameter> Parameters => Set<Parameter>();
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {

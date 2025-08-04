@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Ares.DataModel.dll" Version="2025.7.30.172417" />
+    <PackageReference Include="Ares.DataModel.dll" Version="2025.8.4.82927" />
   </ItemGroup>
 
 	<Target Name="NugetPackAutoVersioning" AfterTargets="Build">

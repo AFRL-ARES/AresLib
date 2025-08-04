@@ -2,4 +2,4 @@
 
 namespace Ares.Core.Planning;
 
-public record PlanResult(ParameterMetadata Metadata, string Value);
+public record PlanResult(ParameterMetadata Metadata, AresValue Value);

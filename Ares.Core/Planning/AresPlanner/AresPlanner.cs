@@ -1,5 +1,6 @@
 ﻿using Ares.Messaging;
 using Ares.Messaging.Analyzing;
+using Ares.Tools;
 using AresPlanner;
 using Google.Protobuf.WellKnownTypes;
 using System.Reactive.Linq;
@@ -48,7 +49,8 @@ public class AresPlanner : IPlanner
         matchingMetadata.Name = result.ParameterNames[i];
       }
 
-      var aresPlanResult = new PlanResult(matchingMetadata, result.ParameterValues[i].ToString());
+      var valueResult = AresValueHelper.CreateNumber(result.ParameterValues[i]);
+      var aresPlanResult = new PlanResult(matchingMetadata, valueResult);
       planResults.Add(aresPlanResult);
     }
 
