@@ -1,5 +1,6 @@
 ﻿using Ares.Messaging;
 using Ares.Messaging.Analyzing;
+using Google.Protobuf.Collections;
 
 namespace Ares.Core.Analyzing;
 
@@ -41,13 +42,13 @@ public class AnalysisHelper
     .GetAnalyzerById(analyzerId) ?? throw new InvalidOperationException($"Could not find desired analyzer with id {analyzerId}");
   }
 
-  private AresStruct ExperimentOutputToAnalyzerInputs(AresStruct experimentResult, IDictionary<string, string> analyzerMappings)
+  private AresStruct ExperimentOutputToAnalyzerInputs(AresStruct experimentResult, MapField<string, string> analyzerMappings)
   {
     var mappedStruct = new AresStruct();
-    foreach(var expResultField in experimentResult.Fields)
+    foreach(var map in analyzerMappings)
     {
-      var analyzerInputKey = analyzerMappings[expResultField.Key];
-      mappedStruct.Fields[analyzerInputKey] = expResultField.Value;
+      var expResultValue = experimentResult.Fields[map.Value];
+      mappedStruct.Fields[map.Key] = expResultValue;
     }
 
     return mappedStruct;
