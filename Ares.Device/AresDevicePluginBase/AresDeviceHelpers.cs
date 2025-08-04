@@ -1,5 +1,4 @@
 ﻿using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Device;
 
@@ -8,10 +7,9 @@ public static class AresDeviceHelpers
   public static DeviceCommandResult ParseCommandParameterToInt(Parameter param, out int parsedParam)
   {
     var result = new DeviceCommandResult();
-    var unpacked = param.Value.Value.TryUnpack<StringValue>(out var paramString);
-    var parsed = int.TryParse(paramString.Value, out var intParam);
+    var parsed = int.TryParse(param.Value.Value.StringValue, out var intParam);
 
-    if(!unpacked || !parsed)
+    if(!parsed)
     {
       result.Error = $"Failed to parse {param.Metadata.Name} into integer!";
       result.Success = false;
@@ -28,13 +26,12 @@ public static class AresDeviceHelpers
     return result;
   }
 
-  public static DeviceCommandResult ParseCommandParameterToDouble(Parameter param, out double parsedParam)
+  public static DeviceCommandResult ParseStringCommandParameterToDouble(Parameter param, out double parsedParam)
   {
     var result = new DeviceCommandResult();
-    var unpacked = param.Value.Value.TryUnpack<StringValue>(out var paramStringValue);
-    var parsed = double.TryParse(paramStringValue.Value, out var doubleParam);
+    var parsed = double.TryParse(param.Value.Value.StringValue, out var doubleParam);
 
-    if(!unpacked || !parsed)
+    if(!parsed)
     {
       result.Error = $"Failed to parse {param.Metadata.Name} into double!";
       result.Success = false;

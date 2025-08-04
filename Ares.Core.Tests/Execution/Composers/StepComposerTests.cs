@@ -12,7 +12,6 @@ internal class StepComposerTests
 {
   private IDeviceCommandInterpreterRepo _commandInterpreters;
   private StepTemplate _stepTemplate;
-  private IEnumerable<IDeviceConfirmationRequestHandler> _confirmationHelper = new Mock<IEnumerable<IDeviceConfirmationRequestHandler>>().Object;
 
   [SetUp]
   public void SetUp()
@@ -61,7 +60,7 @@ internal class StepComposerTests
   {
     var interpreterMock = new Mock<IDeviceCommandInterpreter<IAresDevice>>();
     interpreterMock.SetupGet(interpreter => interpreter.Device.Name).Returns("TestName");
-    _commandInterpreters = new DeviceCommandInterpreterRepo(_confirmationHelper)
+    _commandInterpreters = new DeviceCommandInterpreterRepo()
     {
       interpreterMock.Object
     };

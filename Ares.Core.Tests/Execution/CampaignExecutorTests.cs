@@ -11,56 +11,57 @@ using Ares.Core.Planning;
 using Ares.Core.Tests.Data;
 using Ares.Core.Tests.Data.Analyzer;
 using Ares.Core.Tests.Data.Device;
-using Ares.Device;
-using Microsoft.EntityFrameworkCore;
 using Moq;
 
 namespace Ares.Core.Tests.Execution;
 
 internal class CampaignExecutorTests
 {
-  private IAnalyzerManager _analyzerManager;
+  private IAnalyzerRepo _analyzerRepo;
   private CampaignComposer _campaignComposer;
   private ICampaignExecutor _campaignExecutor;
   private IExecutionReporter _executionReporter;
   private IExecutionReportStore _executionReportStore;
   private IPlanningHelper _planningHelper;
-  private IEnumerable<IResultHandler> _resultHandlers;
-  private IEnumerable<INotificationHandler> _notificationHandlers;
-  private IEnumerable<IDeviceConfirmationRequestHandler> _deviceConfirmationHandler;
+  private IEnumerable<IExecutionSummaryHandler> _resultHandlers;
   private AresVariableManager _variableManager;
+  private AnalysisHelper _analysisHelper;
+  private AnalysisRepo _analysisRepo;
+
+  private IAnalyzer _replyAnalyzer;
 
   [OneTimeSetUp]
   public void OneTimeSetUp()
   {
-    _analyzerManager = new AnalyzerManager(new AnalysisRepo(), new Mock<IDbContextFactory<CoreDatabaseContext>>().Object);
-    _analyzerManager.RegisterAnalyzer(new TestReplyAnalyzer());
+    _analyzerRepo = new AnalyzerRepo();
+    _replyAnalyzer = new TestReplyAnalyzer();
+    _analyzerRepo.AddAnalyzer(_replyAnalyzer);
+    _analysisRepo = new AnalysisRepo();
+    _analysisHelper = new AnalysisHelper(_analyzerRepo);
     _executionReportStore = new ExecutionReportStore();
     _executionReporter = new ExecutionReporter(_executionReportStore);
     _planningHelper = new Mock<IPlanningHelper>().Object;
-    _resultHandlers = new Mock<IEnumerable<IResultHandler>>().Object;
-    _notificationHandlers = new Mock<IEnumerable<INotificationHandler>>().Object;
+    _resultHandlers = new Mock<List<IExecutionSummaryHandler>>().Object;
     _variableManager = new Mock<AresVariableManager>().Object;
-    _deviceConfirmationHandler = new Mock<IEnumerable<IDeviceConfirmationRequestHandler>>().Object;
 
     var device = new TestDevice();
     var cmdInterpreter = new TestDeviceInterpreter(device);
-    var repo = new DeviceCommandInterpreterRepo(_deviceConfirmationHandler)
+    var repo = new DeviceCommandInterpreterRepo()
     {
       cmdInterpreter
     };
     var stepComposer = new StepComposer(repo);
-    var experimentComposer = new ExperimentComposer(stepComposer, _analyzerManager);
+    var experimentComposer = new ExperimentComposer(stepComposer, _analyzerRepo);
     var startupScriptComposer = new StartupComposer(stepComposer);
     var closeoutScriptComposer = new CloseoutComposer(stepComposer);
 
-    _campaignComposer = new CampaignComposer(_analyzerManager, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _notificationHandlers, _variableManager);
+    _campaignComposer = new CampaignComposer(_analysisHelper, experimentComposer, startupScriptComposer, closeoutScriptComposer, _planningHelper, _executionReporter, _resultHandlers, _analysisRepo, _analyzerRepo, Array.Empty<INotificationHandler>(), _variableManager);
   }
 
   [SetUp]
   public void SetUp()
   {
-    _campaignExecutor = _campaignComposer.Compose(TestCampaignProvider.GetSampleCampaignTemplate());
+    _campaignExecutor = _campaignComposer.Compose(TestCampaignProvider.GetSampleCampaignTemplate(_replyAnalyzer));
   }
 
   [Test]

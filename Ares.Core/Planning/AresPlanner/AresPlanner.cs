@@ -1,14 +1,15 @@
-﻿using Ares.Messaging;
-using AresPlanner;
+using Ares.Messaging;
+using Ares.Messaging.Analyzing;
+using Ares.Messaging.Planning;
+using Ares.Tools;
+using DynamicData;
 using Google.Protobuf.WellKnownTypes;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning.AresPlanner;
 
 public class AresPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
   readonly Uri _address;
 
   public AresPlanner(string name, Uri address)
@@ -16,15 +17,15 @@ public class AresPlanner : IPlanner
     _address = address;
     Name = name;
     Address = address.OriginalString;
-    PlannerState = _plannerStateSubject.AsObservable();
+    Status = new PlannerStatus { PlannerState = PlannerState.Inactive, Message = $"{name} has not been activated" };
     UniqueId = Guid.NewGuid().ToString();
   }
 
-  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> experimentAnalyses, CancellationToken cancellationToken)
+  public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<CompletedExperiment> completedExperiments, IEnumerable<Analysis> _experimentAnalyses, CancellationToken cancellationToken)
   {
-    var client = ClientStore.AresPlanningClient;
+    var client = ClientStore.AresPlanningClient ?? throw new InvalidOperationException($"Failed to plan as the remote client has not been established yet.");
     var planRequest = new PlanRequest();
-    planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, experimentAnalyses)));
+    planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, completedExperiments)));
     var result = await client.PlanAsync(planRequest, deadline: DateTime.UtcNow.AddSeconds(30));
     return ToPlanResults(result, plannableParameters);
   }
@@ -47,21 +48,24 @@ public class AresPlanner : IPlanner
         matchingMetadata.Name = result.ParameterNames[i];
       }
 
-      var aresPlanResult = new PlanResult(matchingMetadata, result.ParameterValues[i].ToString());
+      var valueResult = AresValueHelper.CreateNumber(result.ParameterValues[i]);
+      var aresPlanResult = new PlanResult(matchingMetadata, valueResult);
       planResults.Add(aresPlanResult);
     }
 
     return planResults;
   }
 
-  public PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<Analysis> experimentAnalyses)
+  public PlanningParameter ConvertToPlanningParameter(ParameterMetadata metadata, IEnumerable<CompletedExperiment> experimentHistory)
   {
-    var relevantInfo = experimentAnalyses.SelectMany(analysis => analysis.CompletedExperiment.Parameters.Where(param => param.PlanningMetadata.Name == metadata.Name));
-    var parameter = new PlanningParameter();
-    parameter.ParameterName = metadata.Name;
-    parameter.IsPlanned = true;
-    parameter.DataType = metadata.GetType().ToString();
-    parameter.ParameterHistory.AddRange(relevantInfo.Select(param => double.Parse(param.Value.Value.Unpack<StringValue>().Value)));
+    var relevantInfo = experimentHistory.SelectMany(experiment => experiment.Parameters.Where(param => param.PlanningMetadata.Name == metadata.Name));
+    var parameter = new PlanningParameter
+    {
+      ParameterName = metadata.Name,
+      IsPlanned = true,
+      DataType = metadata.GetType().ToString()
+    };
+    parameter.ParameterHistory.AddRange(relevantInfo.Select(param => double.Parse(param.Value.Value.StringValue)));
 
     if(metadata.Constraints.Any())
     {
@@ -70,18 +74,53 @@ public class AresPlanner : IPlanner
       parameter.MaximumValue = constraint.Maximum;
     }
 
+    parameter.PlannerName = metadata.PlannerName;
     return parameter;
   }
 
-  public void Init()
+  public async Task Init()
   {
     ClientStore.CreateClient(_address);
-    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    var client = ClientStore.AresPlanningClient;
+    Capabilities? response = null;
+
+    try
+    {
+      response = await client.RequestCapabilitiesAsync(new Empty());
+    }
+
+    catch(Exception)
+    {
+      Status.PlannerState = PlannerState.Error;
+      Status.Message = "Failed to establish a connection with the planner!";
+      return;
+    }
+
+    if(response is null)
+    {
+      Status.PlannerState = PlannerState.Error;
+      Status.Message = "Planner returned a null capability response!";
+      return;
+    }
+
+    AvailablePlanners.Clear();
+    AdapterSettings.Clear();
+
+    AvailablePlanners.AddRange(response.AvailablePlanners);
+    AdapterSettings.AddRange(response.AdapterSettings);
+
+    Timeout = TimeSpan.FromSeconds(response.TimeoutSeconds);
+    await Task.Delay(TimeSpan.FromSeconds(0.5));
+    Status.PlannerState = PlannerState.Active;
+    Status.Message = $"Successfully activated {Name}!";
   }
 
   public string Name { get; set; }
   public Version Version { get; set; } = new Version(1, 0);
-  public IObservable<PlannerState> PlannerState { get; }
+  public PlannerStatus Status { get; protected set; }
+  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IList<PlannerSetting> AdapterSettings { get; } = new List<PlannerSetting>();
   public string Address { get; set; }
   public string UniqueId { get; set; }
+  public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 }

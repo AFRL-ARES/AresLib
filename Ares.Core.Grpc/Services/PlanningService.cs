@@ -28,8 +28,52 @@ public class PlanningService : AresPlanning.AresPlanningBase
   public override Task<GetAllPlannersResponse> GetAllPlanners(Empty request, ServerCallContext context)
   {
     var response = new GetAllPlannersResponse();
-    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerInfo { Name = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name, Address = planner.Address });
+    var planners = _plannerManager.AvailablePlanners.Select(planner => new PlannerAdapterInfo { AdapterName = planner.Name, Version = planner.Version.ToString(), UniqueId = Guid.NewGuid().ToString(), Type = planner.GetType().Name, Address = planner.Address });
     response.Planners.AddRange(planners);
+    return Task.FromResult(response);
+  }
+
+  public override Task<CapabilitiesResponse> GetPlannerCapabilities(CapabilitiesRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.AdapterName);
+    var response = new CapabilitiesResponse();
+
+    if(planner is not null)
+      response.PlannerCapability.AddRange(planner.AvailablePlanners.Select(p => new PlannerOption() { Name = p.PlannerName, Description = p.Description, Version = p.Version }));
+
+    return Task.FromResult(response);
+  }
+
+  public override Task<PlannerStatus> GetPlannerStatus(PlannerStatusRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.AdapterName);
+
+    if(planner is null)
+      return Task.FromResult(new PlannerStatus { PlannerState = PlannerState.Error, Message = "ARES was unable to find this planner!" });
+
+    return Task.FromResult(planner.Status);
+  }
+
+  public override async Task<Empty> ActivatePlanner(PlannerActivationRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.AdapterName);
+
+    if(planner is null)
+      return new Empty();
+
+    await planner.Init();
+    return new Empty();
+  }
+
+  public override Task<PlannerSettingsResponse> GetPlannerSettings(PlannerSettingsRequest request, ServerCallContext context)
+  {
+    var planner = _plannerManager.AvailablePlanners.FirstOrDefault(p => p.Name == request.ServiceName);
+    var response = new PlannerSettingsResponse();
+
+    if(planner is null)
+      return Task.FromResult(response);
+
+    response.Settings.AddRange(planner.AdapterSettings);
     return Task.FromResult(response);
   }
 
@@ -40,7 +84,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
 
     var uri = new Uri(request.Address);
     var planner = new Planning.AresPlanner.AresPlanner(request.Name, new Uri(request.Address));
-    planner.Init();
+    await planner.Init();
     await _plannerManager.RegisterPlanner(planner);
     await AddPlannerToDb(planner, context);
     return new Empty();
@@ -67,7 +111,7 @@ public class PlanningService : AresPlanning.AresPlanningBase
 
     await _plannerManager.UnregisterPlanner(planner);
     var updatedPlanner = new Planning.AresPlanner.AresPlanner(request.Name, new Uri(request.Address));
-    updatedPlanner.Init();
+    await updatedPlanner.Init();
     await _plannerManager.RegisterPlanner(updatedPlanner);
     await RemovePlannerFromDb(planner.Name, context);
     await AddPlannerToDb(updatedPlanner, context);
@@ -116,9 +160,9 @@ public class PlanningService : AresPlanning.AresPlanningBase
   {
     try
     {
-      var info = new PlannerInfo()
+      var info = new PlannerAdapterInfo()
       {
-        Name = planner.Name,
+        AdapterName = planner.Name,
         Address = planner.Address,
         Type = planner.GetType().ToString(),
         Version = planner.Version.ToString(),
@@ -142,9 +186,10 @@ public class PlanningService : AresPlanning.AresPlanningBase
     try
     {
       await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-      var oldInfo = await dbContext.Analyzers.FirstOrDefaultAsync(a => a.Name == name);
+
+      var oldInfo = await dbContext.Planners.FirstOrDefaultAsync(a => a.AdapterName == name);
       if(oldInfo != null)
-        dbContext.Analyzers.Remove(oldInfo);
+        dbContext.Planners.Remove(oldInfo);
       await dbContext.SaveChangesAsync(context.CancellationToken);
     }
 

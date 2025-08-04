@@ -1,7 +1,7 @@
 ﻿using Ares.Device;
 using Ares.Messaging;
 using Ares.Test;
-using Google.Protobuf.WellKnownTypes;
+using Ares.Tools;
 
 namespace Ares.Core.Tests.Data.Device;
 
@@ -22,18 +22,16 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
         var reply = new TestReply();
         var param = parameters.First(parameter => parameter.Metadata.Name == TestDeviceCommandParameter.ReplyParameter.ToString());
         reply.Message = $"Device received {param.Value.Value}";
-        var unpacked = param.Value.Value.TryUnpack<StringValue>(out var stringValueParam);
-        var parsed = float.TryParse(stringValueParam.Value, out var floatValue);
+        var parsed = float.TryParse(param.Value.Value.StringValue, out var floatValue);
 
-        if(!unpacked || !parsed)
+        if(!parsed)
         {
           result.Error = "Test device failed to parse number!";
           result.Success = false;
           return Task.FromResult(result);
         }
 
-        reply.Number = floatValue;
-        result.Result = Any.Pack(reply);
+        result.Result = AresStructHelper.CreateNumberStruct("TestOutput", floatValue);
         result.Success = true;
         result.UniqueId = Guid.NewGuid().ToString();
         return Task.FromResult(result);
@@ -59,7 +57,7 @@ public class TestDeviceInterpreter : DeviceCommandInterpreter<TestDevice, TestDe
       OutputMetadata = new OutputMetadata
       {
         UniqueId = Guid.NewGuid().ToString(),
-        FullName = typeof(TestReply).FullName,
+        DataSchema = AresSchemaHelper.CreateSchema("TestOutput", AresDataType.Number),
         Description = "A test response for the test command",
         Index = idx
       }

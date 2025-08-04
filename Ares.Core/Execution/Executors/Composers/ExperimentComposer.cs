@@ -6,9 +6,9 @@ namespace Ares.Core.Execution.Executors.Composers;
 public class ExperimentComposer : ICommandComposer<ExperimentTemplate, ExperimentExecutor>
 {
   private readonly ICommandComposer<StepTemplate, StepExecutor> _stepComposer;
-  private readonly IAnalyzerManager _analyzerManager;
+  private readonly IAnalyzerRepo _analyzerManager;
 
-  public ExperimentComposer(ICommandComposer<StepTemplate, StepExecutor> stepComposer, IAnalyzerManager analyzerManager)
+  public ExperimentComposer(ICommandComposer<StepTemplate, StepExecutor> stepComposer, IAnalyzerRepo analyzerManager)
   {
     _stepComposer = stepComposer;
     _analyzerManager = analyzerManager;

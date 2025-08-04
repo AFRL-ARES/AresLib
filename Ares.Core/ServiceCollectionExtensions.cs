@@ -7,9 +7,7 @@ using Ares.Core.Execution.Executors.Composers;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Core.Planning;
-using Ares.Core.UserConfirmation;
 using Ares.Core.Validation.Campaign;
-using Ares.Device;
 using Ares.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,7 +26,7 @@ public static class ServiceCollectionExtensions
     services.AddSingleton<IPlannerManager, PlannerManager>();
     services.AddSingleton<IExecutionReporter, ExecutionReporter>();
     services.AddSingleton<IExecutionReportStore, ExecutionReportStore>();
-    services.AddSingleton<IAnalyzerManager, AnalyzerManager>();
+    services.AddSingleton<IAnalyzerRepo, AnalyzerRepo>();
     services.AddTransient<INumExperimentsRunFactory, NumExperimentsRunFactory>();
     services.AddSingleton<IActiveCampaignTemplateStore, ActiveCampaignTemplateStore>();
     services.AddSingleton<ICampaignValidatorRepository, CampaignValidatorRepository>();
@@ -36,10 +34,12 @@ public static class ServiceCollectionExtensions
     services.AddTransient<ICampaignValidator, GoodAnalyzerCampaignValidator>();
     services.AddTransient<ICampaignValidator, RequiredDeviceInterpretersValidator>();
     services.AddSingleton<IDeviceCommandInterpreterRepo, DeviceCommandInterpreterRepo>();
+    services.AddSingleton<IRemoteAnalyzerManager, RemoteAnalyzerManager>();
+    services.AddSingleton<IAnalyzerCache, AnalyzerCache>();
     services.AddSingleton<AresVariableManager>();
     services.AddSingleton<AnalysisRepo>();
+    services.AddSingleton<AnalysisHelper>();
     services.AddSingleton<IDesiredAnalysisResultFactory, DesiredAnalysisResultFactory>();
-    services.AddSingleton<IDeviceConfirmationRequestHandler, DeviceConfirmationRequestHandler>();
 
     services.BindComposers();
     services.BindStartConditions();
@@ -51,6 +51,7 @@ public static class ServiceCollectionExtensions
     services.AddTransient<IStartCondition, AllPlannersAssignedStartCondition>();
     services.AddTransient<IStartCondition, GoodAnalyzerForExperimentOutputCondition>();
     services.AddTransient<IStartCondition, RequiredDeviceInterpretersStartCondition>();
+    services.AddTransient<IStartCondition, AssignedPlannersActiveStartCondition>();
   }
 
   private static void BindComposers(this IServiceCollection services)

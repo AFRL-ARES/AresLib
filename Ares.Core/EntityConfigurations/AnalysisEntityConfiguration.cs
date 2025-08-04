@@ -1,4 +1,4 @@
-﻿using Ares.Messaging;
+﻿using Ares.Messaging.Analyzing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,9 +10,5 @@ internal class AnalysisEntityConfiguration : AresEntityTypeBaseConfiguration<Ana
   {
     base.Configure(builder);
     builder.ToTable("Analyses");
-
-    builder.HasOne(t => t.CompletedExperiment)
-      .WithOne()
-      .HasForeignKey<Analysis>("CompletedExperimentId");
   }
 }

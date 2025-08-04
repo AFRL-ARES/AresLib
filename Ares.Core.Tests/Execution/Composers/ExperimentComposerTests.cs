@@ -1,9 +1,9 @@
-﻿using Ares.Core.Analyzing;
+﻿using System.Reflection;
+using Ares.Core.Analyzing;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
 using Ares.Messaging;
 using Moq;
-using System.Reflection;
 
 namespace Ares.Core.Tests.Execution.Composers;
 
@@ -37,8 +37,8 @@ internal class ExperimentComposerTests
     experimentTemplate.StepTemplates.Add(stepTemplate1);
     experimentTemplate.StepTemplates.Add(stepTemplate4);
 
-    var analyzerManagerMock = new Mock<IAnalyzerManager>();
-    var experimentComposer = new ExperimentComposer(stepComposerMock.Object, analyzerManagerMock.Object);
+    var analyzerRepoMock = new Mock<IAnalyzerRepo>();
+    var experimentComposer = new ExperimentComposer(stepComposerMock.Object, analyzerRepoMock.Object);
     var experimentExecutor = experimentComposer.Compose(experimentTemplate);
     var templates = experimentExecutor.ExperimentStepExecutors.Select(executor => typeof(StepExecutor).GetProperty("Template", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(executor)).OfType<StepTemplate>();
 

@@ -1,4 +1,5 @@
 ﻿using Ares.Core.Execution.StopConditions;
+using Ares.Messaging;
 
 namespace Ares.Core.Execution;
 
@@ -17,7 +18,7 @@ public interface IExecutionManager
   /// <summary>
   /// Indicates whether the currently loaded campaign has all the prerequisites in order to start and run
   /// </summary>
-  public bool CanRun { get; }
+  public Task<bool> CanRun();
 
   /// <summary>
   /// Starts the campaign if not already running.
@@ -26,7 +27,7 @@ public interface IExecutionManager
   /// </summary>
   /// <param name="executionNotes"> User notes written for an execution instance, not specific to a template.</param>
   /// <returns>A task that will complete when the campaign completes</returns>
-  Task Start(string executionNotes);
+  Task Start(string executionNotes, List<AresCampaignTag> campaignTags);
 
   /// <summary>
   /// Stops the campaign execution if running or paused. Does nothing if the campaign is not running.
@@ -57,5 +58,5 @@ public interface IExecutionManager
   /// Checks whether the prerequisites to execution have been met
   /// </summary>
   /// <returns> An error string if the campaign is not executable, an empty string otherwise </returns>
-  string CheckCampaignStartPrerequisites();
+  Task<string> CheckCampaignStartPrerequisites();
 }

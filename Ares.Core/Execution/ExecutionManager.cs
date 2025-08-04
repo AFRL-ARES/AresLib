@@ -1,6 +1,7 @@
 ﻿using Ares.Core.Execution.ControlTokens;
 using Ares.Core.Execution.Executors;
 using Ares.Core.Execution.Executors.Composers;
+using Ares.Core.Execution.Extensions;
 using Ares.Core.Execution.StartConditions;
 using Ares.Core.Execution.StopConditions;
 using Ares.Messaging;
@@ -13,40 +14,59 @@ public class ExecutionManager : IExecutionManager
 {
   private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
   private readonly ICommandComposer<CampaignTemplate, ICampaignExecutor> _campaignComposer;
-  private readonly IDbContextFactory<CoreDatabaseContext> _dbContext;
+  private readonly IDbContextFactory<CoreDatabaseContext> _dbContextFactory;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private ExecutionControlTokenSource? _executionControlTokenSource;
 
   public ExecutionManager(IEnumerable<IStartCondition> startConditions,
-    IDbContextFactory<CoreDatabaseContext> dbContext,
+    IDbContextFactory<CoreDatabaseContext> dbContextFactory,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     ICommandComposer<CampaignTemplate, ICampaignExecutor> campaignComposer)
   {
     _startConditions = startConditions;
-    _dbContext = dbContext;
+    _dbContextFactory = dbContextFactory;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _campaignComposer = campaignComposer;
   }
 
   public IList<IStopCondition> CampaignStopConditions { get; } = new List<IStopCondition>() { };
 
-  public bool CanRun => _startConditions.All(condition => condition.CanStart()?.Success ?? true) && _activeCampaignTemplateStore.CampaignTemplate is not null;
+  public async Task<bool> CanRun()
+  {
+    if(_activeCampaignTemplateStore.CampaignTemplate is null)
+      return false;
+
+    var startConditionTasks = _startConditions.Select(sc => sc.CanStart());
+    var startConditions = await Task.WhenAll(startConditionTasks);
+    return startConditions.All(condition => condition?.Success ?? true);
+  }
 
   public int ReplanRate { get; private set; } = 1;
 
-  public async Task Start(string executionNotes)
+  public async Task Start(string executionNotes, List<AresCampaignTag> campaignTags)
   {
-    CheckCampaignStartPrerequisites();
+    var err = await CheckCampaignStartPrerequisites();
+    if(!string.IsNullOrEmpty(err))
+    {
+      throw new InvalidOperationException(err);
+    }
     var executor = _campaignComposer.Compose(_activeCampaignTemplateStore.CampaignTemplate!);
+
     if(!string.IsNullOrEmpty(executionNotes))
       executor.UpdateExecutionNotes(executionNotes);
+
+    if(campaignTags.Any())
+      executor.UpdateCampaignTags(campaignTags);
 
     executor.StopConditions.Add(CampaignStopConditions);
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
-    var campaignResult = await executor.Execute(_executionControlTokenSource.Token);
-    campaignResult.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
-    await PostExecution(campaignResult);
+    var campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
+    campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
+    campaignExecutionSummary.CampaignNotes = executionNotes;
+    campaignExecutionSummary.CampaignTags = string.Join(",", campaignTags.Select(tag => tag.TagName).ToList());
+
+    await PostExecution(campaignExecutionSummary);
   }
 
   public void Stop()
@@ -58,7 +78,7 @@ public class ExecutionManager : IExecutionManager
   public void Resume()
     => _executionControlTokenSource?.Resume();
 
-  public string CheckCampaignStartPrerequisites()
+  public async Task<string> CheckCampaignStartPrerequisites()
   {
     if(_activeCampaignTemplateStore.CampaignTemplate is null)
       return "CampaignTemplate was not assigned to the active template store.";
@@ -69,11 +89,13 @@ public class ExecutionManager : IExecutionManager
     if(!EnsureParameterAssignment())
       return "The campaign has errors in it's parameter assignments, please resolve these before starting your campaign.";
 
-    var startConditionResults = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).ToArray();
+    var startConditionResultTasks = _startConditions.Select(condition => condition.CanStart());
+    var startConditionResults = await Task.WhenAll(startConditionResultTasks);
+    startConditionResults = startConditionResults.Where(result => result is not null && !result.Success).ToArray();
     if(startConditionResults.Any())
       return $"Failed to start campaign:{Environment.NewLine}{string.Join(Environment.NewLine, startConditionResults.SelectMany(conditionResult => conditionResult!.Messages))}";
 
-    return String.Empty;
+    return string.Empty;
   }
 
   public bool EnsureParameterAssignment()
@@ -107,17 +129,17 @@ public class ExecutionManager : IExecutionManager
     ReplanRate = newRate;
   }
 
-  private async Task PostExecution(CampaignResult result)
+  private async Task PostExecution(CampaignExecutionSummary result)
   {
-    //await StoreCompletedCampaign(result);
+    await StoreCompletedCampaign(result);
     _executionControlTokenSource?.Dispose();
     _executionControlTokenSource = null;
   }
 
-  private async Task StoreCompletedCampaign(CampaignResult result)
+  private async Task StoreCompletedCampaign(CampaignExecutionSummary result)
   {
-    await using var context = await _dbContext.CreateDbContextAsync();
-    context.CampaignResults.Add(result);
+    await using var context = _dbContextFactory.CreateDbContext();
+    context.CampaignExecutionSummaries.Add(result);
     await context.SaveChangesAsync();
   }
 }

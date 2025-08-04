@@ -1,30 +1,31 @@
-﻿using Ares.Messaging;
+using Ares.Messaging;
+using Ares.Messaging.Analyzing;
 using Ares.Messaging.Planning;
+using Ares.Tools;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning;
 
 public class ManualPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
   private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
 
   public ManualPlanner()
   {
-    PlannerState = _plannerStateSubject.AsObservable();
+    Status = new PlannerStatus { PlannerState = PlannerState.Active, Message = "Manual Planner is active!" };
   }
 
-  public IEnumerable<IEnumerable<(string Name, string Value)>> CurrentPlanResults => _planResultsQueue.AsEnumerable().Select(results => results.Select(result => (result.Name, result.Value)));
+  public IEnumerable<IEnumerable<(string Name, AresValue Value)>> CurrentPlanResults => 
+    _planResultsQueue
+    .AsEnumerable()
+    .Select(results => results
+    .Select(result => (result.Name, result.value)));
 
-  public string Name { get; set; } = "Manual Planner";
-  public Version Version { get; set; } = new(1, 0);
 
-  public string Address { get; set; }
-
-  public string UniqueId { get; set; } = new Guid().ToString();
-
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<Analysis> _, CancellationToken __)
+  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, 
+    IEnumerable<CompletedExperiment> experiments, 
+    IEnumerable<Analysis> _, 
+    CancellationToken __)
   {
     try
     {
@@ -38,8 +39,6 @@ public class ManualPlanner : IPlanner
     }
   }
 
-  public IObservable<PlannerState> PlannerState { get; }
-
   public Task Seed(ManualPlannerSeed seedParam)
   {
     Reset();
@@ -48,7 +47,10 @@ public class ManualPlanner : IPlanner
       case ManualPlannerSeed.PlannerStuffOneofCase.None:
         break;
       case ManualPlannerSeed.PlannerStuffOneofCase.PlannerValues:
-        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues.Select(set => set.ParameterValues.Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
+        var manualPlanResultCollections = seedParam.PlannerValues.PlannedValues
+          .Select(set => set.ParameterValues
+          .Select(pair => new ManualPlanResult(pair.Name, pair.Value)));
+
         foreach(var manualPlanResults in manualPlanResultCollections)
           _planResultsQueue.Enqueue(manualPlanResults);
 
@@ -70,7 +72,15 @@ public class ManualPlanner : IPlanner
 
   public Task Init()
   {
-    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    var manualPlanner = new Planner()
+    {
+      PlannerName = "Manual Planner",
+      Description = "A planner used for executing sets of manual values.",
+      UniqueId = UniqueId,
+      Version = Version.ToString()
+    };
+
+    AvailablePlanners.Add(manualPlanner);
     return Task.CompletedTask;
   }
 
@@ -130,15 +140,23 @@ public class ManualPlanner : IPlanner
 
     foreach(var argList in data)
     {
-      var planResults = argList.Select((d, i) => new ManualPlanResult(firstLineTokens[i], d));
+      var planResults = argList.Select((d, i) => new ManualPlanResult(firstLineTokens[i], AresValueHelper.CreateString(d)));
       _planResultsQueue.Enqueue(planResults);
     }
   }
 
-  //
-  private record ManualPlanResult(string Name, string Value)
+  private record ManualPlanResult(string Name, AresValue value)
+
   {
     public PlanResult ToPlanResult(ParameterMetadata metadata)
-      => new(metadata, Value);
+      => new(metadata, value);
   }
+
+  public PlannerStatus Status { get; protected set; }
+  public string Name { get; set; } = "Manual Planner";
+  public Version Version { get; set; } = new(1, 0);
+  public string Address { get; set; } = string.Empty;
+  public string UniqueId { get; set; } = new Guid().ToString();
+  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IList<PlannerSetting> AdapterSettings { get; } = new List<PlannerSetting>();
 }

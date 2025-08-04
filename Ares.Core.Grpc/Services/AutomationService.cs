@@ -1,53 +1,53 @@
-﻿using Ares.Core.Analyzing;
-using Ares.Core.Execution;
-using Ares.Core.Execution.StartConditions;
-using Ares.Core.Execution.StopConditions;
-using Ares.Core.Grpc.Helpers;
-using Ares.Core.Notifications;
-using Ares.Messaging;
-using Google.Protobuf.WellKnownTypes;
-using Grpc.Core;
-using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Threading.Tasks;
+using System.Text.Json;
 using System.Threading.Tasks;
+using Ares.Core.Analyzing;
+using Ares.Core.EntityConfigurations.Helpers;
+using Ares.Core.Execution;
+using Ares.Core.Execution.StartConditions;
+using Ares.Core.Execution.StopConditions;
+using Ares.Core.Notifications;
+using Ares.Messaging;
+using Google.Protobuf.WellKnownTypes;
+using Grpc.Core;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ares.Core.Grpc.Services;
 
 public class AutomationService : AresAutomation.AresAutomationBase
 {
   private readonly IActiveCampaignTemplateStore _activeCampaignTemplateStore;
-  private readonly IAnalyzerManager _analyzerManager;
   private readonly IDbContextFactory<CoreDatabaseContext> _coreContextFactory;
   private readonly IExecutionManager _executionManager;
   private readonly IExecutionReportStore _executionReportStore;
   private readonly IEnumerable<IStartCondition> _startConditions;
   private readonly IEnumerable<INotificationHandler> _notificationHandlers;
   readonly IDesiredAnalysisResultFactory _desiredAnalysisResultFactory;
-  private JsonSerializerSettings _serializerSettings;
+  private JsonSerializerOptions _serializerSettings;
+  readonly IAnalyzerRepo _analyzerRepo;
 
   public AutomationService(IDbContextFactory<CoreDatabaseContext> coreContextFactory,
     IExecutionManager executionManager,
     IExecutionReportStore executionReportStore,
     IActiveCampaignTemplateStore activeCampaignTemplateStore,
     IEnumerable<IStartCondition> startConditions,
-    IAnalyzerManager analyzerManager,
+    IAnalyzerRepo analyzerRepo,
     IEnumerable<INotificationHandler> notificationHandlers,
     IDesiredAnalysisResultFactory desiredAnalysisResultFactory)
   {
+    _analyzerRepo = analyzerRepo;
     _desiredAnalysisResultFactory = desiredAnalysisResultFactory;
     _coreContextFactory = coreContextFactory;
     _executionManager = executionManager;
     _executionReportStore = executionReportStore;
     _activeCampaignTemplateStore = activeCampaignTemplateStore;
     _startConditions = startConditions;
-    _analyzerManager = analyzerManager;
-    _serializerSettings = CreateCustomSerializationSettings();
+    _serializerSettings = SerializerSettingsHelper.CreateCustomSerializationSettings();
     _notificationHandlers = notificationHandlers;
   }
 
@@ -69,7 +69,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
       try
       {
         var contents = await File.ReadAllTextAsync(file);
-        var campaignTemplate = JsonConvert.DeserializeObject<CampaignTemplate>(contents, _serializerSettings);
+        var campaignTemplate = JsonSerializer.Deserialize<CampaignTemplate>(contents, _serializerSettings);
         if(campaignTemplate is not null)
           campaignResponse.CampaignTemplates.Add(campaignTemplate);
 
@@ -112,7 +112,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     foreach(var file in directoryFiles)
     {
       var jsonString = File.ReadAllText(Path.Combine(AresConfig.TemplatePath, file));
-      var templateObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
+      var templateObject = JsonSerializer.Deserialize<CampaignTemplate>(jsonString, _serializerSettings);
       if(templateObject is not null && templateObject.Name == request.CampaignName)
         return new BoolValue { Value = true };
     }
@@ -151,7 +151,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override async Task<Empty> AddProject(Project request, ServerCallContext context)
   {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
+    using var dbContext = _coreContextFactory.CreateDbContext();
     dbContext.Projects.Add(request);
     await dbContext.SaveChangesAsync(context.CancellationToken);
     return new Empty();
@@ -166,10 +166,10 @@ public class AutomationService : AresAutomation.AresAutomationBase
   /// <returns></returns>
   public override Task<Empty> AddCampaign(AddOrUpdateCampaignRequest request, ServerCallContext context)
   {
+    //Save to data directory
     var directoryFiles = Directory.EnumerateFiles(AresConfig.TemplatePath, "*.json");
-    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
+    var jsonString = JsonSerializer.Serialize(request.Template, _serializerSettings);
     var fullFilePath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
-
     File.WriteAllText(fullFilePath, jsonString);
     return Task.FromResult(new Empty());
   }
@@ -187,10 +187,9 @@ public class AutomationService : AresAutomation.AresAutomationBase
       return Task.FromResult(request.Template);
     }
 
-    var jsonString = JsonConvert.SerializeObject(request.Template, _serializerSettings);
+    var jsonString = JsonSerializer.Serialize(request.Template, _serializerSettings);
     var fullPath = Path.Combine(AresConfig.TemplatePath, $"{request.Template.UniqueId}.json");
     File.WriteAllText(fullPath, jsonString);
-
     return Task.FromResult(request.Template);
   }
 
@@ -202,7 +201,7 @@ public class AutomationService : AresAutomation.AresAutomationBase
     if(campaignFile is not null)
     {
       var jsonString = await File.ReadAllTextAsync(Path.Combine(AresConfig.TemplatePath, campaignFile));
-      var campaignObject = JsonConvert.DeserializeObject<CampaignTemplate>(jsonString, _serializerSettings);
+      var campaignObject = JsonSerializer.Deserialize<CampaignTemplate>(jsonString, _serializerSettings);
 
       if(campaignObject is not null)
         return campaignObject;
@@ -223,13 +222,17 @@ public class AutomationService : AresAutomation.AresAutomationBase
 
   public override Task<Empty> StartExecution(StartCampaignRequest request, ServerCallContext context)
   {
-    _executionManager.Start(request.UserNotes);
+    _executionManager.Start(request.UserNotes, request.CampaignTags.ToList());
     return Task.FromResult(new Empty());
   }
 
   public override async Task<CampaignTemplate> SetCampaignForExecution(CampaignRequest request, ServerCallContext context)
   {
     var template = await GetCampaignTemplate(request, context);
+    if(template is null)
+    {
+      throw new InvalidOperationException($"No campaign template found for request. Name: {request.CampaignName}");
+    }
     _activeCampaignTemplateStore.CampaignTemplate = template;
     return template;
   }
@@ -299,13 +302,14 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(response);
   }
 
-  public override Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
+  public override async Task<StartStopConditionsResponse> GetFailedStartConditions(Empty request, ServerCallContext context)
   {
     var response = new StartStopConditionsResponse();
-    var conditions = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
+    var conditionResults = await Task.WhenAll(_startConditions.Select(condition => condition.CanStart()));
+    var conditions = conditionResults.Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
     response.StartStopConditions.AddRange(conditions);
 
-    return Task.FromResult(response);
+    return response;
   }
 
   public override Task<Empty> RemoveStopCondition(StartStopCondition request, ServerCallContext context)
@@ -321,44 +325,21 @@ public class AutomationService : AresAutomation.AresAutomationBase
     return Task.FromResult(new Empty());
   }
 
-  public override async Task<AvailableCampaignResultsResponse> GetAvailableCampaignResults(Empty request, ServerCallContext context)
+  public override async Task<StartStopConditionsResponse> GetPreliminaryFailedStartConditions(CampaignTemplate request, ServerCallContext context)
   {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
-    var results = dbContext.CampaignResults.Select(result => new CampaignResultMetadata
-    {
-      CompletionTime = result.ExecutionInfo.TimeFinished,
-      ResultId = result.UniqueId
-    }).ToArray();
-
-    var response = new AvailableCampaignResultsResponse();
-    response.AvailableCampaignResults.AddRange(results);
+    var response = new StartStopConditionsResponse();
+    var conditionResults = await Task.WhenAll(_startConditions.Select(condition => condition.CanStart()));
+    var conditions = conditionResults.Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
+    response.StartStopConditions.AddRange(conditions);
 
     return response;
   }
 
-  public override async Task<CampaignResult> GetCampaignResult(CampaignResultRequest request, ServerCallContext context)
+  private async Task<IEnumerable<StartConditionResult>> GetFailedStartConditionResults()
   {
-    await using var dbContext = _coreContextFactory.CreateDbContext();
-    var result = dbContext.CampaignResults.First(campaignResult => campaignResult.UniqueId == request.ResultId);
-
-    return result;
-  }
-
-  public override Task<GetAllAnalyzersResponse> GetAllAnalyzers(Empty request, ServerCallContext context)
-  {
-    var response = new GetAllAnalyzersResponse();
-    var analyzers = _analyzerManager.AvailableAnalyzers.Select(analyzer => new AnalyzerInfo { Name = analyzer.Name, Type = analyzer.GetType().Name, Version = analyzer.Version.ToString(), UniqueId = Guid.NewGuid().ToString() });
-    response.Analyzers.AddRange(analyzers);
-    return Task.FromResult(response);
-  }
-
-  public override Task<StartStopConditionsResponse> GetPreliminaryFailedStartConditions(CampaignTemplate request, ServerCallContext context)
-  {
-    var response = new StartStopConditionsResponse();
-    var conditions = _startConditions.Select(condition => condition.CanStart()).Where(result => result is not null && !result.Success).Select(condition => new StartStopCondition { Message = string.Join(Environment.NewLine, condition!.Messages), Name = condition.GetType().Name });
-    response.StartStopConditions.AddRange(conditions);
-
-    return Task.FromResult(response);
+    var conditionTasks = _startConditions.Select(condition => condition.CanStart());
+    var conditions = await Task.WhenAll(conditionTasks);
+    return conditions;
   }
 
   public override Task<Empty> SetNumExperimentsStopCondition(NumExperimentsCondition request, ServerCallContext context)
@@ -422,28 +403,94 @@ public class AutomationService : AresAutomation.AresAutomationBase
       });
   }
 
-  public override Task<CheckExecutionEligibilityResponse> CheckExecutionEligibility(Empty request, ServerCallContext context)
+  public override async Task<CheckExecutionEligibilityResponse> CheckExecutionEligibility(Empty request, ServerCallContext context)
   {
-    var eligbilityError = _executionManager.CheckCampaignStartPrerequisites();
+    var eligbilityError = await _executionManager.CheckCampaignStartPrerequisites();
 
-    if(String.IsNullOrEmpty(eligbilityError))
-      return Task.FromResult(new CheckExecutionEligibilityResponse { Error = string.Empty, IsEligible = true });
+    if(string.IsNullOrEmpty(eligbilityError))
+      return new CheckExecutionEligibilityResponse { Error = string.Empty, IsEligible = true };
 
     else
-      return Task.FromResult(new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false });
+      return new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false };
   }
 
-  private JsonSerializerSettings CreateCustomSerializationSettings()
+  public override async Task<TagsResponse> GetAllTags(Empty request, ServerCallContext context)
   {
-    var serializerSettings = new JsonSerializerSettings();
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(existingTags);
+    return response;
+  }
 
-    //Add Custom Serializers
-    serializerSettings.Converters.Add(new ByteStringConverter());
+  public override async Task<TagsResponse> AddTag(TagRequest request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+    if(existingTags.Any(t => t.UniqueId == request.Tag.UniqueId))
+      //Duplicate tag, don't do it plz
+      throw new InvalidOperationException();
 
-    //Set type handling
-    serializerSettings.TypeNameHandling = TypeNameHandling.All;
+    dbContext.CampaignTags.Add(request.Tag);
+    await dbContext.SaveChangesAsync();
 
-    return serializerSettings;
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(existingTags);
+    response.AvailableTags.Add(request.Tag);
+    return response;
+  }
+
+  public override async Task<TagsResponse> RemoveTag(TagRequest request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+    var match = existingTags.FirstOrDefault(tag => tag.UniqueId == request.Tag.UniqueId);
+    
+    if(match is not null)
+    {
+      dbContext.Remove(match);
+      await dbContext.SaveChangesAsync();
+    }
+
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(await dbContext.CampaignTags.ToArrayAsync());
+    return response;
+  }
+
+  public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummaries(Empty request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var summaries = await dbContext.CampaignExecutionSummaries
+      .AsNoTracking()
+      .AsSplitQuery()
+      .ToArrayAsync(context.CancellationToken);
+    var response = new AvailableCampaignExecutionSummariesResponse();
+    response.AvailableCampaignSummaries
+      .AddRange(summaries
+      .Select(summary => new CampaignExecutionSummaryMetadata
+      {
+        CampaignName = summary.CampaignName,
+        CompletionTime = summary.ExecutionInfo.TimeFinished,
+        SummaryId = summary.UniqueId,
+        NumExperiments = summary.ExperimentSummaries.Count
+      }));
+
+    return response;
+  }
+
+  public override async Task<CampaignExecutionSummary> GetCampaignSummary(CampaignExecutionSummaryRequest request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var summary = await dbContext.CampaignExecutionSummaries
+      .AsNoTracking()
+      .AsSplitQuery()
+      .FirstOrDefaultAsync(s => s.UniqueId == request.SummaryId, context.CancellationToken);
+
+    if(summary is null)
+      //TODO: Figure out what to do here..?
+      throw new InvalidOperationException("Couldn't locate a matching campaign summary!");
+
+    return summary;
   }
 
   private void HandleNotification(string title, string message, NotificationSeverityEnum severity)

@@ -1,5 +1,6 @@
 using Ares.Messaging;
-using Google.Protobuf;
+using Ares.Messaging.Analyzing;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Planning;
@@ -16,6 +17,7 @@ public class PlanningHelper : IPlanningHelper
   public async Task<bool> TryResolveParameters(IEnumerable<PlannerAllocation> plannerAllocations,
     IEnumerable<Parameter> parameters,
     IEnumerable<Analysis> seedAnalyses,
+    IEnumerable<CompletedExperiment> seedExperiments,
     CancellationToken cancellationToken)
   {
     var parameterArray = parameters.ToArray();
@@ -24,8 +26,8 @@ public class PlanningHelper : IPlanningHelper
     {
       var hasVersion = Version.TryParse(plannerAllocation.Planner.Version, out var version);
       var planner = hasVersion
-        ? _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name, version!)
-        : _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name);
+        ? _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.AdapterName, version!)
+        : _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.AdapterName);
 
       plannerToMetadataMaps.Add((planner, plannerAllocation.Parameter));
     }
@@ -35,7 +37,7 @@ public class PlanningHelper : IPlanningHelper
     foreach(var grouping in planGroup)
     {
       var planner = grouping.Key;
-      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedAnalysesArr, cancellationToken);
+      var resultsEnumerable = await planner.Plan(grouping.Select(pair => pair.Metadata), seedExperiments, seedAnalysesArr, cancellationToken);
       var results = resultsEnumerable.ToArray();
       if(!results.Any())
         return false;
@@ -50,7 +52,7 @@ public class PlanningHelper : IPlanningHelper
         var val = new ParameterValue
         {
           UniqueId = Guid.NewGuid().ToString(),
-          Value = Any.Pack(new StringValue() { Value = result.Value })
+          Value = result.Value
         };
 
         parameterPlanTarget.Value = val;
