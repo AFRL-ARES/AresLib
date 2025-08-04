@@ -25,8 +25,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CoreDevice", "CoreDevice\Co
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ares.Device.USB", "Ares.Device.USB\Ares.Device.USB.csproj", "{2D8D948D-28C8-4574-BD3B-3BEC227434F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ares.AutomationBuilding", "Ares.AutomationBuilding\Ares.AutomationBuilding.csproj", "{C4C467BF-3DEB-3DC9-F62A-45FB5F5F382C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ares.Device.Rest", "Ares.Device.Rest\Ares.Device.Rest.csproj", "{161AF5DC-B9F2-460F-B116-8951156E44E7}"
 EndProject
 Global
@@ -79,10 +77,6 @@ Global
 		{2D8D948D-28C8-4574-BD3B-3BEC227434F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D8D948D-28C8-4574-BD3B-3BEC227434F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D8D948D-28C8-4574-BD3B-3BEC227434F4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C4C467BF-3DEB-3DC9-F62A-45FB5F5F382C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C4C467BF-3DEB-3DC9-F62A-45FB5F5F382C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C4C467BF-3DEB-3DC9-F62A-45FB5F5F382C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C4C467BF-3DEB-3DC9-F62A-45FB5F5F382C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{161AF5DC-B9F2-460F-B116-8951156E44E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{161AF5DC-B9F2-460F-B116-8951156E44E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{161AF5DC-B9F2-460F-B116-8951156E44E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
