@@ -7,7 +7,6 @@ namespace Ares.Core.Execution.Executors;
 
 public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, ExperimentExecutionStatus>
 {
-
   public ExperimentExecutor(ExperimentTemplate template,
     IExecutor<StepExecutionSummary, StepExecutionStatus>[] experimentStepExecutors)
   {
@@ -35,15 +34,6 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
     ExperimentStatusObservable = experimentStepExecutionObservation;
   }
 
-
-  public IExecutor<StepExecutionSummary, StepExecutionStatus>[] ExperimentStepExecutors { get; }
-
-  public ExperimentTemplate Template { get; set; }
-
-  public IObservable<ExperimentExecutionStatus> ExperimentStatusObservable { get; }
-
-  public ExperimentExecutionStatus Status { get; }
-
   public async Task<ExperimentExecutionSummary> Execute(ExecutionControlToken token)
   {
     var startTime = DateTime.UtcNow;
@@ -61,14 +51,28 @@ public class ExperimentExecutor : IExecutor<ExperimentExecutionSummary, Experime
       stepSummaries.Add(stepResult);
     }
 
+    var completedExperiment = await PopulateExperimentSummary(stepSummaries);
+    return ExecutorSummaryHelpers.CreateExperimentExecutionSummary(completedExperiment, startTime, DateTime.UtcNow, stepSummaries);
+  }
+
+  public Task<CompletedExperiment> PopulateExperimentSummary(List<StepExecutionSummary> stepSummaries)
+  {
     var completedExperiment = new CompletedExperiment
     {
-      Template = Template,
+      Template = Template.AssignNewUniquePlanningIds(),
       Result = ResultGenerator.GenerateExperimentResult(stepSummaries, Template.StepTemplates)
     };
 
-    //completedExperiment.Parameters.AddRange(Template.GetAllPlannedParameters());
+    
 
-    return ExecutorSummaryHelpers.CreateExperimentExecutionSummary(Template.UniqueId, completedExperiment, startTime, DateTime.UtcNow, stepSummaries);
+    return Task.FromResult(completedExperiment);
   }
+
+  public IExecutor<StepExecutionSummary, StepExecutionStatus>[] ExperimentStepExecutors { get; }
+
+  public ExperimentTemplate Template { get; set; }
+
+  public IObservable<ExperimentExecutionStatus> ExperimentStatusObservable { get; }
+
+  public ExperimentExecutionStatus Status { get; }
 }

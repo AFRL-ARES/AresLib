@@ -92,6 +92,7 @@ public static class ExperimentTemplateExtensions
 
         commandTemplate.Metadata.UniqueId = Guid.NewGuid().ToString();
         commandTemplate.UniqueId = cmdTemplateId;
+
         foreach(var metadataParameterMetadata in commandTemplate.Metadata.ParameterMetadatas)
         {
           metadataParameterMetadata.UniqueId = Guid.NewGuid().ToString();
@@ -103,6 +104,7 @@ public static class ExperimentTemplateExtensions
         {
           argument.UniqueId = Guid.NewGuid().ToString();
           argument.Metadata.UniqueId = Guid.NewGuid().ToString();
+
           if(argument.Value is not null)
             argument.Value.UniqueId = Guid.NewGuid().ToString();
 
@@ -113,5 +115,45 @@ public static class ExperimentTemplateExtensions
     }
 
     return newTemplate;
+  }
+
+  /// <summary>
+  /// Given an experiment template, assigns new unique ids to its planning metadata
+  /// </summary>
+  /// <param name="template"></param>
+  /// <returns></returns>
+  public static ExperimentTemplate AssignNewUniquePlanningIds(this ExperimentTemplate template)
+  {
+    foreach(var step in template.StepTemplates)
+    {
+      foreach(var cmd in step.CommandTemplates)
+      {
+        foreach(var param in cmd.Parameters)
+        {
+          param.PlanningMetadata.UniqueId = Guid.NewGuid().ToString();
+        }
+      }
+    }
+
+    return template;
+  }
+
+  /// <summary>
+  /// Given an experiment template, clones all of it's existing planned parameters with new unique id's for all applicable fields.
+  /// </summary>
+  /// <param name="template"></param>
+  /// <returns></returns>
+  public static List<Parameter> CloneParametersWithNewIds(this ExperimentTemplate template)
+  {
+    var parameters = new List<Parameter>();
+    foreach(var param in template.GetAllPlannedParameters())
+    {
+      param.UniqueId = Guid.NewGuid().ToString();
+      param.Metadata.UniqueId = Guid.NewGuid().ToString();
+      param.PlanningMetadata.UniqueId = Guid.NewGuid().ToString();
+      parameters.Add(param);
+    }
+
+    return parameters;
   }
 }

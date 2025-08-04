@@ -10,6 +10,7 @@ internal class StepExecutionSummaryEntityConfiguration : AresEntityTypeBaseConfi
   {
     base.Configure(builder);
     builder.ToTable("StepExecutionSummaries");
+
     builder.HasMany(result => result.CommandSummaries)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);
@@ -19,10 +20,10 @@ internal class StepExecutionSummaryEntityConfiguration : AresEntityTypeBaseConfi
       .HasForeignKey<ExecutionInfo>("StepExecutionSummaryId")
       .OnDelete(DeleteBehavior.ClientCascade);
 
-    builder.HasOne<StepTemplate>()
-      .WithMany()
-      .HasForeignKey(result => result.StepId)
-      .OnDelete(DeleteBehavior.ClientCascade);
+    //builder.HasOne<StepTemplate>()
+    //  .WithMany()
+    //  .HasForeignKey(result => result.StepId)
+    //  .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.Navigation(result => result.CommandSummaries).AutoInclude();
     builder.Navigation(result => result.ExecutionInfo).AutoInclude();

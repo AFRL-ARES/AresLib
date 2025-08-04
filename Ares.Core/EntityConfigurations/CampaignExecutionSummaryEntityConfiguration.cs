@@ -10,6 +10,7 @@ internal class CampaignExecutionSummaryEntityConfiguration : AresEntityTypeBaseC
   {
     base.Configure(builder);
     builder.ToTable("CampaignExecutionSummaries");
+
     builder.HasMany(result => result.ExperimentSummaries)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);

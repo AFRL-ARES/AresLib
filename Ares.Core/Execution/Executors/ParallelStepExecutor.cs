@@ -15,6 +15,6 @@ public class ParallelStepExecutor : StepExecutor
     var commandTasks = CommandExecutors.Select(command => command.Execute(token));
     var commandSummaries = await Task.WhenAll(commandTasks);
 
-    return ExecutorSummaryHelpers.CreateStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow, commandSummaries);
+    return ExecutorSummaryHelpers.CreateStepExecutionSummary(startTime, DateTime.UtcNow, commandSummaries);
   }
 }

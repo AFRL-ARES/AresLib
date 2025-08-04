@@ -24,9 +24,9 @@ public class SequentialStepExecutor : StepExecutor
         commandSummaries.Add(commandExecutionSummary);
 
       else
-        return ExecutorSummaryHelpers.CreateEmptyStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow);
+        return ExecutorSummaryHelpers.CreateEmptyStepExecutionSummary(startTime, DateTime.UtcNow);
     }
 
-    return ExecutorSummaryHelpers.CreateStepExecutionSummary(Template.UniqueId, startTime, DateTime.UtcNow, commandSummaries);
+    return ExecutorSummaryHelpers.CreateStepExecutionSummary(startTime, DateTime.UtcNow, commandSummaries);
   }
 }

@@ -10,6 +10,7 @@ internal class CommandExecutionSummaryEntityConfiguration : AresEntityTypeBaseCo
   {
     base.Configure(builder);
     builder.ToTable("CommandExecutionSummaries");
+
     builder.HasOne(result => result.ExecutionInfo)
       .WithOne()
       .HasForeignKey<ExecutionInfo>("CommandExecutionSummaryId")
@@ -18,11 +19,6 @@ internal class CommandExecutionSummaryEntityConfiguration : AresEntityTypeBaseCo
     builder.HasOne(result => result.Result)
       .WithOne()
       .HasForeignKey<DeviceCommandResult>("CommandExecutionSummaryId")
-      .OnDelete(DeleteBehavior.ClientCascade);
-
-    builder.HasOne<CommandTemplate>()
-      .WithMany()
-      .HasForeignKey(result => result.CommandId)
       .OnDelete(DeleteBehavior.ClientCascade);
 
     builder.Navigation(result => result.ExecutionInfo).AutoInclude();

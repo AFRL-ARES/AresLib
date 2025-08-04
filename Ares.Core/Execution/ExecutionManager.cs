@@ -62,18 +62,6 @@ public class ExecutionManager : IExecutionManager
     executor.ReplanRate = ReplanRate;
     _executionControlTokenSource = new ExecutionControlTokenSource();
     var campaignExecutionSummary = await executor.Execute(_executionControlTokenSource.Token);
-
-    using(var dbContext = _dbContextFactory.CreateDbContext())
-    {
-      foreach(var exp in campaignExecutionSummary.ExperimentSummaries)
-      {
-        var existingParameters = exp.CompletedExperiment.Template.GetAllPlannedParameters().Select(p => p.UniqueId);
-        var databaseParameters = await dbContext.Parameters.Where(p => existingParameters.Contains(p.UniqueId)).ToListAsync();
-        exp.CompletedExperiment.Parameters.AddRange(databaseParameters);
-      }
-      await dbContext.SaveChangesAsync();
-    }
-
     campaignExecutionSummary.CampaignName = _activeCampaignTemplateStore.CampaignTemplate!.Name;
     campaignExecutionSummary.CampaignNotes = executionNotes;
     campaignExecutionSummary.CampaignTags = string.Join(",", campaignTags.Select(tag => tag.TagName).ToList());

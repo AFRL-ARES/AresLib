@@ -10,6 +10,7 @@ internal class ExperimentTemplateEntityConfiguration : AresEntityTypeBaseConfigu
   {
     base.Configure(builder);
     builder.ToTable("ExperimentTemplates");
+
     builder.HasMany(experimentTemplate => experimentTemplate.StepTemplates)
       .WithOne()
       .OnDelete(DeleteBehavior.Cascade);

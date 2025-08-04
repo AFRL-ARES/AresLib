@@ -5,8 +5,7 @@ namespace Ares.Core.Execution.Executors;
 
 internal static class ExecutorSummaryHelpers
 {
-  public static ExperimentExecutionSummary CreateExperimentExecutionSummary(string experimentId,
-    CompletedExperiment completedExperiment,
+  public static ExperimentExecutionSummary CreateExperimentExecutionSummary(CompletedExperiment completedExperiment,
     DateTime startTime,
     DateTime endTime,
     IEnumerable<StepExecutionSummary> StepSummaries)
@@ -15,7 +14,7 @@ internal static class ExecutorSummaryHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
-      ExperimentId = experimentId,
+      ExperimentId = completedExperiment.Template.UniqueId,
       CompletedExperiment = completedExperiment,
     };
 
@@ -23,8 +22,7 @@ internal static class ExecutorSummaryHelpers
     return experimentSummary;
   }
 
-  public static StepExecutionSummary CreateStepExecutionSummary(string stepId,
-    DateTime startTime,
+  public static StepExecutionSummary CreateStepExecutionSummary(DateTime startTime,
     DateTime endTime,
     IEnumerable<CommandExecutionSummary> CommandSummaries)
   {
@@ -32,7 +30,7 @@ internal static class ExecutorSummaryHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
-      StepId = stepId
+      StepId = Guid.NewGuid().ToString()
     };
 
     stepResult.CommandSummaries.AddRange(CommandSummaries);
@@ -40,7 +38,7 @@ internal static class ExecutorSummaryHelpers
     return stepResult;
   }
 
-  public static StepExecutionSummary CreateEmptyStepExecutionSummary(string stepId, DateTime startTime, DateTime endTime)
+  public static StepExecutionSummary CreateEmptyStepExecutionSummary(DateTime startTime, DateTime endTime)
   {
     return new StepExecutionSummary { UniqueId = Guid.NewGuid().ToString(), ExecutionInfo = MakeExecutionInfo(startTime, endTime) };
   }
@@ -53,7 +51,7 @@ internal static class ExecutorSummaryHelpers
     {
       UniqueId = Guid.NewGuid().ToString(),
       ExecutionInfo = MakeExecutionInfo(startTime, endTime),
-      CommandId = template.UniqueId,
+      CommandId = Guid.NewGuid().ToString(),
       Result = deviceResult,
       CommandDescription = template.Metadata.Description,
       CommandName = template.Metadata.Name
