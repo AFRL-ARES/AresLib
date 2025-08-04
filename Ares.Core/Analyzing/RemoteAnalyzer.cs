@@ -1,6 +1,7 @@
 ﻿using Ares.Messaging;
 using Ares.Messaging.Analyzing;
 using Ares.Messaging.Analyzing.Remote;
+using Ares.Tools;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
@@ -9,7 +10,8 @@ namespace Ares.Core.Analyzing;
 public class RemoteAnalyzer : AnalyzerBase
 {
   private readonly GrpcChannel _channel;
-  private bool _initialized = false;
+  private AnalyzerCapabilities _capabilities = new();
+  private AresDataSchema _parameters = new();
 
   public RemoteAnalyzer(string name, Uri address, string id) : base(name, "", "_._._", id)
   {
@@ -31,18 +33,27 @@ public class RemoteAnalyzer : AnalyzerBase
     var analysisRequest = new AnalysisRequest
     {
       Inputs = inputs,
-      Settings = new AresStruct()
+      Settings = Settings
     };
     return client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken).ResponseAsync;
   }
 
+
+  /// <summary>
+  /// Gives the option of settings override.
+  /// </summary>
+  /// <param name="inputs"></param>
+  /// <param name="settings">These will add-to/override existing settings values if provided. </param>
+  /// <param name="cancellationToken"></param>
+  /// <returns></returns>
   public override Task<Analysis> Analyze(AresStruct inputs, AresStruct settings, CancellationToken cancellationToken = default)
   {
     var client = GetClient();
+    var mergedSettings = Settings.AppendStruct(settings);
     var analysisRequest = new AnalysisRequest
     {
       Inputs = inputs,
-      Settings = settings
+      Settings = mergedSettings
     };
     return client.AnalyzeAsync(analysisRequest, cancellationToken: cancellationToken).ResponseAsync;
   }
@@ -53,13 +64,13 @@ public class RemoteAnalyzer : AnalyzerBase
     try
     {
       var capabilities = await client.GetAnalyzerCapabilitiesAsync(new Empty(), cancellationToken: cancellationToken);
+      _capabilities = capabilities;
       return capabilities;
     }
     catch(RpcException)
     {
-      return new AnalyzerCapabilities();
+      return _capabilities;
     }
-
   }
 
   public override async Task<AresDataSchema> GetParameters(CancellationToken cancellationToken)
@@ -68,11 +79,12 @@ public class RemoteAnalyzer : AnalyzerBase
     try
     {
       var response = await client.GetAnalysisParametersAsync(new Empty(), cancellationToken: cancellationToken);
+      _parameters = response.ParameterSchema;
       return response.ParameterSchema;
     }
     catch(RpcException)
     {
-      return new AresDataSchema();
+      return _parameters;
     }
   }
 
@@ -80,6 +92,8 @@ public class RemoteAnalyzer : AnalyzerBase
   {
     await UpdateInfo();
     await UpdateState();
+    await UpdateParameters();
+    await UpdateCapabilities();
   }
 
   internal async Task UpdateInfo()
@@ -94,9 +108,6 @@ public class RemoteAnalyzer : AnalyzerBase
     }
     catch(RpcException)
     {
-      Type = "Unknown";
-      Version = "Unknown";
-      Description = "Failed to retrieve analyzer information";
     }
   }
 
@@ -108,13 +119,81 @@ public class RemoteAnalyzer : AnalyzerBase
       var state = await client.GetStateAsync(new Empty());
       AnalyzerState = state.State;
       StateMessage = state.StateMessage;
-      _initialized = true;
     }
     catch(RpcException e)
     {
       AnalyzerState = AnalyzerState.Inactive;
       StateMessage = $"Failed to connect to analyzer: {e.Message}";
     }
+  }
+
+  internal async Task UpdateCapabilities()
+  {
+    var client = GetClient();
+    try
+    {
+      _capabilities = await client.GetAnalyzerCapabilitiesAsync(new Empty());
+    }
+    catch(RpcException)
+    {
+    }
+
+    if(_capabilities.TimeoutSeconds > 0)
+    {
+      AnalysisTimeout = TimeSpan.FromSeconds(_capabilities.TimeoutSeconds);
+    }
+    else
+    {
+      AnalysisTimeout = TimeSpan.MaxValue;
+    }
+
+    var newSettings = _capabilities.SettingsSchema?.Fields.Where(entry => !Settings.Fields.ContainsKey(entry.Key)) ?? [];
+    var removedSettings = Settings.Fields.Where(entry => !_capabilities.SettingsSchema?.Fields.ContainsKey(entry.Key) ?? false);
+
+    foreach(var removedSetting in removedSettings)
+    {
+      Settings.Fields.Remove(removedSetting.Key);
+    }
+
+    foreach(var newSetting in newSettings)
+    {
+      if(newSetting.Value.Type == AresDataType.String)
+      {
+        Settings.Fields[newSetting.Key] = AresValueHelper.CreateDefault(newSetting.Value.Type, newSetting.Value.StringChoices?.Strings);
+      }
+      else if(newSetting.Value.Type == AresDataType.Number)
+      {
+        Settings.Fields[newSetting.Key] = AresValueHelper.CreateDefault(
+          newSetting.Value.Type,
+          newSetting.Value.NumberChoices?.Numbers);
+      }
+      else
+      {
+        Settings.Fields[newSetting.Key] = AresValueHelper.CreateDefault(newSetting.Value.Type);
+      }
+    }
+  }
+
+  internal async Task UpdateParameters()
+  {
+    var client = GetClient();
+    try
+    {
+      var response = await client.GetAnalysisParametersAsync(new Empty());
+      _parameters = response.ParameterSchema;
+    }
+    catch(RpcException)
+    {
+    }
+  }
+
+  internal async Task UpdateInfo(AnalyzerInfo info)
+  {
+    Type = info.Type;
+    Description = info.Description;
+    Version = info.Version;
+    _capabilities = info.Capabilities;
+    await UpdateCapabilities();
   }
 
   private AresRemoteAnalyzerService.AresRemoteAnalyzerServiceClient GetClient()

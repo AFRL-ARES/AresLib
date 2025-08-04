@@ -1,7 +1,6 @@
 ﻿using Ares.Device.Tests.Device;
 using Ares.Messaging;
 using Ares.Tools;
-using Google.Protobuf.WellKnownTypes;
 using Moq;
 using Moq.Protected;
 
@@ -48,7 +47,7 @@ internal class DeviceLibraryTests
 
     Assert.That(result.Success);
     var num = result.Result.Fields.FirstOrDefault(field => field.Key == "Test");
-    Assert.That(num.Value.StringValue, Is.EqualTo("12345"));
+    Assert.That(num.Value.NumberValue, Is.EqualTo(12345));
   }
 
   [Test]

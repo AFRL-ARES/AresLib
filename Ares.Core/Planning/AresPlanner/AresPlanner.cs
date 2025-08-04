@@ -1,10 +1,9 @@
-﻿using Ares.Messaging;
+﻿using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using Ares.Messaging;
 using Ares.Messaging.Analyzing;
 using Ares.Tools;
 using AresPlanner;
-using Google.Protobuf.WellKnownTypes;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
 
 namespace Ares.Core.Planning.AresPlanner;
 
@@ -24,7 +23,7 @@ public class AresPlanner : IPlanner
 
   public async Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<CompletedExperiment> completedExperiments, IEnumerable<Analysis> _experimentAnalyses, CancellationToken cancellationToken)
   {
-    var client = ClientStore.AresPlanningClient;
+    var client = ClientStore.AresPlanningClient ?? throw new InvalidOperationException($"Failed to plan as the remote client has not been established yet.");
     var planRequest = new PlanRequest();
     planRequest.PlanningParameters.AddRange(plannableParameters.Select(parameter => ConvertToPlanningParameter(parameter, completedExperiments)));
     var result = await client.PlanAsync(planRequest, deadline: DateTime.UtcNow.AddSeconds(30));

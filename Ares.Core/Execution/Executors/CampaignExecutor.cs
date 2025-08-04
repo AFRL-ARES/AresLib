@@ -123,6 +123,13 @@ public class CampaignExecutor : ICampaignExecutor
         break;
       }
 
+      if(experimentExecutorResult.ExperimentExecutor is null)
+      {
+        await HandleNotification("Experiment Executor Generation Failure", "Error was not specified, but the executor generation has failed.", NotificationSeverityEnum.Error);
+        executionSuccess = false;
+        break;
+      }
+
       var experimentExecutor = experimentExecutorResult.ExperimentExecutor;
 
       if(experimentExecutorResult.ErrorString is not null)

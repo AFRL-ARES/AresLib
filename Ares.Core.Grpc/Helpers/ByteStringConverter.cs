@@ -20,7 +20,7 @@ public class ByteStringConverter : JsonConverter<ByteString>
     writer.WriteValue(jsonString);
   }
 
-  public override ByteString ReadJson(JsonReader reader, Type objectType, ByteString? existingValue, bool hasExistingValue, JsonSerializer serializer)
+  public override ByteString? ReadJson(JsonReader reader, Type objectType, ByteString? existingValue, bool hasExistingValue, JsonSerializer serializer)
   {
     if(reader.TokenType is JsonToken.Null || reader.Value is null)
       return null;

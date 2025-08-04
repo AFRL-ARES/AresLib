@@ -21,6 +21,8 @@ public class CoreDatabaseContext : DbContext
   public DbSet<CampaignExecutionSummary> CampaignExecutionSummaries => Set<CampaignExecutionSummary>();
   public DbSet<DeviceConfig> DeviceConfigs => Set<DeviceConfig>();
   public DbSet<AnalyzerConfig> Analyzers => Set<AnalyzerConfig>();
+  public DbSet<AnalyzerInfo> AnalyzerInfos => Set<AnalyzerInfo>();
+  public DbSet<AnalyzerSettings> AnalyzerSettings => Set<AnalyzerSettings>();
   public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
   public DbSet<AresCampaignTag> CampaignTags => Set<AresCampaignTag>();
   public DbSet<Parameter> Parameters => Set<Parameter>();

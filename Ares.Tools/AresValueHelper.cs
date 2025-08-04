@@ -78,4 +78,39 @@ public static class AresValueHelper
 
     return val;
   }
+
+  public static AresValue CreateDefault(AresDataType dataType)
+  {
+    return dataType switch
+    {
+      AresDataType.UnspecifiedType => CreateNull(),
+      AresDataType.Null => CreateNull(),
+      AresDataType.Boolean => CreateBool(false),
+      AresDataType.String => CreateString(string.Empty),
+      AresDataType.Number => CreateNumber(0),
+      AresDataType.StringArray => CreateStringArray(Array.Empty<string>()),
+      AresDataType.NumberArray => CreateNumberArray(Array.Empty<double>()),
+      AresDataType.ByteArray => CreateBytes(Array.Empty<byte>()),
+      AresDataType.BoolArray => CreateBoolArray(Array.Empty<bool>()),
+      _ => CreateNull()
+    };
+  }
+
+  public static AresValue CreateDefault(AresDataType dataType, IEnumerable<string>? choices = null)
+  {
+    return dataType switch
+    {
+      AresDataType.String => CreateString(choices?.FirstOrDefault() ?? string.Empty),
+      _ => CreateDefault(dataType)
+    };
+  }
+
+  public static AresValue CreateDefault(AresDataType dataType, IEnumerable<double>? choices = null)
+  {
+    return dataType switch
+    {
+      AresDataType.Number => CreateNumber(choices?.FirstOrDefault() ?? 0),
+      _ => CreateDefault(dataType)
+    };
+  }
 }

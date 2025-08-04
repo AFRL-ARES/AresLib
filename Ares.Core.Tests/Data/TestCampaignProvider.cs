@@ -3,7 +3,6 @@ using Ares.Core.Tests.Data.Device;
 using Ares.Messaging;
 using Ares.Test;
 using Ares.Tools;
-using Google.Protobuf.WellKnownTypes;
 
 namespace Ares.Core.Tests.Data;
 
@@ -76,6 +75,8 @@ internal class TestCampaignProvider
 
     experimentTemplate.StepTemplates.AddRange(stepTemplates);
 
+    experimentTemplate.AnalyzerMaps["TestOutput1"] = "TestReply";
+
     return experimentTemplate;
   }
 
@@ -97,6 +98,8 @@ internal class TestCampaignProvider
 
     template.Parameters.AddRange(parameters);
     template.UniqueId = metadata.UniqueId;
+
+    template.UserOutputKeyMap["TestOutput"] = "TestOutput1";
 
     return template;
   }

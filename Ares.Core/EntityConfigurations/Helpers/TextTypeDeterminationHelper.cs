@@ -36,6 +36,15 @@ public static class TextTypeDeterminationHelper
       .HasColumnType(DetermineColumnType());
   }
 
+  public static PropertyBuilder<AresDataSchema> HasDataSchema(this PropertyBuilder<AresDataSchema> schema)
+  {
+    var settings = SerializerSettingsHelper.CreateCustomSerializationSettings();
+    return schema.HasConversion(
+      s => JsonSerializer.Serialize(s, settings),
+      s => JsonSerializer.Deserialize<AresDataSchema>(s, settings) ?? new AresDataSchema())
+      .HasColumnType(DetermineColumnType());
+  }
+
   public static PropertyBuilder<AresDataSchemaSimplified> HasDataSchemaSimplified(this PropertyBuilder<AresDataSchemaSimplified> schema)
   {
     var settings = SerializerSettingsHelper.CreateCustomSerializationSettings();

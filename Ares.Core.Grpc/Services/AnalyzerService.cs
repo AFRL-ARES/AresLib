@@ -90,17 +90,17 @@ public class AnalyzerService(IAnalyzerRepo analyzerRepo, IRemoteAnalyzerManager 
     }
   }
 
-  public override Task<Empty> RemoveRemoteAnalyzer(RemoveRemoteAnalyzerRequest request, ServerCallContext context)
+  public override async Task<Empty> RemoveRemoteAnalyzer(RemoveRemoteAnalyzerRequest request, ServerCallContext context)
   {
-    _remoteAnalyzerManager.RemoveAnalyzer(request.AnalyzerId);
+    await _remoteAnalyzerManager.RemoveAnalyzer(request.AnalyzerId);
 
-    return Task.FromResult(new Empty());
+    return new Empty();
   }
 
   public override Task<AnalyzerStateResponse> GetState(AnalyzerStateRequest request, ServerCallContext context)
   {
     var response = new AnalyzerStateResponse();
-    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId) ?? throw new ItemNotFoundException(request.AnalyzerId, typeof(IAnalyzer), "Failed to get state as requested analyzer was not found"); ;
 
     response.State = analyzer.AnalyzerState;
     response.StateMessage = analyzer.StateMessage;
@@ -111,9 +111,42 @@ public class AnalyzerService(IAnalyzerRepo analyzerRepo, IRemoteAnalyzerManager 
   public override async Task<AnalyzerInfoResponse> GetInfo(AnalyzerInfoRequest request, ServerCallContext context)
   {
     var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+    if(analyzer is null)
+    {
+      return new AnalyzerInfoResponse
+      {
+        Info = new AnalyzerInfo { Name = "Unknown", Description = "Analyzer not found" }
+      };
+    }
     var info = await GetInfo(analyzer);
     var response = new AnalyzerInfoResponse { Info = info };
 
     return response;
+  }
+
+  public override Task<AresStruct> GetAnalyzerSettings(AnalyzerSettingsRequest request, ServerCallContext context)
+  {
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId) ?? throw new ItemNotFoundException(request.AnalyzerId, typeof(IAnalyzer), "Failed to get settings as requested analyzer was not found"); ;
+    return Task.FromResult(analyzer.Settings);
+  }
+
+  public override async Task<Empty> SetAnalyzerSettings(AnalyzerSettings request, ServerCallContext context)
+  {
+    var analyzer = _analyzerRepo.GetAnalyzerById(request.AnalyzerId);
+    if(analyzer is null)
+    {
+      return new Empty();
+    }
+
+    if(analyzer is RemoteAnalyzer remoteAnalyzer)
+    {
+      await _remoteAnalyzerManager.UpdateAnalyzerSettings(request);
+    }
+    else
+    {
+      analyzer.UpdateSettings(request.Settings);
+    }
+
+    return new Empty();
   }
 }
