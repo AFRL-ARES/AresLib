@@ -415,49 +415,49 @@ public class AutomationService : AresAutomation.AresAutomationBase
       return new CheckExecutionEligibilityResponse { Error = eligbilityError, IsEligible = false };
   }
 
-  //public override async Task<TagsResponse> GetAllTags(Empty request, ServerCallContext context)
-  //{
-  //  await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-  //  var existingTags = await dbContext.CampaignTags.ToArrayAsync();
-  //  var response = new TagsResponse();
-  //  response.AvailableTags.AddRange(existingTags);
-  //  return response;
-  //}
+  public override async Task<TagsResponse> GetAllTags(Empty request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(existingTags);
+    return response;
+  }
 
-  //public override async Task<TagsResponse> AddTag(TagRequest request, ServerCallContext context)
-  //{
-  //  await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-  //  var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+  public override async Task<TagsResponse> AddTag(TagRequest request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
 
-  //  if(existingTags.Any(t => t.UniqueId == request.Tag.UniqueId))
-  //    //Duplicate tag, don't do it plz
-  //    throw new InvalidOperationException();
+    if(existingTags.Any(t => t.UniqueId == request.Tag.UniqueId))
+      //Duplicate tag, don't do it plz
+      throw new InvalidOperationException();
 
-  //  dbContext.CampaignTags.Add(request.Tag);
-  //  await dbContext.SaveChangesAsync();
+    dbContext.CampaignTags.Add(request.Tag);
+    await dbContext.SaveChangesAsync();
 
-  //  var response = new TagsResponse();
-  //  response.AvailableTags.AddRange(existingTags);
-  //  response.AvailableTags.Add(request.Tag);
-  //  return response;
-  //}
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(existingTags);
+    response.AvailableTags.Add(request.Tag);
+    return response;
+  }
 
-  //public override async Task<TagsResponse> RemoveTag(TagRequest request, ServerCallContext context)
-  //{
-  //  await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
-  //  var existingTags = await dbContext.CampaignTags.ToArrayAsync();
-  //  var match = existingTags.FirstOrDefault(tag => tag.UniqueId == request.Tag.UniqueId);
+  public override async Task<TagsResponse> RemoveTag(TagRequest request, ServerCallContext context)
+  {
+    await using var dbContext = await _coreContextFactory.CreateDbContextAsync();
+    var existingTags = await dbContext.CampaignTags.ToArrayAsync();
+    var match = existingTags.FirstOrDefault(tag => tag.UniqueId == request.Tag.UniqueId);
 
-  //  if(match is not null)
-  //  {
-  //    dbContext.Remove(match);
-  //    await dbContext.SaveChangesAsync();
-  //  }
+    if(match is not null)
+    {
+      dbContext.Remove(match);
+      await dbContext.SaveChangesAsync();
+    }
 
-  //  var response = new TagsResponse();
-  //  response.AvailableTags.AddRange(await dbContext.CampaignTags.ToArrayAsync());
-  //  return response;
-  //}
+    var response = new TagsResponse();
+    response.AvailableTags.AddRange(await dbContext.CampaignTags.ToArrayAsync());
+    return response;
+  }
 
   public override async Task<AvailableCampaignExecutionSummariesResponse> GetAvailableCampaignExecutionSummaries(Empty request, ServerCallContext context)
   {
