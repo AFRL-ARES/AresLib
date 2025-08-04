@@ -36,7 +36,5 @@ public abstract class StepExecutor : IExecutor<StepExecutionSummary, StepExecuti
   protected StepTemplate Template { get; }
   public IObservable<StepExecutionStatus> ExperimentStatusObservable { get; }
   public StepExecutionStatus Status { get; }
-  public IObservable<StepExecutionStatus>? StartupStatusObservable { get; }
-  public IObservable<StepExecutionStatus>? CloseoutStatusObservable { get; }
   public abstract Task<StepExecutionSummary> Execute(ExecutionControlToken token);
 }

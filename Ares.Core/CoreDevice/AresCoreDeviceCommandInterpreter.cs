@@ -54,9 +54,6 @@ public class AresCoreDeviceCommandInterpreter : DeviceCommandInterpreter<AresCor
         return result;
 
       case AresCoreDeviceCommand.WaitForUser:
-        var param = parameters[0];
-
-        await Device.WaitForUser(param.Value.Value.StringValue);
         result.Success = true;
         result.AwaitUserInput = true;
         return result;

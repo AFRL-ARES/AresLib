@@ -26,8 +26,8 @@ public class PlanningHelper : IPlanningHelper
     {
       var hasVersion = Version.TryParse(plannerAllocation.Planner.Version, out var version);
       var planner = hasVersion
-        ? _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name, version!)
-        : _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.Name);
+        ? _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.AdapterName, version!)
+        : _plannerManager.GetPlanner(plannerAllocation.Planner.Type, plannerAllocation.Planner.AdapterName);
 
       plannerToMetadataMaps.Add((planner, plannerAllocation.Parameter));
     }

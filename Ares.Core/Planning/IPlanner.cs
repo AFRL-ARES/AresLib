@@ -1,5 +1,6 @@
 ﻿using Ares.Messaging;
 using Ares.Messaging.Analyzing;
+using Ares.Messaging.Planning;
 
 namespace Ares.Core.Planning;
 
@@ -21,15 +22,31 @@ public interface IPlanner
   string Address { get; set; }
 
   /// <summary>
-  /// Current state (<see cref="PlannerState" />) of the planner which essentially indicated
+  /// Current status (<see cref="PlannerStatus" />) of the planner which essentially indicates
   /// whether or not this planner is currently available for planning
   /// </summary>
-  IObservable<PlannerState> PlannerState { get; }
+  PlannerStatus Status { get; }
+
+  /// <summary>
+  /// A list of planners reported to be available by the planner service
+  /// </summary>
+  IList<Planner> AvailablePlanners { get; }
+
+  /// <summary>
+  /// A list of settings custom to this adapter
+  /// </summary>
+  IList<PlannerSetting> AdapterSettings { get; }
 
   /// <summary>
   /// Id used to uniquely identify this instance of the planner
   /// </summary>
   string UniqueId { get; set; }
+
+  /// <summary>
+  /// Initializes the planner adapter, including verifying the connection status
+  /// </summary>
+  /// <returns></returns>
+  Task Init();
 
   /// <summary>
   /// Returns the values for the given parameter metadata

@@ -23,7 +23,7 @@ public class CoreDatabaseContext : DbContext
   public DbSet<AnalyzerConfig> Analyzers => Set<AnalyzerConfig>();
   public DbSet<AnalyzerInfo> AnalyzerInfos => Set<AnalyzerInfo>();
   public DbSet<AnalyzerSettings> AnalyzerSettings => Set<AnalyzerSettings>();
-  public DbSet<PlannerInfo> Planners => Set<PlannerInfo>();
+  public DbSet<PlannerAdapterInfo> Planners => Set<PlannerAdapterInfo>();
   public DbSet<AresCampaignTag> CampaignTags => Set<AresCampaignTag>();
   public DbSet<Parameter> Parameters => Set<Parameter>();
 

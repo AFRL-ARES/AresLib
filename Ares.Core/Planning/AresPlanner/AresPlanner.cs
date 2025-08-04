@@ -1,15 +1,15 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Ares.Messaging;
 using Ares.Messaging.Analyzing;
+using Ares.Messaging.Planning;
 using Ares.Tools;
-using AresPlanner;
+using DynamicData;
+using Google.Protobuf.WellKnownTypes;
+using System.Reactive.Linq;
 
 namespace Ares.Core.Planning.AresPlanner;
 
 public class AresPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
   readonly Uri _address;
 
   public AresPlanner(string name, Uri address)
@@ -17,7 +17,7 @@ public class AresPlanner : IPlanner
     _address = address;
     Name = name;
     Address = address.OriginalString;
-    PlannerState = _plannerStateSubject.AsObservable();
+    Status = new PlannerStatus { PlannerState = PlannerState.Inactive, Message = $"{name} has not been activated" };
     UniqueId = Guid.NewGuid().ToString();
   }
 
@@ -74,18 +74,53 @@ public class AresPlanner : IPlanner
       parameter.MaximumValue = constraint.Maximum;
     }
 
+    parameter.PlannerName = metadata.PlannerName;
     return parameter;
   }
 
-  public void Init()
+  public async Task Init()
   {
     ClientStore.CreateClient(_address);
-    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    var client = ClientStore.AresPlanningClient;
+    Capabilities? response = null;
+
+    try
+    {
+      response = await client.RequestCapabilitiesAsync(new Empty());
+    }
+
+    catch(Exception)
+    {
+      Status.PlannerState = PlannerState.Error;
+      Status.Message = "Failed to establish a connection with the planner!";
+      return;
+    }
+
+    if(response is null)
+    {
+      Status.PlannerState = PlannerState.Error;
+      Status.Message = "Planner returned a null capability response!";
+      return;
+    }
+
+    AvailablePlanners.Clear();
+    AdapterSettings.Clear();
+
+    AvailablePlanners.AddRange(response.AvailablePlanners);
+    AdapterSettings.AddRange(response.AdapterSettings);
+
+    Timeout = TimeSpan.FromSeconds(response.TimeoutSeconds);
+    await Task.Delay(TimeSpan.FromSeconds(0.5));
+    Status.PlannerState = PlannerState.Active;
+    Status.Message = $"Successfully activated {Name}!";
   }
 
   public string Name { get; set; }
   public Version Version { get; set; } = new Version(1, 0);
-  public IObservable<PlannerState> PlannerState { get; }
+  public PlannerStatus Status { get; protected set; }
+  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IList<PlannerSetting> AdapterSettings { get; } = new List<PlannerSetting>();
   public string Address { get; set; }
   public string UniqueId { get; set; }
+  public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(30);
 }

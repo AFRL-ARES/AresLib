@@ -1,4 +1,4 @@
-﻿using AresPlanner;
+﻿using Ares.Messaging.Planning;
 using Grpc.Net.Client;
 
 namespace Ares.Core.Planning.AresPlanner

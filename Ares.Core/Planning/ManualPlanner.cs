@@ -1,20 +1,18 @@
-﻿using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using Ares.Messaging;
 using Ares.Messaging.Analyzing;
 using Ares.Messaging.Planning;
 using Ares.Tools;
+using System.Reactive.Linq;
 
 namespace Ares.Core.Planning;
 
 public class ManualPlanner : IPlanner
 {
-  private readonly ISubject<PlannerState> _plannerStateSubject = new BehaviorSubject<PlannerState>(Planning.PlannerState.Disconnected);
   private readonly Queue<IEnumerable<ManualPlanResult>> _planResultsQueue = new();
 
   public ManualPlanner()
   {
-    PlannerState = _plannerStateSubject.AsObservable();
+    Status = new PlannerStatus { PlannerState = PlannerState.Active, Message = "Manual Planner is active!" };
   }
 
   public IEnumerable<IEnumerable<(string Name, AresValue Value)>> CurrentPlanResults => 
@@ -23,14 +21,11 @@ public class ManualPlanner : IPlanner
     .Select(results => results
     .Select(result => (result.Name, result.value)));
 
-  public string Name { get; set; } = "Manual Planner";
-  public Version Version { get; set; } = new(1, 0);
 
-  public string Address { get; set; } = "INTERNAL";
-
-  public string UniqueId { get; set; } = new Guid().ToString();
-
-  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, IEnumerable<CompletedExperiment> _, IEnumerable<Analysis> __, CancellationToken ___)
+  public Task<IEnumerable<PlanResult>> Plan(IEnumerable<ParameterMetadata> plannableParameters, 
+    IEnumerable<CompletedExperiment> experiments, 
+    IEnumerable<Analysis> _, 
+    CancellationToken __)
   {
     try
     {
@@ -43,8 +38,6 @@ public class ManualPlanner : IPlanner
       return Task.FromResult<IEnumerable<PlanResult>>(new List<PlanResult>());
     }
   }
-
-  public IObservable<PlannerState> PlannerState { get; }
 
   public Task Seed(ManualPlannerSeed seedParam)
   {
@@ -79,7 +72,15 @@ public class ManualPlanner : IPlanner
 
   public Task Init()
   {
-    _plannerStateSubject.OnNext(Planning.PlannerState.Connected);
+    var manualPlanner = new Planner()
+    {
+      PlannerName = "Manual Planner",
+      Description = "A planner used for executing sets of manual values.",
+      UniqueId = UniqueId,
+      Version = Version.ToString()
+    };
+
+    AvailablePlanners.Add(manualPlanner);
     return Task.CompletedTask;
   }
 
@@ -144,10 +145,18 @@ public class ManualPlanner : IPlanner
     }
   }
 
-  //
   private record ManualPlanResult(string Name, AresValue value)
+
   {
     public PlanResult ToPlanResult(ParameterMetadata metadata)
       => new(metadata, value);
   }
+
+  public PlannerStatus Status { get; protected set; }
+  public string Name { get; set; } = "Manual Planner";
+  public Version Version { get; set; } = new(1, 0);
+  public string Address { get; set; } = string.Empty;
+  public string UniqueId { get; set; } = new Guid().ToString();
+  public IList<Planner> AvailablePlanners { get; } = new List<Planner>();
+  public IList<PlannerSetting> AdapterSettings { get; } = new List<PlannerSetting>();
 }

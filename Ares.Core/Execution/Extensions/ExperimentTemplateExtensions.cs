@@ -130,7 +130,8 @@ public static class ExperimentTemplateExtensions
       {
         foreach(var param in cmd.Parameters)
         {
-          param.PlanningMetadata.UniqueId = Guid.NewGuid().ToString();
+          if(param.PlanningMetadata is not null)
+            param.PlanningMetadata.UniqueId = Guid.NewGuid().ToString();
         }
       }
     }
