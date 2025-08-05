@@ -48,6 +48,6 @@
   <ItemGroup>
     <Protobuf Update="Analyzing\Remote\AresRemoteAnalyzerService.proto" GrpcServices="Both" />
     <Protobuf Update="Planning\AresPlanner.proto" GrpcServices="Client" />
-    <Protobuf Update="Planning\ares_planner.proto" GrpcServices="Client" />
+    <Protobuf Update="Planning\ares_planner.proto" GrpcServices="Both" />
   </ItemGroup>
 </Project>
