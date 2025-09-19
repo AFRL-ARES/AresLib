@@ -55,6 +55,12 @@ internal static class ExperimentTemplateExtensions
 
     foreach(var para in parameters)
     {
+      if (para.EnvironmentBased && para.Value.Value is null)
+      {
+        resolved = false;
+        continue;
+      }
+
       var unpacked = para.Value.Value.TryUnpack<StringValue>(out var stringValue);
       if(unpacked && stringValue.Value == string.Empty)
         resolved = false;
